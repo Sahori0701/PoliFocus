@@ -1,0 +1,7 @@
+{
+  "name": "polifocus",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
