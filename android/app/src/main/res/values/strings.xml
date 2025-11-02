@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PoliFocusTask</string>
+    <string name="title_activity_main">PoliFocusTask</string>
+    <string name="package_name">com.polifocustask.app</string>
+    <string name="custom_url_scheme">com.polifocustask.app</string>
+</resources>
