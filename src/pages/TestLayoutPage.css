@@ -1,0 +1,43 @@
+/* src/pages/TestLayoutPage.css */
+
+.test-container {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.test-container h2, .test-container p {
+    color: #333;
+}
+
+/* --- Reglas exactas que fallan en el otro componente --- */
+
+.test-form-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.test-form-item-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.test-form-item-wrapper {
+  width: 100%;
+  --background: #ffffff;
+  --border-radius: 8px !important;
+  --min-height: 52px;
+  --border-color: #ddd;
+  --highlight-color-focused: transparent;
+  --inner-padding-start: 16px;
+  --inner-padding-end: 16px;
+  border: 1px solid #ddd;
+}
+
+.test-form-item-wrapper ion-input {
+  --color: #000;
+  --placeholder-color: #888;
+}

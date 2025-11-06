@@ -24,7 +24,7 @@
   gap: 1rem;
 }
 
-/* --- ENFOQUE FINAL CON DIV CONTENEDOR --- */
+/* --- NUEVO ENFOQUE: Estilos directos sobre los componentes --- */
 
 .form-row {
   display: flex;
@@ -32,40 +32,60 @@
   width: 100%;
 }
 
-/* NUEVO: El div contenedor es ahora el hijo de flex y se expande */
-.form-item-container {
-  flex: 1; /* Ocupa el espacio disponible */
-  min-width: 0; /* Soluciona problemas de encogimiento en flexbox */
+/* Estilos para los campos que van en pareja (ocupan 50% cada uno) */
+.form-flex-item {
+  flex: 1;
+  min-width: 0;
+  background: #374151;
+  border-radius: 8px !important; /* !important para sobreescribir estilos de Ionic */
+  min-height: 52px;
+  border: none;
+  color: #e5e7eb;
+  --padding-start: 16px; /* Variables CSS de Ionic para padding interno */
+  --padding-end: 16px;
+  --placeholder-color: #9ca3af;
+  --placeholder-opacity: 1;
+  font-size: 1rem; /* Restauramos el tamaño de fuente original */
 }
 
-/* IonItem ahora ocupa el 100% de su contenedor (el div) */
-.form-item-wrapper {
+/* Estilos para los campos que ocupan toda la fila */
+.form-item-wrapper-single {
   width: 100%;
-  --background: #374151;
-  --border-radius: 8px !important;
-  --min-height: 52px;
-  --border-color: transparent;
-  --highlight-color-focused: transparent;
-  --inner-padding-start: 16px;
-  --inner-padding-end: 16px;
+  background: #374151;
+  border-radius: 8px;
+  min-height: 52px;
 }
 
-/* Los inputs y selects siguen igual */
-.form-item-wrapper ion-input,
-.form-item-wrapper ion-select {
+/* Aplicamos estilos internos a los inputs/selects dentro del contenedor single */
+.form-item-wrapper-single ion-input,
+.form-item-wrapper-single ion-select {
+  width: 100%;
   --background: transparent;
   --color: #e5e7eb;
   --placeholder-color: #9ca3af;
   --placeholder-opacity: 1;
+  --padding-start: 16px;
+  --padding-end: 16px;
   font-size: 1rem;
 }
 
-.form-item-wrapper ion-select::part(icon) {
+
+/* Aseguramos que el color del icono del Select sea visible en ambos casos */
+.form-flex-item::part(icon),
+.form-item-wrapper-single ion-select::part(icon) {
   color: #9ca3af;
   opacity: 0.8;
 }
 
-/* --- FIN DE LA CORRECCIÓN --- */
+/* Eliminamos el borde que puede aparecer en el select al hacer click */
+.form-flex-item.ion-focused,
+.form-item-wrapper-single ion-select.ion-focused {
+    --border-color: transparent !important;
+    --highlight-color-focused: transparent;
+}
+
+
+/* --- FIN DEL NUEVO ENFOQUE --- */
 
 .submit-button {
   margin-top: 0.5rem;
@@ -75,7 +95,7 @@
   font-weight: 600;
 }
 
-/* --- SECCIÓN DE RECURRENCIA (sin cambios) --- */
+/* --- SECCIÓN DE RECURRENCIA (sin cambios visuales) --- */
 
 .recurrence-section {
   padding: 1rem;

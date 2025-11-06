@@ -5,7 +5,6 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonItem,
   IonInput,
   IonSelect,
   IonSelectOption,
@@ -18,7 +17,6 @@ import { taskUtils } from '../utils/taskUtils';
 import './TaskForm.css';
 
 interface TaskFormProps {
-  // Modificado para esperar una promesa booleana
   onSubmit: (task: Task) => Promise<boolean>;
 }
 
@@ -68,7 +66,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
     setRecurrenceEnd(dateUtils.toDateInputValue(nextMonth));
   };
 
-  // Modificado para ser asíncrono y esperar la respuesta
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
@@ -104,10 +101,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
       }
     }
 
-    // Esperar la señal de éxito/fracaso
     const success = await onSubmit(baseTask);
-
-    // Resetear el formulario SÓLO si hubo éxito
     if (success) {
       resetForm();
     }
@@ -125,50 +119,37 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
       </IonCardHeader>
       <IonCardContent>
         <form onSubmit={handleSubmit} className="task-form">
-          <IonItem className="form-item-wrapper">
-            <IonInput value={title} placeholder="Descripción de la tarea" onIonInput={e => setTitle(e.detail.value!)} required />
-          </IonItem>
+          {/* Este campo es único y no necesita flex-row, por lo que puede mantener su estilo original */}
+          <div className="form-item-wrapper-single">
+             <IonInput value={title} placeholder="Descripción de la tarea" onIonInput={e => setTitle(e.detail.value!)} required />
+          </div>
 
+          {/* FILAS PROBLEMÁTICAS: Ahora sin IonItem ni divs intermedios */}
           <div className="form-row">
-            <div className="form-item-container">
-              <IonItem className="form-item-wrapper">
-                <IonInput type="date" value={date} onIonInput={e => setDate(e.detail.value!)} required />
-              </IonItem>
-            </div>
-            <div className="form-item-container">
-              <IonItem className="form-item-wrapper">
-                <IonInput type="time" value={time} onIonInput={e => setTime(e.detail.value!)} required />
-              </IonItem>
-            </div>
+            <IonInput className="form-flex-item" type="date" value={date} onIonInput={e => setDate(e.detail.value!)} required />
+            <IonInput className="form-flex-item" type="time" value={time} onIonInput={e => setTime(e.detail.value!)} required />
           </div>
 
           <div className="form-row">
-            <div className="form-item-container">
-              <IonItem className="form-item-wrapper">
-                <IonInput type="number" value={duration} placeholder="60" onIonInput={e => setDuration(parseInt(e.detail.value!, 10) || 60)} required />
-              </IonItem>
-            </div>
-            <div className="form-item-container">
-              <IonItem className="form-item-wrapper">
-                <IonSelect value={priority} placeholder="Media" onIonChange={e => setPriority(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
-                  <IonSelectOption value="low">Baja</IonSelectOption>
-                  <IonSelectOption value="medium">Media</IonSelectOption>
-                  <IonSelectOption value="high">Alta</IonSelectOption>
-                </IonSelect>
-              </IonItem>
-            </div>
-          </div>
-
-          <IonItem className="form-item-wrapper">
-            <IonSelect value={recurrenceType} placeholder="Sin repetición" onIonChange={e => setRecurrenceType(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
-              <IonSelectOption value="none">Sin repetición</IonSelectOption>
-              <IonSelectOption value="daily">Diaria</IonSelectOption>
-              <IonSelectOption value="weekly">Semanal</IonSelectOption>
-              <IonSelectOption value="monthly">Mensual</IonSelectOption>
-              <IonSelectOption value="weekdays">Días específicos</IonSelectOption>
-              <IonSelectOption value="custom">Personalizada</IonSelectOption>
+            <IonInput className="form-flex-item" type="number" value={duration} placeholder="60" onIonInput={e => setDuration(parseInt(e.detail.value!, 10) || 60)} required />
+            <IonSelect className="form-flex-item" value={priority} placeholder="Media" onIonChange={e => setPriority(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
+              <IonSelectOption value="low">Baja</IonSelectOption>
+              <IonSelectOption value="medium">Media</IonSelectOption>
+              <IonSelectOption value="high">Alta</IonSelectOption>
             </IonSelect>
-          </IonItem>
+          </div>
+          
+          {/* Este campo es único y no necesita flex-row */}
+          <div className="form-item-wrapper-single">
+            <IonSelect value={recurrenceType} placeholder="Sin repetición" onIonChange={e => setRecurrenceType(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
+                <IonSelectOption value="none">Sin repetición</IonSelectOption>
+                <IonSelectOption value="daily">Diaria</IonSelectOption>
+                <IonSelectOption value="weekly">Semanal</IonSelectOption>
+                <IonSelectOption value="monthly">Mensual</IonSelectOption>
+                <IonSelectOption value="weekdays">Días específicos</IonSelectOption>
+                <IonSelectOption value="custom">Personalizada</IonSelectOption>
+            </IonSelect>
+          </div>
 
           {showRecurrence && (
             <div className="recurrence-section">
@@ -189,20 +170,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
                 <div className="custom-interval-section">
                   <IonLabel className="section-label">Repetir cada</IonLabel>
                   <div className="form-row">
-                    <div className="form-item-container">
-                      <IonItem className="form-item-wrapper">
-                         <IonInput type="number" value={customInterval} min={1} onIonInput={e => setCustomInterval(parseInt(e.detail.value!, 10) || 1)} />
-                      </IonItem>
-                    </div>
-                     <div className="form-item-container">
-                        <IonItem className="form-item-wrapper">
-                          <IonSelect value={customUnit} onIonChange={e => setCustomUnit(e.detail.value)} interface="action-sheet" cancelText="Cancelar" placeholder="Unidad">
-                            <IonSelectOption value="days">Días</IonSelectOption>
-                            <IonSelectOption value="weeks">Semanas</IonSelectOption>
-                            <IonSelectOption value="months">Meses</IonSelectOption>
-                          </IonSelect>
-                        </IonItem>
-                      </div>
+                    <IonInput className="form-flex-item" type="number" value={customInterval} min={1} onIonInput={e => setCustomInterval(parseInt(e.detail.value!, 10) || 1)} />
+                    <IonSelect className="form-flex-item" value={customUnit} onIonChange={e => setCustomUnit(e.detail.value)} interface="action-sheet" cancelText="Cancelar" placeholder="Unidad">
+                      <IonSelectOption value="days">Días</IonSelectOption>
+                      <IonSelectOption value="weeks">Semanas</IonSelectOption>
+                      <IonSelectOption value="months">Meses</IonSelectOption>
+                    </IonSelect>
                   </div>
                 </div>
               )}
@@ -210,16 +183,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
               <div className="date-range-section">
                 <IonLabel className="section-label">Período de recurrencia</IonLabel>
                 <div className="form-row">
-                  <div className="form-item-container">
-                    <IonItem className="form-item-wrapper">
-                       <IonInput type="date" value={recurrenceStart} onIonInput={e => setRecurrenceStart(e.detail.value!)} />
-                     </IonItem>
-                  </div>
-                   <div className="form-item-container">
-                     <IonItem className="form-item-wrapper">
-                       <IonInput type="date" value={recurrenceEnd} onIonInput={e => setRecurrenceEnd(e.detail.value!)} />
-                     </IonItem>
-                  </div>
+                  <IonInput className="form-flex-item" type="date" value={recurrenceStart} onIonInput={e => setRecurrenceStart(e.detail.value!)} />
+                  <IonInput className="form-flex-item" type="date" value={recurrenceEnd} onIonInput={e => setRecurrenceEnd(e.detail.value!)} />
                 </div>
               </div>
             </div>
