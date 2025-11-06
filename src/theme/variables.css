@@ -237,3 +237,60 @@ ion-toast {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Estilos para IonSelect (corregir texto negro) */
+ion-select {
+  --placeholder-color: var(--ion-color-medium);
+  --placeholder-opacity: 0.8;
+  color: var(--ion-text-color) !important;
+}
+
+/* Alert de selección (dropdown) */
+ion-alert {
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
+}
+
+ion-alert .alert-button {
+  color: var(--ion-color-primary);
+}
+
+ion-alert .alert-radio-label,
+ion-alert .alert-checkbox-label {
+  color: var(--ion-text-color) !important;
+}
+
+/* Action Sheet (alternativa a alert) */
+ion-action-sheet {
+  --background: var(--ion-color-light);
+  --color: var(--ion-text-color);
+  --button-color: var(--ion-text-color);
+  --button-background: transparent;
+  --button-background-activated: var(--ion-color-medium-tint);
+  --button-background-selected: var(--ion-color-primary-tint);
+}
+
+ion-action-sheet .action-sheet-button {
+  color: var(--ion-text-color) !important;
+  font-size: 1rem;
+  height: auto;
+  min-height: 56px;
+  padding: 0.75rem 1rem;
+}
+
+ion-action-sheet .action-sheet-button.action-sheet-selected {
+  color: var(--ion-color-primary) !important;
+  font-weight: 600;
+}
+
+ion-action-sheet .action-sheet-cancel {
+  color: var(--ion-color-danger) !important;
+  font-weight: 600;
+}
+
+ion-action-sheet .action-sheet-title {
+  color: var(--ion-text-color);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 1rem;
+}

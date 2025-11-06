@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🎯 PoliFocusTask - Sistema de Gestión de Tareas con Técnica Pomodoro
 
 <div align="center">
@@ -189,3 +190,7 @@ Este proyecto está bajo la Licencia MIT. Ver [LICENSE](./LICENSE) para más det
 [⬆ Volver arriba](#-polifocustask---sistema-de-gestión-de-tareas-con-técnica-pomodoro)
 
 </div>
+=======
+# PoliFocusTask
+PoliFocusTask será una aplicación móvil multiplataforma que resuelve el problema de la procrastinación y la sobrecarga de tareas al fusionar la gestión simple de to-do lists con la metodología Pomodoro. Su función principal es obligar al usuario a trabajar en bloques de tiempo enfocados (focos) y registrar con precisión cuánto tiempo tomó.
+>>>>>>> d3dfd7ab9188b4cc9877ef31bd40ab0ebd535375

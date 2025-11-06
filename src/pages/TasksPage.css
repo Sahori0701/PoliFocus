@@ -1,0 +1,123 @@
+/* pages/TasksPage.css */
+
+.tasks-container {
+  padding: 1rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  font-family: 'Dosis', sans-serif;
+  font-weight: 800;
+}
+
+.title-gradient {
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-title {
+  font-family: 'Dosis', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--ion-text-color);
+}
+
+.tabs-wrapper {
+  margin-bottom: 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--ion-background-color);
+  padding: 0.5rem 0;
+}
+
+.custom-segment {
+  --background: var(--ion-color-light);
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+}
+
+.custom-segment ion-segment-button {
+  --indicator-color: var(--ion-color-primary);
+  --color-checked: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-width: fit-content;
+  padding: 0 0.75rem;
+  text-transform: none;
+}
+
+.custom-segment ion-label {
+  text-transform: none;
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.custom-searchbar {
+  --background: var(--ion-color-light);
+  --border-radius: 0.75rem;
+  --box-shadow: none;
+  --icon-color: var(--ion-color-medium);
+  --placeholder-color: var(--ion-color-medium);
+  --placeholder-opacity: 0.8;
+  --color: var(--ion-text-color);
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.custom-searchbar input {
+  color: var(--ion-text-color) !important;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .tasks-container {
+    max-width: 768px;
+    padding: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+  }
+
+  .custom-segment ion-segment-button {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tasks-container {
+    max-width: 1024px;
+    padding: 2rem;
+  }
+}
+
+/* Scrollbar personalizado */
+.tabs-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs-wrapper {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
