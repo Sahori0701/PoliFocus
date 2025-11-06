@@ -24,31 +24,33 @@
   gap: 1rem;
 }
 
+/* --- ENFOQUE FINAL CON DIV CONTENEDOR --- */
+
 .form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 1rem;
-}
-
-/* --- NUEVA ESTRATEGIA CON ION-ITEM --- */
-
-/* 1. Estilo del contenedor IonItem */
-.form-item-wrapper {
-  --background: #374151; /* Fondo oscuro en el item */
-  --border-radius: 8px !important;
-  --min-height: 52px;
-  --border-color: transparent; /* Sin líneas ni bordes */
-  --highlight-color-focused: transparent; /* Sin highlight al hacer foco */
-
-  /* 2. Padding interno controlado por variables de Ionic */
-  --inner-padding-start: 16px;
-  --inner-padding-end: 16px;
-  
-  /* SOLUCIÓN: Forzar el ancho completo para corregir bug en Android */
   width: 100%;
 }
 
-/* 3. Hacer que el Input y Select internos sean transparentes */
+/* NUEVO: El div contenedor es ahora el hijo de flex y se expande */
+.form-item-container {
+  flex: 1; /* Ocupa el espacio disponible */
+  min-width: 0; /* Soluciona problemas de encogimiento en flexbox */
+}
+
+/* IonItem ahora ocupa el 100% de su contenedor (el div) */
+.form-item-wrapper {
+  width: 100%;
+  --background: #374151;
+  --border-radius: 8px !important;
+  --min-height: 52px;
+  --border-color: transparent;
+  --highlight-color-focused: transparent;
+  --inner-padding-start: 16px;
+  --inner-padding-end: 16px;
+}
+
+/* Los inputs y selects siguen igual */
 .form-item-wrapper ion-input,
 .form-item-wrapper ion-select {
   --background: transparent;
@@ -58,13 +60,12 @@
   font-size: 1rem;
 }
 
-/* Icono del select */
 .form-item-wrapper ion-select::part(icon) {
   color: #9ca3af;
   opacity: 0.8;
 }
 
-/* --- FIN DE LA NUEVA ESTRATEGIA --- */
+/* --- FIN DE LA CORRECCIÓN --- */
 
 .submit-button {
   margin-top: 0.5rem;

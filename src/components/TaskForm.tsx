@@ -130,25 +130,33 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
           </IonItem>
 
           <div className="form-row">
-            <IonItem className="form-item-wrapper">
-              <IonInput type="date" value={date} onIonInput={e => setDate(e.detail.value!)} required />
-            </IonItem>
-            <IonItem className="form-item-wrapper">
-              <IonInput type="time" value={time} onIonInput={e => setTime(e.detail.value!)} required />
-            </IonItem>
+            <div className="form-item-container">
+              <IonItem className="form-item-wrapper">
+                <IonInput type="date" value={date} onIonInput={e => setDate(e.detail.value!)} required />
+              </IonItem>
+            </div>
+            <div className="form-item-container">
+              <IonItem className="form-item-wrapper">
+                <IonInput type="time" value={time} onIonInput={e => setTime(e.detail.value!)} required />
+              </IonItem>
+            </div>
           </div>
 
           <div className="form-row">
-            <IonItem className="form-item-wrapper">
-              <IonInput type="number" value={duration} placeholder="60" onIonInput={e => setDuration(parseInt(e.detail.value!, 10) || 60)} required />
-            </IonItem>
-            <IonItem className="form-item-wrapper">
-              <IonSelect value={priority} placeholder="Media" onIonChange={e => setPriority(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
-                <IonSelectOption value="low">Baja</IonSelectOption>
-                <IonSelectOption value="medium">Media</IonSelectOption>
-                <IonSelectOption value="high">Alta</IonSelectOption>
-              </IonSelect>
-            </IonItem>
+            <div className="form-item-container">
+              <IonItem className="form-item-wrapper">
+                <IonInput type="number" value={duration} placeholder="60" onIonInput={e => setDuration(parseInt(e.detail.value!, 10) || 60)} required />
+              </IonItem>
+            </div>
+            <div className="form-item-container">
+              <IonItem className="form-item-wrapper">
+                <IonSelect value={priority} placeholder="Media" onIonChange={e => setPriority(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
+                  <IonSelectOption value="low">Baja</IonSelectOption>
+                  <IonSelectOption value="medium">Media</IonSelectOption>
+                  <IonSelectOption value="high">Alta</IonSelectOption>
+                </IonSelect>
+              </IonItem>
+            </div>
           </div>
 
           <IonItem className="form-item-wrapper">
@@ -181,16 +189,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
                 <div className="custom-interval-section">
                   <IonLabel className="section-label">Repetir cada</IonLabel>
                   <div className="form-row">
-                    <IonItem className="form-item-wrapper">
-                       <IonInput type="number" value={customInterval} min={1} onIonInput={e => setCustomInterval(parseInt(e.detail.value!, 10) || 1)} />
-                    </IonItem>
-                     <IonItem className="form-item-wrapper">
-                        <IonSelect value={customUnit} onIonChange={e => setCustomUnit(e.detail.value)} interface="action-sheet" cancelText="Cancelar" placeholder="Unidad">
-                          <IonSelectOption value="days">Días</IonSelectOption>
-                          <IonSelectOption value="weeks">Semanas</IonSelectOption>
-                          <IonSelectOption value="months">Meses</IonSelectOption>
-                        </IonSelect>
+                    <div className="form-item-container">
+                      <IonItem className="form-item-wrapper">
+                         <IonInput type="number" value={customInterval} min={1} onIonInput={e => setCustomInterval(parseInt(e.detail.value!, 10) || 1)} />
                       </IonItem>
+                    </div>
+                     <div className="form-item-container">
+                        <IonItem className="form-item-wrapper">
+                          <IonSelect value={customUnit} onIonChange={e => setCustomUnit(e.detail.value)} interface="action-sheet" cancelText="Cancelar" placeholder="Unidad">
+                            <IonSelectOption value="days">Días</IonSelectOption>
+                            <IonSelectOption value="weeks">Semanas</IonSelectOption>
+                            <IonSelectOption value="months">Meses</IonSelectOption>
+                          </IonSelect>
+                        </IonItem>
+                      </div>
                   </div>
                 </div>
               )}
@@ -198,12 +210,16 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
               <div className="date-range-section">
                 <IonLabel className="section-label">Período de recurrencia</IonLabel>
                 <div className="form-row">
-                  <IonItem className="form-item-wrapper">
-                     <IonInput type="date" value={recurrenceStart} onIonInput={e => setRecurrenceStart(e.detail.value!)} />
-                   </IonItem>
-                   <IonItem className="form-item-wrapper">
-                     <IonInput type="date" value={recurrenceEnd} onIonInput={e => setRecurrenceEnd(e.detail.value!)} />
-                   </IonItem>
+                  <div className="form-item-container">
+                    <IonItem className="form-item-wrapper">
+                       <IonInput type="date" value={recurrenceStart} onIonInput={e => setRecurrenceStart(e.detail.value!)} />
+                     </IonItem>
+                  </div>
+                   <div className="form-item-container">
+                     <IonItem className="form-item-wrapper">
+                       <IonInput type="date" value={recurrenceEnd} onIonInput={e => setRecurrenceEnd(e.detail.value!)} />
+                     </IonItem>
+                  </div>
                 </div>
               </div>
             </div>
