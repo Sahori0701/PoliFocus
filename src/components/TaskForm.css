@@ -43,6 +43,9 @@
   /* 2. Padding interno controlado por variables de Ionic */
   --inner-padding-start: 16px;
   --inner-padding-end: 16px;
+  
+  /* SOLUCIÓN: Forzar el ancho completo para corregir bug en Android */
+  width: 100%;
 }
 
 /* 3. Hacer que el Input y Select internos sean transparentes */
