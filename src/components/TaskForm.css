@@ -30,7 +30,7 @@
   display: flex;
   gap: 1rem;
   width: 100%;
-  flex-wrap: wrap; /* <<<<<<<<<<<<<<<< ESTA ES LA LÍNEA AÑADIDA */
+  flex-wrap: wrap;
 }
 
 /* Estilos para los campos que van en pareja (ocupan 50% cada uno) */
@@ -46,7 +46,7 @@
   --padding-end: 16px;
   --placeholder-color: #9ca3af;
   --placeholder-opacity: 1;
-  font-size: 0.9rem; /* TAMAÑO DE FUENTE REDUCIDO */
+  font-size: 0.9rem; 
 }
 
 /* Estilos para los campos que ocupan toda la fila */
@@ -67,12 +67,12 @@
   --placeholder-opacity: 1;
   --padding-start: 16px;
   --padding-end: 16px;
-  font-size: 0.9rem; /* TAMAÑO DE FUENTE REDUCIDO */
+  font-size: 0.9rem;
 }
 
 /* Clase específica para inputs de fecha y hora */
 .date-time-input {
-  font-size: 0.8rem; /* Tamaño de fuente aún más pequeño */
+  font-size: 0.75rem; /* Tamaño de fuente aún más pequeño */
 }
 
 /* Aseguramos que el color del icono del Select sea visible en ambos casos */
@@ -96,7 +96,7 @@
   margin-top: 0.5rem;
   --border-radius: 8px;
   height: 52px;
-  font-size: 1rem;
+  font-size: 0.9rem; /* TAMAÑO DE FUENTE REDUCIDO */
   font-weight: 600;
 }
 
