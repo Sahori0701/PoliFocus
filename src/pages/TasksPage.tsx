@@ -11,6 +11,7 @@ import {
   IonLabel,
   IonSearchbar,
   IonToast,
+  useIonAlert,
 } from '@ionic/react';
 import { useApp } from '../context/AppContext';
 import { Task } from '../models/Task';
@@ -23,6 +24,7 @@ import './TasksPage.css';
 
 const TasksPage: React.FC = () => {
   const { tasks, addTask, deleteTask, updateTask, setActiveTask } = useApp();
+  const [presentAlert] = useIonAlert();
   
   const [activeTab, setActiveTab] = useState<'planning' | 'active' | 'expired' | 'completed'>('planning');
   const [searchTerm, setSearchTerm] = useState('');
@@ -111,18 +113,33 @@ const TasksPage: React.FC = () => {
   };
 
   const handleDeleteTask = async (taskId: number) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-    const confirmed = window.confirm(`¿Estás seguro de eliminar "${task.title}"?`);
-    if (confirmed) {
-      try {
-        await deleteTask(taskId);
-        showSuccessToast('Tarea eliminada');
-      } catch (error) {
-        showErrorToast('Error al eliminar tarea');
-        console.error('Error deleting task:', error);
-      }
-    }
+    const taskToDelete = tasks.find(t => t.id === taskId);
+    if (!taskToDelete) return;
+
+    presentAlert({
+      header: 'Confirmar Eliminación',
+      message: `¿Estás seguro de que quieres eliminar la tarea "${taskToDelete.title}"? Esta acción no se puede deshacer.`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel',
+        },
+        {
+          text: 'Eliminar',
+          cssClass: 'alert-button-danger',
+          handler: async () => {
+            try {
+              await deleteTask(taskId);
+              showSuccessToast('Tarea eliminada');
+            } catch (error) {
+              showErrorToast('Error al eliminar tarea');
+              console.error('Error deleting task:', error);
+            }
+          },
+        },
+      ],
+    });
   };
 
   const handleCompleteTask = async (taskId: number) => {
