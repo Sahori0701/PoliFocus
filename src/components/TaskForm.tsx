@@ -128,8 +128,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
           </div>
 
           <div className="form-row">
-            <IonInput className="form-flex-item" type="date" value={date} onIonInput={e => setDate(e.detail.value!)} required />
-            <IonInput className="form-flex-item" type="time" value={time} onIonInput={e => setTime(e.detail.value!)} required />
+            <IonInput className="form-flex-item date-time-input" type="date" value={date} onIonInput={e => setDate(e.detail.value!)} required />
+            <IonInput className="form-flex-item date-time-input" type="time" value={time} onIonInput={e => setTime(e.detail.value!)} required />
           </div>
 
           <div className="form-row">

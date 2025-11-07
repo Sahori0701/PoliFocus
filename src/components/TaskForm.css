@@ -69,6 +69,10 @@
   font-size: 0.9rem; /* TAMAÑO DE FUENTE REDUCIDO */
 }
 
+/* Clase específica para inputs de fecha y hora */
+.date-time-input {
+  font-size: 0.8rem; /* Tamaño de fuente aún más pequeño */
+}
 
 /* Aseguramos que el color del icono del Select sea visible en ambos casos */
 .form-flex-item::part(icon),
