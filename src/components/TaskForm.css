@@ -30,6 +30,7 @@
   display: flex;
   gap: 1rem;
   width: 100%;
+  flex-wrap: wrap; /* <<<<<<<<<<<<<<<< ESTA ES LA LÍNEA AÑADIDA */
 }
 
 /* Estilos para los campos que van en pareja (ocupan 50% cada uno) */
