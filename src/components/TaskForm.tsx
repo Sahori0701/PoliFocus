@@ -184,8 +184,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
               <div className="date-range-section">
                 <IonLabel className="section-label">Período de recurrencia</IonLabel>
                 <div className="form-row">
-                  <IonInput className="form-flex-item" type="date" value={recurrenceStart} onIonInput={e => setRecurrenceStart(e.detail.value!)} />
-                  <IonInput className="form-flex-item" type="date" value={recurrenceEnd} onIonInput={e => setRecurrenceEnd(e.detail.value!)} />
+                  <IonInput className="form-flex-item date-time-input" type="date" value={recurrenceStart} onIonInput={e => setRecurrenceStart(e.detail.value!)} />
+                  <IonInput className="form-flex-item date-time-input" type="date" value={recurrenceEnd} onIonInput={e => setRecurrenceEnd(e.detail.value!)} />
                 </div>
               </div>
             </div>
