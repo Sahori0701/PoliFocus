@@ -72,6 +72,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
       alert('El título es obligatorio');
       return;
     }
+    if (duration < 5) {
+      alert('La duración debe ser de al menos 5 minutos.');
+      return;
+    }
     if (recurrenceType === 'weekdays' && selectedWeekdays.length === 0) {
       alert('Selecciona al menos un día de la semana');
       return;
@@ -119,19 +123,17 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
       </IonCardHeader>
       <IonCardContent>
         <form onSubmit={handleSubmit} className="task-form">
-          {/* Este campo es único y no necesita flex-row, por lo que puede mantener su estilo original */}
           <div className="form-item-wrapper-single">
              <IonInput value={title} placeholder="Descripción de la tarea" onIonInput={e => setTitle(e.detail.value!)} required />
           </div>
 
-          {/* FILAS PROBLEMÁTICAS: Ahora sin IonItem ni divs intermedios */}
           <div className="form-row">
             <IonInput className="form-flex-item" type="date" value={date} onIonInput={e => setDate(e.detail.value!)} required />
             <IonInput className="form-flex-item" type="time" value={time} onIonInput={e => setTime(e.detail.value!)} required />
           </div>
 
           <div className="form-row">
-            <IonInput className="form-flex-item" type="number" value={duration} placeholder="60" onIonInput={e => setDuration(parseInt(e.detail.value!, 10) || 60)} required />
+            <IonInput className="form-flex-item" type="number" value={duration} placeholder="Minutos" onIonInput={e => setDuration(parseInt(e.detail.value || '0', 10))} />
             <IonSelect className="form-flex-item" value={priority} placeholder="Media" onIonChange={e => setPriority(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
               <IonSelectOption value="low">Baja</IonSelectOption>
               <IonSelectOption value="medium">Media</IonSelectOption>
@@ -139,7 +141,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
             </IonSelect>
           </div>
           
-          {/* Este campo es único y no necesita flex-row */}
           <div className="form-item-wrapper-single">
             <IonSelect value={recurrenceType} placeholder="Sin repetición" onIonChange={e => setRecurrenceType(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
                 <IonSelectOption value="none">Sin repetición</IonSelectOption>

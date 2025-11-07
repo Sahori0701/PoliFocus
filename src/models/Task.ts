@@ -1,53 +1,39 @@
 // models/Task.ts
 
-export type Priority = 'low' | 'medium' | 'high';
+// Estado de la tarea: pendiente, en progreso, completada o cancelada
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-export type RecurrenceType = 'none' | 'daily' | 'weekly' | 'monthly' | 'weekdays' | 'custom';
-export type TimeUnit = 'days' | 'weeks' | 'months';
 
+// Prioridad de la tarea
+export type Priority = 'low' | 'medium' | 'high';
+
+// Tipo de recurrencia
+export type RecurrenceType = 'none' | 'daily' | 'weekly' | 'monthly' | 'weekdays' | 'custom';
+
+// Unidad de recurrencia para el tipo 'custom'
+export type RecurrenceUnit = 'days' | 'weeks' | 'months';
+
+// Interfaz para la configuración de recurrencia
 export interface Recurrence {
   type: RecurrenceType;
   interval?: number;
-  unit?: TimeUnit;
-  weekdays?: number[]; // 0-6 (Domingo-Sábado)
-  startDate: string; // ISO string
-  endDate: string; // ISO string
+  unit?: RecurrenceUnit;
+  weekdays?: number[]; // 0 (Dom) a 6 (Sáb)
 }
 
+// Interfaz principal para la Tarea
 export interface Task {
   id: number;
   title: string;
-  scheduledStart: string; // ISO string
-  duration: number; // minutos
-  priority: Priority;
+  description: string;
   status: TaskStatus;
-  createdAt: string; // ISO string
-  completedAt?: string; // ISO string
-  actualDuration?: number; // minutos reales
-  recurrence?: Recurrence;
-  isRecurring: boolean;
-  parentId?: number; // Para tareas recurrentes
-  alert15?: boolean; // Alerta de 15 min enviada
-  alert5?: boolean; // Alerta de 5 min enviada
-}
-
-export interface TaskFormData {
-  title: string;
-  date: string; // YYYY-MM-DD
-  time: string; // HH:mm
-  duration: number;
   priority: Priority;
-  recurrence: RecurrenceType;
-  recurrenceInterval?: number;
-  recurrenceUnit?: TimeUnit;
-  recurrenceWeekdays?: number[];
-  recurrenceStart?: string;
-  recurrenceEnd?: string;
-}
-
-export interface Efficiency {
-  badge: 'excellent' | 'good' | 'warning' | 'poor';
-  icon: string;
-  difference: number; // minutos
-  percentage: string;
+  scheduledStart: string; // Fecha y hora en formato ISO
+  duration: number; // Duración en minutos
+  recurrence: Recurrence;
+  tags?: string[];
+  subtasks?: Partial<Task>[];
+  dependencies?: number[];
+  assignedTo?: string;
+  createdAt: string;
+  updatedAt: string;
 }

@@ -45,7 +45,7 @@
   --padding-end: 16px;
   --placeholder-color: #9ca3af;
   --placeholder-opacity: 1;
-  font-size: 1rem; /* Restauramos el tamaño de fuente original */
+  font-size: 0.9rem; /* TAMAÑO DE FUENTE REDUCIDO */
 }
 
 /* Estilos para los campos que ocupan toda la fila */
@@ -66,7 +66,7 @@
   --placeholder-opacity: 1;
   --padding-start: 16px;
   --padding-end: 16px;
-  font-size: 1rem;
+  font-size: 0.9rem; /* TAMAÑO DE FUENTE REDUCIDO */
 }
 
 

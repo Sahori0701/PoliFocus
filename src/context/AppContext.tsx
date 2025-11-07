@@ -89,7 +89,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addTask = async (task: Task) => {
     try {
       await storageService.addTask(task);
-      setTasks(prev => [...prev, task]);
+      await loadTasks();
     } catch (error) {
       console.error('Error adding task:', error);
       throw error;
@@ -98,10 +98,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const updateTask = async (taskId: number, updates: Partial<Task>) => {
     try {
-      const updated = await storageService.updateTask(taskId, updates);
-      if (updated) {
-        setTasks(prev => prev.map(t => t.id === taskId ? updated : t));
-      }
+      await storageService.updateTask(taskId, updates);
+      await loadTasks();
     } catch (error) {
       console.error('Error updating task:', error);
       throw error;
@@ -111,7 +109,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const deleteTask = async (taskId: number) => {
     try {
       await storageService.deleteTask(taskId);
-      setTasks(prev => prev.filter(t => t.id !== taskId));
+      await loadTasks();
     } catch (error) {
       console.error('Error deleting task:', error);
       throw error;
