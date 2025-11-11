@@ -79,7 +79,7 @@
 
 /* Reducción para los selectores de fecha de recurrencia (AJUSTADO PARA ANDROID) */
 .recurrence-date-picker {
-  font-size: 0.7rem !important; /* Reducido para mejor ajuste en móvil */
+  font-size: 0.65rem !important; /* Reducido para mejor ajuste en móvil */
   text-align: left !important;
 }
 
