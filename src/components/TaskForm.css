@@ -70,16 +70,16 @@
   font-size: 0.9rem;
 }
 
-/* Clase específica para inputs de fecha y hora principales (CORREGIDO) */
+/* Clase específica para inputs de fecha y hora principales */
 .date-time-input {
-  font-size: 0.75rem;   /* Aumentado para mayor visibilidad */
+  font-size: 0.8rem;   /* Tamaño grande y visible */
   font-weight: 500;
-  text-align: left; /* Centrado para mejor estética */
+  text-align: left; /* Texto centrado */
 }
 
-/* Reducción para los selectores de fecha de recurrencia para que sean más discretos */
+/* Reducción para los selectores de fecha de recurrencia (AJUSTADO PARA ANDROID) */
 .recurrence-date-picker {
-  font-size: 0.9rem !important;
+  font-size: 0.7rem !important; /* Reducido para mejor ajuste en móvil */
   text-align: left !important;
 }
 
@@ -104,12 +104,12 @@
 .submit-button {
   margin-top: 0.5rem;
   --border-radius: 8px;
-  height: 48px; /* ALTURA REDUCIDA */
-  font-size: 0.85rem; /* TAMAÑO DE FUENTE REDUCIDO */
+  height: 48px; 
+  font-size: 0.85rem; 
   font-weight: 600;
 }
 
-/* --- SECCIÓN DE RECURRENCIA (sin cambios visuales) --- */
+/* --- SECCIÓN DE RECURRENCIA --- */
 
 .recurrence-section {
   padding: 1rem;
