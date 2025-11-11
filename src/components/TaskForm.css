@@ -70,10 +70,19 @@
   font-size: 0.9rem;
 }
 
-/* Clase específica para inputs de fecha y hora */
+/* Clase específica para inputs de fecha y hora principales (CORREGIDO) */
 .date-time-input {
-  font-size: 0.7rem; /* Tamaño de fuente aún más pequeño */
+  font-size: 0.75rem;   /* Aumentado para mayor visibilidad */
+  font-weight: 500;
+  text-align: left; /* Centrado para mejor estética */
 }
+
+/* Reducción para los selectores de fecha de recurrencia para que sean más discretos */
+.recurrence-date-picker {
+  font-size: 0.9rem !important;
+  text-align: left !important;
+}
+
 
 /* Aseguramos que el color del icono del Select sea visible en ambos casos */
 .form-flex-item::part(icon),

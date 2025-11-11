@@ -77,9 +77,17 @@
 .task-meta {
   display: flex;
   flex-wrap: wrap;
+  align-items: baseline; /* Alinea la base de los textos */
   gap: clamp(0.5rem, 1.5vw, 0.75rem);
   font-size: clamp(0.6875rem, 1.8vw, 0.75rem);
   color: var(--ion-color-medium);
+}
+
+/* Estilo específico para fecha y hora principal, ahora revertido a un tamaño menor */
+.task-main-date {
+  font-size: clamp(0.8rem, 2.0vw, 1.0em) !important;
+  font-weight: 500 !important;
+  color: var(--ion-color-medium-shade) !important;
 }
 
 .meta-item {
@@ -93,6 +101,7 @@
   font-size: clamp(0.875rem, 2vw, 1rem);
   line-height: 1;
 }
+
 
 /* Footer */
 .task-footer {

@@ -60,14 +60,14 @@ const TaskItem: React.FC<TaskItemProps> = ({
             </div>
             
             <div className="task-meta">
-              <span className="meta-item">
+              <span className="meta-item task-main-date">
                 <span className="meta-icon">🕐</span>
                 {date.toLocaleTimeString('es-ES', {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
               </span>
-              <span className="meta-item">
+              <span className="meta-item task-main-date">
                 <span className="meta-icon">📅</span>
                 {date.toLocaleDateString('es-ES', {
                   day: '2-digit',
