@@ -1,11 +1,27 @@
 /* src/pages/TimerPage.css */
 
+/* Contenedor principal para centrar */
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
 /* Tipografía Principal */
 .page-title {
   font-family: 'Dosis', sans-serif;
   font-weight: 800;
   font-size: 1.8rem;
-  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.target-icon {
+  margin-left: 0.5rem;
+  font-size: 1.5rem; /* Ajustar tamaño si es necesario */
 }
 
 /* Tarea Activa */
@@ -21,11 +37,14 @@
 }
 
 .active-task-display ion-button {
-  --border-color: #49567D;
-  --color: #ffffff;
   --background: #313A5A;
+  --color: #ffffff;
+  --border-radius: 12px;
+  --box-shadow: none;
   margin-top: 0.75rem;
   font-weight: 600;
+  text-transform: none; /* Evita que el texto se ponga en mayúsculas */
+  height: 40px;
 }
 
 /* Temporizador */
@@ -47,7 +66,7 @@
   position: relative;
   /* Efecto de brillo ajustado */
   box-shadow: 0px 0px 50px -10px #32d8a660;
-  background: radial-gradient(circle, #1F2A4C 0%, #1C213A 70%);
+  /* Se elimina el fondo para que sea transparente */
 }
 
 .time-text {
