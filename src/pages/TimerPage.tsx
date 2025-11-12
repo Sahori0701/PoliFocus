@@ -1,55 +1,62 @@
 import {
   IonContent,
-  IonHeader,
   IonPage,
-  IonTitle,
-  IonToolbar,
-  IonCard,
-  IonCardContent,
+  IonButton,
+  IonIcon,
+  IonLabel
 } from '@ionic/react';
+import { search, pause, checkmark, playSkipForwardOutline } from 'ionicons/icons';
+import Header from '../components/Header';
+import './TimerPage.css';
 
 const TimerPage: React.FC = () => {
+  const activeTask = {
+    title: 'Reunion',
+  };
+
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>
-            <div style={{ 
-              fontFamily: 'Dosis, sans-serif',
-              fontWeight: 800,
-            }}>
-              Modo Concentración
-            </div>
-          </IonTitle>
-        </IonToolbar>
-      </IonHeader>
+      <Header />
       
-      <IonContent fullscreen>
-        <div style={{ padding: '1rem' }}>
-          <h2 style={{ 
-            fontFamily: 'Dosis, sans-serif',
-            fontSize: '1.5rem',
-            marginBottom: '1rem',
-          }}>
-            Modo Concentración 🎯
-          </h2>
-          
-          <IonCard>
-            <IonCardContent>
-              <p style={{ textAlign: 'center', color: 'var(--app-text-secondary)' }}>
-                Temporizador Pomodoro en desarrollo...
-              </p>
-              <p style={{ 
-                textAlign: 'center', 
-                color: 'var(--app-primary)',
-                marginTop: '1rem',
-                fontSize: '3rem',
-              }}>
-                ⏱️
-              </p>
-            </IonCardContent>
-          </IonCard>
+      <IonContent fullscreen className="ion-padding">
+        
+        <div className="active-task-display">
+            <p className="task-name">{activeTask?.title || 'Ninguna'}</p>
+            <IonButton fill="outline" color="light" size="small">
+                <IonIcon slot="start" icon={search}></IonIcon>
+                Buscar Tarea
+            </IonButton>
         </div>
+
+        {/* Temporizador Principal */}
+        <div className="timer-display-wrapper">
+          <div className="timer-display">
+            <h1 className="time-text">15:20</h1>
+            <p className="time-status">¡A trabajar!</p>
+            <div className="time-percentage">62%</div>
+            <div className="time-percentage-label">restante</div>
+          </div>
+        </div>
+
+        {/* Botones de Control */}
+        <div className="timer-controls">
+          <IonButton className="control-button-pause">
+            <IonIcon slot="start" icon={pause} />
+            Pausar
+          </IonButton>
+          <IonButton className="control-button-complete">
+            <IonIcon slot="icon-only" icon={checkmark} />
+          </IonButton>
+          <IonButton className="control-button-skip">
+            <IonIcon slot="icon-only" icon={playSkipForwardOutline} />
+          </IonButton>
+        </div>
+
+        {/* Información Adicional */}
+        <div className="footer-info">
+            ⓘ El botón check marca la tarea como completada
+        </div>
+
       </IonContent>
     </IonPage>
   );

@@ -1,0 +1,119 @@
+/* src/pages/TimerPage.css */
+
+/* Tipografía Principal */
+.page-title {
+  font-family: 'Dosis', sans-serif;
+  font-weight: 800;
+  font-size: 1.8rem;
+  margin-top: 1rem;
+}
+
+/* Tarea Activa */
+.active-task-display {
+  margin-top: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.task-name {
+  font-size: 1.1rem;
+  color: var(--ion-color-medium-tint);
+  margin: 0;
+}
+
+.active-task-display ion-button {
+  --border-color: #49567D;
+  --color: #ffffff;
+  --background: #313A5A;
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+/* Temporizador */
+.timer-display-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.timer-display {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  /* Efecto de brillo ajustado */
+  box-shadow: 0px 0px 50px -10px #32d8a660;
+  background: radial-gradient(circle, #1F2A4C 0%, #1C213A 70%);
+}
+
+.time-text {
+  font-family: 'Dosis', sans-serif;
+  font-size: 5rem;
+  /* Grosor de fuente reducido */
+  font-weight: 300;
+  margin: 0;
+  line-height: 1;
+}
+
+.time-status {
+  font-size: 1.5rem;
+  /* Grosor de fuente reducido */
+  font-weight: 400;
+  margin: 0.5rem 0;
+}
+
+.time-percentage {
+  font-size: 2rem;
+  /* Grosor de fuente reducido */
+  font-weight: 400;
+  margin-top: 0.5rem;
+  line-height: 1;
+}
+
+.time-percentage-label {
+  font-size: 1rem;
+  color: var(--ion-color-medium-tint);
+}
+
+/* Controles */
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.timer-controls ion-button {
+  height: 55px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.control-button-pause {
+  --background: #E53935;
+  --background-activated: #c62828;
+  width: 150px;
+}
+
+.control-button-complete {
+  --background: #00A36C;
+  --background-activated: #008256;
+  width: 55px;
+}
+
+.control-button-skip {
+  --background: #396AE5;
+  --background-activated: #2a52b8;
+  width: 55px;
+}
+
+/* Footer */
+.footer-info {
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  color: #49567D;
+}

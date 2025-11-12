@@ -2,10 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   IonContent,
-  IonHeader,
   IonPage,
-  IonTitle,
-  IonToolbar,
   IonSegment,
   IonSegmentButton,
   IonLabel,
@@ -20,6 +17,7 @@ import TaskForm from '../components/TaskForm';
 import TaskList from '../components/TaskList';
 import ConflictModal from '../components/ConflictModal';
 import TaskModal from '../components/TaskModal';
+import Header from '../components/Header';
 import './TasksPage.css';
 
 const TasksPage: React.FC = () => {
@@ -174,16 +172,10 @@ const TasksPage: React.FC = () => {
 
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>
-            <div className="page-title"><span className="title-gradient">PoliFocusTask</span></div>
-          </IonTitle>
-        </IonToolbar>
-      </IonHeader>
+      <Header />
       <IonContent fullscreen>
         <div className="tasks-container">
-          <h2 className="section-title">Gestión de Tareas 📋</h2>
+          <h1 className="section-title">Gestión de Tareas 📋</h1>
           <div className="tabs-wrapper">
             <IonSegment value={activeTab} onIonChange={e => setActiveTab(e.detail.value as any)} scrollable className="custom-segment">
               <IonSegmentButton value="planning"><IonLabel>📝 Planificar</IonLabel></IonSegmentButton>

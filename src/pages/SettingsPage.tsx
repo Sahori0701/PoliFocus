@@ -1,10 +1,7 @@
 // pages/SettingsPage.tsx
 import {
   IonContent,
-  IonHeader,
   IonPage,
-  IonTitle,
-  IonToolbar,
   IonCard,
   IonCardContent,
   IonCardHeader,
@@ -20,6 +17,7 @@ import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { storageService } from '../services/storage.service';
 import { Task } from '../models/Task';
+import Header from '../components/Header';
 
 const SettingsPage: React.FC = () => {
   const { tasks, config, addTask, loadTasks, isLoading } = useApp();
@@ -90,38 +88,20 @@ const SettingsPage: React.FC = () => {
 
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>
-            <div style={{ 
-              fontFamily: 'Dosis, sans-serif',
-              fontWeight: 800,
-            }}>
-              Ajustes
-            </div>
-          </IonTitle>
-        </IonToolbar>
-      </IonHeader>
+      <Header />
       
       <IonContent fullscreen>
         <IonLoading isOpen={isLoading} message="Cargando..." />
         
         <div style={{ padding: '1rem' }}>
-          <h2 style={{ 
-            fontFamily: 'Dosis, sans-serif',
-            fontSize: '1.5rem',
-            marginBottom: '1rem',
-          }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>
             Ajustes ⚙️
           </h2>
 
           {/* Prueba de Storage */}
           <IonCard>
             <IonCardHeader>
-              <IonCardTitle style={{ 
-                fontFamily: 'Dosis, sans-serif',
-                color: 'var(--app-primary)',
-              }}>
+              <IonCardTitle style={{ color: 'var(--app-primary)' }}>
                 🧪 Prueba de Storage
               </IonCardTitle>
             </IonCardHeader>
@@ -164,10 +144,7 @@ const SettingsPage: React.FC = () => {
           {/* Información */}
           <IonCard>
             <IonCardHeader>
-              <IonCardTitle style={{ 
-                fontFamily: 'Dosis, sans-serif',
-                color: 'var(--app-primary)',
-              }}>
+              <IonCardTitle style={{ color: 'var(--app-primary)' }}>
                 Acerca de
               </IonCardTitle>
             </IonCardHeader>
@@ -199,10 +176,7 @@ const SettingsPage: React.FC = () => {
           {/* Stack Tecnológico */}
           <IonCard>
             <IonCardHeader>
-              <IonCardTitle style={{ 
-                fontFamily: 'Dosis, sans-serif',
-                color: 'var(--app-primary)',
-              }}>
+              <IonCardTitle style={{ color: 'var(--app-primary)' }}>
                 Stack Tecnológico
               </IonCardTitle>
             </IonCardHeader>
@@ -216,10 +190,7 @@ const SettingsPage: React.FC = () => {
           {/* Acciones de Datos */}
           <IonCard>
             <IonCardHeader>
-              <IonCardTitle style={{ 
-                fontFamily: 'Dosis, sans-serif',
-                color: 'var(--app-primary)',
-              }}>
+              <IonCardTitle style={{ color: 'var(--app-primary)' }}>
                 Gestión de Datos
               </IonCardTitle>
             </IonCardHeader>

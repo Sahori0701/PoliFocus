@@ -74,8 +74,8 @@
   /* ============================================
      BACKGROUNDS
      ============================================ */
-  --ion-background-color: #111827;
-  --ion-background-color-rgb: 17, 24, 39;
+  --ion-background-color: #0F172A;
+  --ion-background-color-rgb: 15, 23, 42;
 
   --ion-text-color: #f3f4f6;
   --ion-text-color-rgb: 243, 244, 246;
@@ -131,7 +131,7 @@
 }
 
 body {
-  background: linear-gradient(135deg, #111827 0%, #0f172a 100%);
+  background: #0F172A;
 }
 
 /* Títulos con fuente Dosis */

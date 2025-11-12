@@ -1,8 +1,11 @@
+
 /* pages/TasksPage.css */
 
 .tasks-container {
-  padding: 1rem;
+  /* Se reduce el padding superior */
+  padding: 0.5rem 1rem 1rem;
   max-width: 100%;
+  max-height: 100%;
   margin: 0 auto;
 }
 
@@ -22,7 +25,8 @@
 
 .section-title {
   font-family: 'Dosis', sans-serif;
-  font-size: 1.5rem;
+  /* Tamaño de letra reducido para móvil */
+  font-size: 1.2rem; 
   font-weight: 700;
   margin-bottom: 1rem;
   color: var(--ion-text-color);
@@ -92,11 +96,13 @@
 @media (min-width: 768px) {
   .tasks-container {
     max-width: 768px;
-    padding: 1.5rem;
+    /* Se reduce el padding superior para tablet */
+    padding: 1rem 1.5rem 1.5rem;
   }
 
   .section-title {
-    font-size: 1.75rem;
+    /* Tamaño de letra reducido para escritorio */
+    font-size: 1.4rem;
   }
 
   .custom-segment ion-segment-button {
@@ -108,7 +114,8 @@
 @media (min-width: 1024px) {
   .tasks-container {
     max-width: 1024px;
-    padding: 2rem;
+    /* Se reduce el padding superior para escritorio */
+    padding: 1.5rem 2rem 2rem;
   }
 }
 

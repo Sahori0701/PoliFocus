@@ -1,0 +1,54 @@
+/* src/components/Header.css */
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Alineación centrada */
+  padding: 0.5rem 1rem;
+  width: 100%;
+}
+
+.header-logo {
+  width: 42px;
+  height: 42px;
+  margin-right: 0.9rem;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.7);
+  flex-shrink: 0;
+}
+
+.header-logo svg {
+  width: 25px;
+  height: 25px;
+}
+
+.header-title-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centra verticalmente el título y subtítulo */
+  align-items: flex-end;   /* Mantiene la alineación del texto a la izquierda */
+}
+
+.header-main-title {
+  font-family: 'Dosis', sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  line-height: 1.2;
+  background: linear-gradient(90deg, var(--app-primary) 0%, var(--app-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.header-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--ion-color-medium-tint);
+  margin-top: -1px; /* Espaciado reducido */
+}
