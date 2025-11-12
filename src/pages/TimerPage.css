@@ -13,8 +13,8 @@
 /* Tipografía Principal */
 .page-title {
   font-family: 'Dosis', sans-serif;
-  font-weight: 800;
-  font-size: 1.8rem;
+  font-weight: 700;
+  font-size: 1.5rem;
   display: flex;
   align-items: center;
 }
@@ -71,7 +71,7 @@
 
 .time-text {
   font-family: 'Dosis', sans-serif;
-  font-size: 5rem;
+  font-size: 4rem;
   /* Grosor de fuente reducido */
   font-weight: 300;
   margin: 0;
