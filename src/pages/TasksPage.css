@@ -2,10 +2,9 @@
 /* pages/TasksPage.css */
 
 .tasks-container {
-  /* Se reduce el padding superior */
-  padding: 0.5rem 1rem 1rem;
+  /* Se aumenta el padding inferior para dar espacio al botón */
+  padding: 0.5rem 1rem 0.5rem; /* Aumentado de 1rem a 6rem */
   max-width: 100%;
-  max-height: 100%;
   margin: 0 auto;
 }
 
@@ -25,7 +24,6 @@
 
 .section-title {
   font-family: 'Dosis', sans-serif;
-  /* Tamaño de letra reducido para móvil */
   font-size: 1.2rem; 
   font-weight: 700;
   margin-bottom: 1rem;
@@ -96,12 +94,10 @@
 @media (min-width: 768px) {
   .tasks-container {
     max-width: 768px;
-    /* Se reduce el padding superior para tablet */
-    padding: 1rem 1.5rem 4rem;
+    padding: 1rem 1.5rem 0.5rem; /* Mantenemos el padding inferior */
   }
 
   .section-title {
-    /* Tamaño de letra reducido para escritorio */
     font-size: 1.4rem;
   }
 
@@ -114,8 +110,7 @@
 @media (min-width: 1024px) {
   .tasks-container {
     max-width: 1024px;
-    /* Se reduce el padding superior para escritorio */
-    padding: 1.5rem 2rem 2rem;
+    padding: 1.5rem 2rem 0.5rem; /* Mantenemos el padding inferior */
   }
 }
 
