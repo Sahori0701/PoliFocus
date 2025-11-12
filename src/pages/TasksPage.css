@@ -97,7 +97,7 @@
   .tasks-container {
     max-width: 768px;
     /* Se reduce el padding superior para tablet */
-    padding: 1rem 1.5rem 1.5rem;
+    padding: 1rem 1.5rem 4rem;
   }
 
   .section-title {
