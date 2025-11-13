@@ -61,7 +61,7 @@
 .progress-ring {
   width: 100%;
   height: 100%;
-  transform: rotate(-90deg);
+  transform: rotate(-90deg); 
   transform-origin: 50% 50%;
 }
 
@@ -81,29 +81,29 @@
 
 .time-text {
   font-family: 'Dosis', sans-serif;
-  font-size: 5rem; /* Aumentado para mayor impacto */
-  font-weight: 400; /* Ligeramente más grueso */
+  font-size: 4.5rem; /* Reducido */
+  font-weight: 400;
   margin: 0;
   line-height: 1;
 }
 
 .time-status {
-  font-size: 1.25rem; /* Ligeramente más pequeño */
-  font-weight: 600; /* Más audaz */
+  font-size: 1.1rem; /* Reducido */
+  font-weight: 600;
   margin: 0.75rem 0;
-  color: var(--ion-color-primary); /* Color azul primario */
+  color: var(--ion-color-primary);
 }
 
 .time-percentage {
-  font-size: 2.75rem; /* Mucho más grande y audaz */
+  font-size: 2.25rem; /* Reducido */
   font-weight: 700;
   line-height: 1;
   margin-top: 0.5rem;
 }
 
 .time-percentage-label {
-  font-size: 0.9rem; /* Más pequeño */
-  color: var(--ion-color-medium-tint); /* Color grisáceo */
+  font-size: 0.8rem; /* Reducido */
+  color: var(--ion-color-medium-tint);
 }
 
 /* Controles */
