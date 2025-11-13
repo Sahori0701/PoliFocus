@@ -4,7 +4,6 @@ import { IonCard, IonButton, IonIcon } from '@ionic/react';
 import { playOutline, trashOutline, checkmarkOutline } from 'ionicons/icons';
 import { Task } from '../models/Task';
 import { taskService } from '../services/task.service';
-import { dateUtils } from '../utils/dateUtils';
 import './TaskItem.css';
 
 interface TaskItemProps {
@@ -22,59 +21,52 @@ const TaskItem: React.FC<TaskItemProps> = ({
   onComplete,
   hasConflict = false,
 }) => {
+  const isCompleted = task.status === 'completed';
   const date = new Date(task.scheduledStart);
-  const urgencyBadge = taskService.getUrgencyBadge(task);
   const priorityColor = taskService.getPriorityColor(task.priority);
 
-  const getBadgeClass = (urgency: string) => {
+  // Lógica para el badge de urgencia (solo si no está completada)
+  const urgencyBadge = !isCompleted ? taskService.getUrgencyBadge(task) : null;
+
+  // Lógica para el badge de eficiencia (solo si está completada)
+  const efficiency = isCompleted ? taskService.calculateEfficiency(task.duration, task.actualDuration || task.duration) : null;
+
+  const getBadgeClass = (urgencyClass: string) => {
     const classes: Record<string, string> = {
       urgent: 'time-badge-urgent',
       soon: 'time-badge-soon',
       normal: 'time-badge-normal',
       expired: 'time-badge-expired',
+      completed: 'time-badge-completed',
     };
-    return classes[urgency] || 'time-badge-normal';
-  };
-
-  const getBadgeIcon = (urgency: string) => {
-    return urgency === 'urgent' ? '⚡' : '🕐';
+    return classes[urgencyClass] || 'time-badge-normal';
   };
 
   return (
     <IonCard
       className={`task-item-card ${hasConflict ? 'task-conflict' : ''}`}
-      style={{ borderLeft: `4px solid ${priorityColor}` }}
+      style={{ borderLeft: `4px solid ${isCompleted ? 'var(--ion-color-success)' : priorityColor}` }}
     >
       <div className="task-item-wrapper">
         {/* Header: Título y metadata */}
         <div className="task-header">
           <div className="task-info">
-            <div className="task-title-row">
+            <div className={`task-title-row ${isCompleted ? 'completed-task' : ''}`}>
               <h4 className="task-title">{task.title}</h4>
               {task.isRecurring && (
                 <span className="task-icon">🔄</span>
               )}
-              {hasConflict && (
+              {hasConflict && !isCompleted && (
                 <span className="task-icon">⚠️</span>
               )}
             </div>
             
             <div className="task-meta">
               <span className="meta-item task-main-date">
-                <span className="meta-icon">🕐</span>
-                {date.toLocaleTimeString('es-ES', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-              <span className="meta-item task-main-date">
                 <span className="meta-icon">📅</span>
-                {date.toLocaleDateString('es-ES', {
-                  day: '2-digit',
-                  month: 'short',
-                })}
+                {date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
               </span>
-              <span className="meta-item">
+               <span className="meta-item">
                 <span className="meta-icon">⏱</span>
                 {task.duration} min
               </span>
@@ -82,53 +74,46 @@ const TaskItem: React.FC<TaskItemProps> = ({
           </div>
         </div>
 
-        {/* Footer: Badge y acciones */}
-        <div className="task-footer">
-          <div className={`time-badge ${getBadgeClass(urgencyBadge.class)}`}>
-            <span className="badge-icon">
-              {getBadgeIcon(urgencyBadge.class)}
-            </span>
-            <span className="badge-text">{urgencyBadge.text}</span>
+        {/* Footer: Condicional basado en el estado de la tarea */}
+        {isCompleted && efficiency ? (
+          // VISTA PARA TAREAS COMPLETADAS
+          <div className="task-footer-completed">
+            <div className={`efficiency-badge efficiency-badge-${efficiency.badge}`}>
+              <span className="badge-icon">{efficiency.icon}</span>
+              <span>{efficiency.difference > 0 ? `+${efficiency.difference}` : efficiency.difference} min</span>
+            </div>
+            <div className="efficiency-details">
+              {`${task.duration}m → ${task.actualDuration || task.duration}m`}
+            </div>
           </div>
+        ) : (
+          // VISTA PARA TAREAS PENDIENTES O VENCIDAS
+          <div className="task-footer">
+            {urgencyBadge && (
+              <div className={`time-badge ${getBadgeClass(urgencyBadge.class)}`}>
+                 <span className="badge-text">{urgencyBadge.text}</span>
+              </div>
+            )}
 
-          <div className="task-actions">
-            {onSelect && (
-              <IonButton
-                size="small"
-                color="primary"
-                onClick={() => onSelect(task)}
-                className="action-button"
-                fill="solid"
-              >
-                <IonIcon icon={playOutline} slot="icon-only" />
-              </IonButton>
-            )}
-            
-            {onComplete && (
-              <IonButton
-                size="small"
-                color="success"
-                onClick={() => onComplete(task.id)}
-                className="action-button"
-                fill="solid"
-              >
-                <IonIcon icon={checkmarkOutline} slot="icon-only" />
-              </IonButton>
-            )}
-            
-            {onDelete && (
-              <IonButton
-                size="small"
-                color="danger"
-                onClick={() => onDelete(task.id)}
-                className="action-button"
-                fill="solid"
-              >
-                <IonIcon icon={trashOutline} slot="icon-only" />
-              </IonButton>
-            )}
+            <div className="task-actions">
+              {onSelect && (
+                <IonButton size="small" color="primary" onClick={() => onSelect(task)} fill="solid">
+                  <IonIcon icon={playOutline} slot="icon-only" />
+                </IonButton>
+              )}
+              {onComplete && (
+                <IonButton size="small" color="success" onClick={() => onComplete(task.id)} fill="solid">
+                  <IonIcon icon={checkmarkOutline} slot="icon-only" />
+                </IonButton>
+              )}
+              {onDelete && (
+                <IonButton size="small" color="danger" onClick={() => onDelete(task.id)} fill="solid">
+                  <IonIcon icon={trashOutline} slot="icon-only" />
+                </IonButton>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </IonCard>
   );

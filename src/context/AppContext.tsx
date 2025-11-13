@@ -31,6 +31,10 @@ interface AppContextType {
   setTimerState: React.Dispatch<React.SetStateAction<TimerState>>;
   activeTask: Task | null;
   setActiveTask: React.Dispatch<React.SetStateAction<Task | null>>;
+
+  // Navigation state
+  initialTab: string | null;
+  setInitialTab: React.Dispatch<React.SetStateAction<string | null>>;
   
   // Loading
   isLoading: boolean;
@@ -53,6 +57,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [timerState, setTimerState] = useState<TimerState>(DEFAULT_TIMER_STATE);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [initialTab, setInitialTab] = useState<string | null>(null);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -179,6 +184,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimerState,
     activeTask,
     setActiveTask,
+    initialTab,
+    setInitialTab,
     isLoading,
   };
 

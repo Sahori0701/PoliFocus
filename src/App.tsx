@@ -79,11 +79,13 @@ const App: React.FC = () => (
           </IonRouterOutlet>
 
           <IonTabBar slot="bottom">
+            {/* Ruta corregida para TAREAS */}
             <IonTabButton tab="tasks" href="/tasks">
               <IonIcon aria-hidden="true" icon={listOutline} />
               <IonLabel>Tareas</IonLabel>
             </IonTabButton>
 
+            {/* Ruta corregida para FOCO (TIMER) */}
             <IonTabButton tab="timer" href="/timer">
               <IonIcon aria-hidden="true" icon={timerOutline} />
               <IonLabel>Foco</IonLabel>

@@ -24,8 +24,8 @@ export interface Recurrence {
 
 // Interfaz para medir la eficiencia de una tarea completada
 export type Efficiency = {
-  badge: 'excellent' | 'good' | 'warning' | 'poor'; // Renombrado de 'level' y se agregó 'warning'
-  percentage: string; // Cambiado a string para reflejar el uso de toFixed()
+  badge: 'excellent' | 'good' | 'warning' | 'poor';
+  percentage: string;
   difference: number;
   icon: string;
 };
@@ -34,20 +34,21 @@ export type Efficiency = {
 export interface Task {
   id: number;
   title: string;
-  description?: string;     // Descripción es opcional
+  description?: string;
   status: TaskStatus;
   priority: Priority;
-  scheduledStart: string;   // Fecha y hora en formato ISO
-  duration: number;         // Duración planificada en minutos
-  actualDuration?: number;  // Duración real en minutos, opcional
+  scheduledStart: string;
+  duration: number; 
+  actualDuration?: number;
+  deadTime?: number;         // Tiempo total en pausa (en minutos)
   isRecurring: boolean;
-  recurrence?: Recurrence;  // Recurrencia es opcional
-  parentId?: number;        // ID de la tarea padre para las recurrentes
+  recurrence?: Recurrence;
+  parentId?: number;
   tags?: string[];
   subtasks?: Partial<Task>[];
   dependencies?: number[];
   assignedTo?: string;
   createdAt: string;
-  updatedAt?: string;       // Fecha de actualización es opcional
-  completedAt?: string;     // Fecha de finalización es opcional
+  updatedAt?: string;
+  completedAt?: string;
 }

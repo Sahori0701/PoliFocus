@@ -10,6 +10,7 @@ import {
   IonToast,
   useIonAlert,
 } from '@ionic/react';
+import { useHistory } from 'react-router-dom'; // Importar useHistory
 import { useApp } from '../context/AppContext';
 import { Task } from '../models/Task';
 import { taskService } from '../services/task.service';
@@ -21,7 +22,8 @@ import Header from '../components/Header';
 import './TasksPage.css';
 
 const TasksPage: React.FC = () => {
-  const { tasks, addTask, deleteTask, updateTask, setActiveTask } = useApp();
+  const { tasks, addTask, deleteTask, updateTask, setActiveTask, initialTab, setInitialTab } = useApp();
+  const history = useHistory(); // Obtener el objeto history
   const [presentAlert] = useIonAlert();
   
   const [activeTab, setActiveTab] = useState<'planning' | 'active' | 'expired' | 'completed'>('planning');
@@ -34,6 +36,16 @@ const TasksPage: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastColor, setToastColor] = useState<'success' | 'warning' | 'danger'>('success');
+
+  useEffect(() => {
+    if (initialTab) {
+      const validTabs: ('planning' | 'active' | 'expired' | 'completed')[] = ['planning', 'active', 'expired', 'completed'];
+      if (validTabs.includes(initialTab as any)) {
+         setActiveTab(initialTab as any);
+      }
+      setInitialTab(null);
+    }
+  }, [initialTab, setInitialTab]);
 
   const getFilteredTasks = () => {
     let filtered: Task[] = [];
@@ -154,9 +166,11 @@ const TasksPage: React.FC = () => {
     }
   };
 
+  // ** LÓGICA DE SELECCIÓN Y NAVEGACIÓN (ACTUALIZADA) **
   const handleSelectTask = (task: Task) => {
     setActiveTask(task);
     showSuccessToast(`Cargada: ${task.title}`);
+    history.push('/timer'); // Redirigir a la página del temporizador
   };
 
   const handleViewTask = (task: Task) => {

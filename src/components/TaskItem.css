@@ -59,6 +59,11 @@
   flex-wrap: wrap;
 }
 
+.task-title-row.completed-task .task-title {
+  text-decoration: line-through;
+  color: var(--ion-color-medium-shade);
+}
+
 .task-title {
   font-family: 'Dosis', sans-serif;
   font-size: clamp(0.9375rem, 2.5vw, 1rem);
@@ -77,13 +82,12 @@
 .task-meta {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline; /* Alinea la base de los textos */
+  align-items: baseline;
   gap: clamp(0.5rem, 1.5vw, 0.75rem);
   font-size: clamp(0.6875rem, 1.8vw, 0.75rem);
   color: var(--ion-color-medium);
 }
 
-/* Estilo específico para fecha y hora principal, ahora revertido a un tamaño menor */
 .task-main-date {
   font-size: clamp(0.8rem, 2.0vw, 1.0em) !important;
   font-weight: 500 !important;
@@ -102,7 +106,6 @@
   line-height: 1;
 }
 
-
 /* Footer */
 .task-footer {
   display: flex;
@@ -112,7 +115,7 @@
   flex-wrap: wrap;
 }
 
-/* Time Badge */
+/* Badges de Tiempo */
 .time-badge {
   display: inline-flex;
   align-items: center;
@@ -134,32 +137,41 @@
   line-height: 1;
 }
 
-/* Badge colors - Siguiendo el SPA */
-.time-badge-urgent {
-  background: var(--ion-color-danger);
-  color: white;
-  animation: pulse 2s infinite;
+.time-badge-urgent { background: var(--ion-color-danger); color: white; animation: pulse 2s infinite; }
+.time-badge-soon { background: var(--ion-color-warning); color: white; }
+.time-badge-normal { background: var(--ion-color-secondary); color: white; }
+.time-badge-expired { background: var(--ion-color-medium); color: white; opacity: 0.8; }
+.time-badge-completed { background: var(--ion-color-success); color: var(--ion-color-success-contrast); }
+
+/* Footer para Tareas Completadas */
+.task-footer-completed {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Espacio entre el badge y el texto */
+  flex-wrap: wrap;
 }
 
-.time-badge-soon {
-  background: var(--ion-color-warning);
-  color: white;
+.efficiency-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: clamp(0.4rem, 1.2vw, 0.5rem) clamp(0.75rem, 1.8vw, 0.875rem);
+  border-radius: 9999px; /* Píldora redondeada */
+  font-size: clamp(0.75rem, 1.9vw, 0.8rem);
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
-.time-badge-normal {
-  background: var(--ion-color-secondary);
-  color: white;
-}
+.efficiency-badge-excellent { background: var(--ion-color-success); color: var(--ion-color-success-contrast); }
+.efficiency-badge-good { background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); }
+.efficiency-badge-warning { background: var(--ion-color-warning); color: var(--ion-color-warning-contrast); }
+.efficiency-badge-poor { background: var(--ion-color-danger); color: var(--ion-color-danger-contrast); }
 
-.time-badge-expired {
-  background: var(--ion-color-medium);
-  color: white;
-  opacity: 0.8;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+.efficiency-details {
+  font-size: clamp(0.75rem, 2vw, 0.875rem);
+  color: var(--ion-color-medium-shade);
+  font-weight: 500;
 }
 
 /* Acciones */
@@ -169,56 +181,9 @@
   flex-wrap: wrap;
 }
 
-.action-button {
-  --padding-start: 0;
-  --padding-end: 0;
-  min-width: 44px;
-  width: 44px;
-  height: 44px;
-  margin: 0;
-}
+.action-button { min-width: 44px; width: 44px; height: 44px; margin: 0; }
+.action-button::part(native) { border-radius: clamp(0.5rem, 1.5vw, 0.75rem); }
 
-.action-button::part(native) {
-  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
-}
-
-/* Responsive */
-@media (max-width: 576px) {
-  .task-item-wrapper {
-    padding: 0.875rem;
-  }
-
-  .task-title {
-    font-size: 0.9375rem;
-  }
-
-  .task-meta {
-    font-size: 0.6875rem;
-  }
-
-  .time-badge {
-    font-size: 0.6875rem;
-    padding: 0.3125rem 0.625rem;
-  }
-}
-
-@media (max-width: 360px) {
-  .task-footer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .task-actions {
-    justify-content: flex-end;
-  }
-}
-
-/* Accesibilidad */
-@media (prefers-reduced-motion: reduce) {
-  .task-item-card,
-  .task-conflict,
-  .time-badge-urgent {
-    animation: none !important;
-    transition: none !important;
-  }
-}
+/* Responsive y Accesibilidad */
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+@media (prefers-reduced-motion: reduce) { *, .task-conflict, .time-badge-urgent { animation: none !important; transition: none !important; } }

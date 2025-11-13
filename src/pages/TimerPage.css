@@ -21,7 +21,7 @@
 
 .target-icon {
   margin-left: 0.5rem;
-  font-size: 1.5rem; /* Ajustar tamaño si es necesario */
+  font-size: 1.5rem;
 }
 
 /* Tarea Activa */
@@ -36,66 +36,74 @@
   margin: 0;
 }
 
-.active-task-display ion-button {
-  --background: #313A5A;
-  --color: #ffffff;
-  --border-radius: 12px;
-  --box-shadow: none;
-  margin-top: 0.75rem;
-  font-weight: 600;
-  text-transform: none; /* Evita que el texto se ponga en mayúsculas */
-  height: 40px;
-}
-
-/* Temporizador */
+/* Contenedor del Aro y Texto */
 .timer-display-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
+  width: 280px;
+  height: 280px;
   margin-bottom: 2.5rem;
 }
 
+/* Contenedor del texto, centrado */
 .timer-display {
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  position: relative;
-  /* Efecto de brillo ajustado */
-  box-shadow: 0px 0px 50px -10px #32d8a660;
-  /* Se elimina el fondo para que sea transparente */
 }
+
+/* Aro de Progreso SVG */
+.progress-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.progress-ring__progress {
+  transition: stroke-dashoffset 0.35s;
+}
+
+.progress-ring__background {
+  stroke: #2c3440;
+}
+
+.progress-ring__progress {
+  stroke: var(--ion-color-primary);
+}
+
+/* ESTILOS DEL TEXTO DENTRO DEL ARO (AJUSTADOS) */
 
 .time-text {
   font-family: 'Dosis', sans-serif;
-  font-size: 4rem;
-  /* Grosor de fuente reducido */
-  font-weight: 300;
+  font-size: 5rem; /* Aumentado para mayor impacto */
+  font-weight: 400; /* Ligeramente más grueso */
   margin: 0;
   line-height: 1;
 }
 
 .time-status {
-  font-size: 1.5rem;
-  /* Grosor de fuente reducido */
-  font-weight: 400;
-  margin: 0.5rem 0;
+  font-size: 1.25rem; /* Ligeramente más pequeño */
+  font-weight: 600; /* Más audaz */
+  margin: 0.75rem 0;
+  color: var(--ion-color-primary); /* Color azul primario */
 }
 
 .time-percentage {
-  font-size: 2rem;
-  /* Grosor de fuente reducido */
-  font-weight: 400;
-  margin-top: 0.5rem;
+  font-size: 2.75rem; /* Mucho más grande y audaz */
+  font-weight: 700;
   line-height: 1;
+  margin-top: 0.5rem;
 }
 
 .time-percentage-label {
-  font-size: 1rem;
-  color: var(--ion-color-medium-tint);
+  font-size: 0.9rem; /* Más pequeño */
+  color: var(--ion-color-medium-tint); /* Color grisáceo */
 }
 
 /* Controles */
@@ -113,20 +121,14 @@
 }
 
 .control-button-pause {
-  --background: #E53935;
-  --background-activated: #c62828;
   width: 150px;
 }
 
 .control-button-complete {
-  --background: #00A36C;
-  --background-activated: #008256;
   width: 55px;
 }
 
 .control-button-skip {
-  --background: #396AE5;
-  --background-activated: #2a52b8;
   width: 55px;
 }
 

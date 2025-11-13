@@ -7,8 +7,10 @@ class TaskService {
    * Verificar si una tarea está vencida
    */
   isTaskExpired(task: Task): boolean {
-    if (task.status !== 'pending') return false;
-    return dateUtils.isExpired(task.scheduledStart, task.duration);
+    // Una tarea completada no puede estar vencida.
+    if (task.status === 'completed') return false;
+    // Solo las tareas pendientes pueden vencerse.
+    return task.status === 'pending' && dateUtils.isExpired(task.scheduledStart, task.duration);
   }
 
   /**
@@ -202,20 +204,31 @@ class TaskService {
   }
 
   /**
-   * Obtener clase de urgencia para badge
+   * Obtener clase y texto de urgencia para el badge de la tarea.
    */
-  getUrgencyBadge(task: Task): { class: 'urgent' | 'soon' | 'normal' | 'expired'; text: string } {
+  getUrgencyBadge(task: Task): { class: 'completed' | 'urgent' | 'soon' | 'normal' | 'expired'; text: string } {
+    // 1. La prioridad máxima es el estado "Completada"
+    if (task.status === 'completed') {
+      return { class: 'completed', text: 'Completada' };
+    }
+
+    // 2. Si no está completada, comprobar si está vencida
     if (this.isTaskExpired(task)) {
       return { class: 'expired', text: 'Vencida' };
     }
 
+    // 3. Si no está vencida, calcular el tiempo restante
     const timeUntil = dateUtils.getTimeUntil(new Date(task.scheduledStart));
     if (!timeUntil) {
+      // Esto puede ocurrir si la fecha es ahora mismo o en el pasado, 
+      // pero isTaskExpired no la marcó (p.ej. si no es 'pending')
+      // Lo tratamos como vencida por seguridad.
       return { class: 'expired', text: 'Vencida' };
     }
 
     const totalMinutes = Math.floor(timeUntil.total / (1000 * 60));
     
+    // 4. Clasificar según el tiempo restante
     if (totalMinutes < 30) {
       return { class: 'urgent', text: dateUtils.formatTimeUntil(timeUntil) };
     } else if (totalMinutes < 120) {
