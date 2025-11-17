@@ -161,7 +161,7 @@ const CalendarPage: React.FC = () => {
   const renderMonthView = useCallback(() => {
     const monthStart = startOfMonth(currentDate);
     const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
-    const days = eachDayOfInterval({ start: startDate, end: add(startDate, { days: 41 }) }); // Always 6 weeks
+    const days = eachDayOfInterval({ start: startDate, end: add(startDate, { days: 34 }) }); // Always 5 weeks
     const dayNames = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
 
     return (
