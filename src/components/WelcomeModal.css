@@ -1,0 +1,120 @@
+/* src/components/WelcomeModal.css */
+
+.welcome-modal {
+    --height: 100%;
+    --width: 100%;
+    --border-radius: 0;
+  }
+  
+  .welcome-modal .ion-toolbar {
+    --background: var(--ion-color-step-100, #1f2937);
+    --color: #FFFFFF;
+    font-family: 'Dosis', sans-serif;
+  }
+  
+  .welcome-modal .ion-title {
+    font-weight: 700;
+  }
+  
+  .welcome-modal .ion-content {
+    --background: var(--ion-color-step-50, #111827);
+    --color: #FFFFFF;
+  }
+  
+  /* Swiper Styles */
+  .mySwiper {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .slide-content {
+    text-align: center;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    max-width: 80%;
+  }
+  
+  .slide-icon {
+    font-size: 6rem;
+    color: var(--ion-color-primary, #10b981);
+    margin-bottom: 1rem;
+  }
+  
+  .slide-content h2 {
+    font-family: 'Dosis', sans-serif;
+    font-weight: 700;
+    font-size: 2.2rem; /* Adjusted for more content */
+    color: #FFFFFF;
+    margin: 0;
+  }
+  
+  .slide-content p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    opacity: 0.8;
+    max-width: 350px;
+  }
+
+  /* Sub-slide for task states */
+  .sub-slide-container {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .sub-slide-container > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .sub-slide-icon {
+    font-size: 3rem;
+    color: var(--ion-color-primary, #10b981);
+  }
+
+  .sub-slide-icon.overdue {
+    color: var(--ion-color-danger, #ef4444);
+  }
+
+  .sub-slide-icon.completed {
+    color: var(--ion-color-success, #22c55e);
+  }
+
+  .sub-slide-container h3 {
+    font-family: 'Dosis', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: #fff;
+  }
+  
+  .start-button-slide {
+    --background: var(--ion-color-primary, #10b981);
+    --color: white;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  /* Swiper Pagination */
+  .swiper-pagination-bullet {
+      background: rgba(255, 255, 255, 0.5);
+      width: 10px;
+      height: 10px;
+  }
+    
+  .swiper-pagination-bullet-active {
+      background: var(--ion-color-primary, #10b981);
+  }

@@ -35,6 +35,10 @@ export interface AppContextType {
   // Navigation state
   initialTab: string | null;
   setInitialTab: React.Dispatch<React.SetStateAction<string | null>>;
+
+  // UI State
+  showWelcomeModal: boolean;
+  setShowWelcomeModal: React.Dispatch<React.SetStateAction<boolean>>;
   
   // Loading
   isLoading: boolean;
@@ -58,6 +62,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initialTab, setInitialTab] = useState<string | null>(null);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -186,6 +191,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setActiveTask,
     initialTab,
     setInitialTab,
+    showWelcomeModal,
+    setShowWelcomeModal,
     isLoading,
   };
 

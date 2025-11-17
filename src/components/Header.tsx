@@ -1,8 +1,12 @@
 import React from 'react';
-import { IonHeader, IonToolbar } from '@ionic/react';
+import { IonHeader, IonToolbar, IonButtons, IonButton, IonIcon } from '@ionic/react';
+import { helpCircleOutline } from 'ionicons/icons';
+import { useApp } from '../context/AppContext';
 import './Header.css';
 
 const Header: React.FC = () => {
+  const { setShowWelcomeModal } = useApp();
+
   return (
     <IonHeader className="ion-no-border">
       <IonToolbar>
@@ -23,9 +27,13 @@ const Header: React.FC = () => {
           </div>
           <div className="header-title-wrapper">
             <h1 className="header-main-title">PoliFocusTask</h1>
-           
           </div>
         </div>
+        <IonButtons slot="end">
+          <IonButton onClick={() => setShowWelcomeModal(true)}>
+            <IonIcon slot="icon-only" icon={helpCircleOutline} />
+          </IonButton>
+        </IonButtons>
       </IonToolbar>
     </IonHeader>
   );

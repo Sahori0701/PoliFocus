@@ -1,4 +1,5 @@
 // App.tsx
+import React, { useState, useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
@@ -19,15 +20,11 @@ import {
   settingsOutline 
 } from 'ionicons/icons';
 
-/* Core CSS required for Ionic components to work properly */
+/* Core CSS */
 import '@ionic/react/css/core.css';
-
-/* Basic CSS for apps built with Ionic */
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
-
-/* Optional CSS utils that can be commented out */
 import '@ionic/react/css/padding.css';
 import '@ionic/react/css/float-elements.css';
 import '@ionic/react/css/text-alignment.css';
@@ -45,69 +42,91 @@ import CalendarPage from './pages/CalendarPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 
+/* Components */
+import SplashScreen from './components/SplashScreen';
+import WelcomeModal from './components/WelcomeModal';
+
 /* Context Provider */
-import { AppProvider } from './context/AppContext';
+import { AppProvider, useApp } from './context/AppContext';
 
 setupIonicReact({
-  mode: 'md', // Material Design para consistencia
+  mode: 'md',
 });
+
+const AppContent: React.FC = () => {
+  const [isAppReady, setIsAppReady] = useState(false);
+  const { showWelcomeModal, setShowWelcomeModal } = useApp();
+
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeModal');
+    const loadingTimeout = setTimeout(() => {
+      setIsAppReady(true);
+      if (!hasSeenWelcome) {
+        setShowWelcomeModal(true);
+      }
+    }, 2500);
+    return () => clearTimeout(loadingTimeout);
+  }, [setShowWelcomeModal]);
+
+  const handleCloseWelcomeModal = () => {
+    setShowWelcomeModal(false);
+    localStorage.setItem('hasSeenWelcomeModal', 'true');
+  };
+
+  return (
+    <>
+      {!isAppReady ? (
+        <SplashScreen />
+      ) : (
+        <>
+          <WelcomeModal isOpen={showWelcomeModal} onClose={handleCloseWelcomeModal} />
+          <IonReactRouter>
+            <IonTabs>
+              <IonRouterOutlet>
+                <Route exact path="/tasks" component={TasksPage} />
+                <Route exact path="/timer" component={TimerPage} />
+                <Route path="/calendar" component={CalendarPage} />
+                <Route path="/reports" component={ReportsPage} />
+                <Route path="/settings" component={SettingsPage} />
+                <Route exact path="/">
+                  <Redirect to="/tasks" />
+                </Route>
+              </IonRouterOutlet>
+
+              <IonTabBar slot="bottom">
+                <IonTabButton tab="tasks" href="/tasks">
+                  <IonIcon aria-hidden="true" icon={listOutline} />
+                  <IonLabel>Tareas</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="timer" href="/timer">
+                  <IonIcon aria-hidden="true" icon={timerOutline} />
+                  <IonLabel>Foco</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="calendar" href="/calendar">
+                  <IonIcon aria-hidden="true" icon={calendarOutline} />
+                  <IonLabel>Calendario</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="reports" href="/reports">
+                  <IonIcon aria-hidden="true" icon={statsChartOutline} />
+                  <IonLabel>Stats</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="settings" href="/settings">
+                  <IonIcon aria-hidden="true" icon={settingsOutline} />
+                  <IonLabel>Ajustes</IonLabel>
+                </IonTabButton>
+              </IonTabBar>
+            </IonTabs>
+          </IonReactRouter>
+        </>
+      )}
+    </>
+  );
+};
 
 const App: React.FC = () => (
   <IonApp>
     <AppProvider>
-      <IonReactRouter>
-        <IonTabs>
-          <IonRouterOutlet>
-            <Route exact path="/tasks">
-              <TasksPage />
-            </Route>
-            <Route exact path="/timer">
-              <TimerPage />
-            </Route>
-            <Route exact path="/calendar">
-              <CalendarPage />
-            </Route>
-            <Route exact path="/reports">
-              <ReportsPage />
-            </Route>
-            <Route exact path="/settings">
-              <SettingsPage />
-            </Route>
-            <Route exact path="/">
-              <Redirect to="/tasks" />
-            </Route>
-          </IonRouterOutlet>
-
-          <IonTabBar slot="bottom">
-            {/* Ruta corregida para TAREAS */}
-            <IonTabButton tab="tasks" href="/tasks">
-              <IonIcon aria-hidden="true" icon={listOutline} />
-              <IonLabel>Tareas</IonLabel>
-            </IonTabButton>
-
-            {/* Ruta corregida para FOCO (TIMER) */}
-            <IonTabButton tab="timer" href="/timer">
-              <IonIcon aria-hidden="true" icon={timerOutline} />
-              <IonLabel>Foco</IonLabel>
-            </IonTabButton>
-
-            <IonTabButton tab="calendar" href="/calendar">
-              <IonIcon aria-hidden="true" icon={calendarOutline} />
-              <IonLabel>Calendario</IonLabel>
-            </IonTabButton>
-
-            <IonTabButton tab="reports" href="/reports">
-              <IonIcon aria-hidden="true" icon={statsChartOutline} />
-              <IonLabel>Stats</IonLabel>
-            </IonTabButton>
-
-            <IonTabButton tab="settings" href="/settings">
-              <IonIcon aria-hidden="true" icon={settingsOutline} />
-              <IonLabel>Ajustes</IonLabel>
-            </IonTabButton>
-          </IonTabBar>
-        </IonTabs>
-      </IonReactRouter>
+      <AppContent />
     </AppProvider>
   </IonApp>
 );
