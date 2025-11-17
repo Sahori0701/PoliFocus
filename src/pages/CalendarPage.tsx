@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { IonPage, IonContent, IonButton, IonIcon } from '@ionic/react';
+import { useHistory } from 'react-router-dom';
 import { add, format, startOfWeek, startOfMonth, eachDayOfInterval, parseISO, isToday, getHours, getMinutes, isBefore, set } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { useApp } from '../context/AppContext';
 import { Task } from '../models/Task';
 import Header from '../components/Header';
+import TaskActivationModal from '../components/TaskActivationModal';
 import './CalendarPage.css';
 
 type View = 'month' | 'week' | 'day';
@@ -89,13 +91,14 @@ const TimeGrid: React.FC<{
     hours: number[];
     now: Date;
     onTimeSlotClick?: (date: Date) => void;
-}> = ({ type, tasks, currentDate, hours, now, onTimeSlotClick }) => {
+    onTaskClick: (task: Task) => void; 
+}> = ({ type, tasks, currentDate, hours, now, onTimeSlotClick, onTaskClick }) => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekDays = eachDayOfInterval({ start: weekStart, end: add(weekStart, { days: 6 }) });
     const daysToRender = type === 'week' ? weekDays : [currentDate];
 
     const handleTimeSlotClick = (day: Date, e: React.MouseEvent<HTMLDivElement>) => {
-        if (!onTimeSlotClick) return;
+        if (!onTimeSlotClick || e.target !== e.currentTarget) return;
         const rect = e.currentTarget.getBoundingClientRect();
         const y = e.clientY - rect.top;
         const hour = Math.floor(y / PIXELS_PER_HOUR);
@@ -134,7 +137,12 @@ const TimeGrid: React.FC<{
         const statusClass = getTaskStatusClass(task);
 
         return (
-            <div key={task.id} className={`task-block ${statusClass}`} style={{ top: `${top}px`, height: `${height}px` }}>
+            <div 
+                key={task.id} 
+                className={`task-block ${statusClass}`}
+                style={{ top: `${top}px`, height: `${height}px` }} 
+                onClick={() => onTaskClick(task)}
+            >
                 <div className="task-block-title">{task.title}</div>
             </div>
         );
@@ -168,12 +176,16 @@ const TimeGrid: React.FC<{
 //=========== Main CalendarPage component ===========
 
 const CalendarPage: React.FC = () => {
-  const { tasks } = useApp();
+  const { tasks, setActiveTask } = useApp();
+  const history = useHistory();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState<View>('month');
   const [calendarTasks, setCalendarTasks] = useState<Task[]>([]);
   const contentRef = useRef<HTMLIonContentElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -207,6 +219,16 @@ const CalendarPage: React.FC = () => {
   const handleTimeSlotClick = (date: Date) => {
     setView('day');
     setCurrentDate(date);
+  };
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  };
+
+  const handleActivateTask = (task: Task) => {
+    setActiveTask(task);
+    history.push('/timer');
   };
 
   const renderMonthView = useCallback(() => {
@@ -250,7 +272,7 @@ const CalendarPage: React.FC = () => {
           ))}
         </div>
         <div className="week-body time-grid-view">
-           <TimeGrid type="week" tasks={calendarTasks} currentDate={currentDate} hours={hours} now={now} onTimeSlotClick={handleTimeSlotClick} />
+           <TimeGrid type="week" tasks={calendarTasks} currentDate={currentDate} hours={hours} now={now} onTimeSlotClick={handleTimeSlotClick} onTaskClick={handleTaskClick} />
         </div>
       </div>
     );
@@ -261,7 +283,7 @@ const CalendarPage: React.FC = () => {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     return (
        <div className="day-view time-grid-view">
-         <TimeGrid type="day" tasks={calendarTasks} currentDate={currentDate} hours={hours} now={now} />
+         <TimeGrid type="day" tasks={calendarTasks} currentDate={currentDate} hours={hours} now={now} onTaskClick={handleTaskClick} />
        </div>
     );
   }, [currentDate, calendarTasks, now]);
@@ -285,6 +307,12 @@ const CalendarPage: React.FC = () => {
             </div>
           </div>
         </div>
+        <TaskActivationModal
+          task={selectedTask}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onActivate={handleActivateTask}
+        />
       </IonContent>
     </IonPage>
   );
