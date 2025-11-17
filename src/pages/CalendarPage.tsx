@@ -93,8 +93,16 @@ const TimeGrid: React.FC<{
     const daysToRender = type === 'week' ? weekDays : [currentDate];
 
     const getTaskStatusClass = (task: Task): string => {
-        if (task.status === 'completed') return 'completed';
-        if (task.dueDate && isBefore(parseISO(task.dueDate as string), now) && task.status !== 'completed') return 'overdue';
+        if (task.status === 'completed') {
+            return 'completed';
+        }
+        if (!task.scheduledStart) {
+            return 'pending';
+        }
+        const dueDate = add(parseISO(task.scheduledStart), { minutes: task.duration });
+        if (isBefore(dueDate, now)) {
+            return 'overdue';
+        }
         return 'pending';
     };
 

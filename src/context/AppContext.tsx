@@ -5,7 +5,7 @@ import { PomodoroSession, TimerState } from '../models/Pomodoro';
 import { AppConfig, DEFAULT_CONFIG } from '../models/Config';
 import { storageService } from '../services/storage.service';
 
-interface AppContextType {
+export interface AppContextType {
   // Tasks
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
@@ -40,7 +40,7 @@ interface AppContextType {
   isLoading: boolean;
 }
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
+export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const DEFAULT_TIMER_STATE: TimerState = {
   isRunning: false,
