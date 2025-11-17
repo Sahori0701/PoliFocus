@@ -22,16 +22,61 @@
 .nav-button { background-color: var(--ion-color-step-200, #374151); border: none; border-radius: 0.5rem; color: var(--ion-color-light); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: background-color 150ms ease; }
 .nav-button:hover { background-color: var(--ion-color-step-300, #4b5563); }
 
-#calendar-content { min-height: 450px; overflow-x: auto; }
+#calendar-content { 
+    min-height: 450px; 
+}
 
 /* --- VISTA DE MES --- */
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
-.calendar-day-name { text-align: center; font-weight: bold; color: var(--ion-color-medium); font-size: 0.75rem; padding-bottom: 0.5rem; }
-.calendar-day { aspect-ratio: 1 / 1; padding: 0.5rem; background: var(--ion-color-step-150, #2b3546); border-radius: 0.75rem; font-size: 0.75rem; }
-.calendar-day.other-month { background: var(--ion-color-step-150, #2b3546); opacity: 0.4; }
-.calendar-day.today { border: 1px solid var(--ion-color-primary); opacity: 1; }
-.task-dots { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 0.25rem; }
-.task-dot { width: 5px; height: 5px; border-radius: 50%; }
+.calendar-grid { 
+    display: grid; 
+    grid-template-columns: repeat(7, 1fr); 
+    gap: 0.5rem; 
+}
+.calendar-day-name { 
+    text-align: center; 
+    font-weight: bold; 
+    color: var(--ion-color-medium); 
+    font-size: 0.75rem; 
+    padding-bottom: 0.5rem; 
+    text-transform: capitalize;
+}
+.calendar-day { 
+    min-height: 60px;
+    padding: 0.5rem; 
+    background: var(--ion-color-step-150, #2b3546); 
+    border-radius: 0.75rem; 
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+.calendar-day:hover {
+    background-color: var(--ion-color-step-200, #374151);
+}
+
+.calendar-day.other-month { 
+    background: var(--ion-color-step-150, #2b3546); 
+    opacity: 0.4; 
+}
+.calendar-day.today { 
+    border: 1px solid var(--ion-color-primary); 
+    opacity: 1; 
+}
+.task-dots { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 3px; 
+    margin-top: 0.25rem; 
+    justify-content: center;
+}
+.task-dot { 
+    width: 5px; 
+    height: 5px; 
+    border-radius: 50%; 
+}
 
 /* Colores de puntos de tarea por estado */
 .task-dot.pending { background-color: var(--ion-color-secondary); }
@@ -106,8 +151,8 @@
 /* --- VISTA DE DÍA --- */
 .day-view .grid-body { 
     height: calc(var(--hour-slot-height) * 24);
-    display: grid; /* NEW */
-    grid-template-columns: 1fr; /* NEW */
+    display: grid;
+    grid-template-columns: 1fr;
 }
 
 /* --- VISTA DE SEMANA --- */
@@ -164,4 +209,65 @@
     height: 8px;
     border-radius: 50%;
     background-color: var(--ion-color-primary);
+}
+
+/* --- AJUSTES RESPONSIVOS PARA MÓVILES --- */
+@media (max-width: 480px) {
+    .calendar-container {
+        margin: 0.5rem auto;
+    }
+    .card {
+        padding: 0.75rem;
+    }
+
+    .calendar-grid {
+        gap: 2px;
+    }
+
+    .calendar-day {
+        font-size: 0.7rem;
+        padding: 4px;
+        border-radius: 0.5rem;
+        min-height: 50px;
+    }
+
+    .calendar-day-name {
+        font-size: 0.65rem;
+        padding-bottom: 0.25rem;
+    }
+    
+    .task-dot {
+        width: 4px;
+        height: 4px;
+    }
+
+    .calendar-header {
+        padding: 0.35rem;
+    }
+
+    /* Solicitud 3: Cambiar la apariencia de las tareas en la vista de semana en móviles */
+    .week-view .task-block-title {
+        display: none;
+    }
+
+    .week-view .task-block {
+        width: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0;
+        border-left: none;
+        border-radius: 3px;
+    }
+
+    .week-view .task-block.pending {
+        background-color: var(--ion-color-secondary);
+    }
+
+    .week-view .task-block.completed {
+        background-color: var(--ion-color-success);
+    }
+
+    .week-view .task-block.overdue {
+        background-color: var(--ion-color-danger);
+    }
 }
