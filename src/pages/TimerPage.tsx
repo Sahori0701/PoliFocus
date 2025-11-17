@@ -145,10 +145,6 @@ const TimerPage: React.FC = () => {
       <Header />
       <IonContent fullscreen className="ion-padding">
         <div className="timer-container">
-          <div className="page-title">
-            {timerState.mode === 'focus' ? 'Modo Concentración' : 'Descanso'}
-            <span role="img" aria-label="target" className="target-icon">{timerState.mode === 'focus' ? '🎯' : '☕️'}</span>
-          </div>
 
           <div className="active-task-display"><p className="task-name">{activeTask?.title || 'Ninguna tarea seleccionada'}</p></div>
 

@@ -23,7 +23,7 @@ const Header: React.FC = () => {
           </div>
           <div className="header-title-wrapper">
             <h1 className="header-main-title">PoliFocusTask</h1>
-            <p className="header-subtitle">Gestión Inteligente v10</p>
+           
           </div>
         </div>
       </IonToolbar>

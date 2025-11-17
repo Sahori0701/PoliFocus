@@ -189,7 +189,7 @@ const TasksPage: React.FC = () => {
       <Header />
       <IonContent fullscreen>
         <div className="tasks-container">
-          <h1 className="section-title">Gestión de Tareas 📋</h1>
+          
           <div className="tabs-wrapper">
             <IonSegment value={activeTab} onIonChange={e => setActiveTab(e.detail.value as any)} scrollable className="custom-segment">
               <IonSegmentButton value="planning"><IonLabel>📝 Planificar</IonLabel></IonSegmentButton>
