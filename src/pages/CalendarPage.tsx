@@ -81,6 +81,8 @@ const TimeGrid: React.FC<{
     currentDate: Date;
     hours: number[];
 }> = ({ type, tasks, currentDate, hours }) => {
+    const PIXELS_PER_HOUR = 64; // Corresponds to 60px height + 4px gap
+
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekDays = eachDayOfInterval({ start: weekStart, end: add(weekStart, { days: 6 }) });
 
@@ -95,9 +97,8 @@ const TimeGrid: React.FC<{
     const renderTaskBlock = (task: Task) => {
         if (!task.scheduledStart) return null;
         const start = parseISO(task.scheduledStart as string);
-        const gridStartHour = type === 'week' ? 6 : 0;
-        const top = (getHours(start) - gridStartHour + getMinutes(start) / 60) * 60.25;
-        const height = (task.duration / 60) * 60.25;
+        const top = (getHours(start) + getMinutes(start) / 60) * PIXELS_PER_HOUR;
+        const height = (task.duration / 60) * PIXELS_PER_HOUR;
 
         return (
             <div key={task.id} className="task-block" style={{ top: `${top}px`, height: `${height}px` }}>
@@ -184,7 +185,7 @@ const CalendarPage: React.FC = () => {
   const renderWeekView = useCallback(() => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekDays = eachDayOfInterval({ start: weekStart, end: add(weekStart, { days: 6 }) });
-    const hours = Array.from({ length: 17 }, (_, i) => 6 + i);
+    const hours = Array.from({ length: 24 }, (_, i) => i); // 0-23 hours
 
     return (
       <div className="week-view">
