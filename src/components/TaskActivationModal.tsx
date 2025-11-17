@@ -1,57 +1,65 @@
 import React from 'react';
 import { IonModal, IonContent, IonButton, IonIcon } from '@ionic/react';
-import { calendarOutline, timeOutline, hourglassOutline, playOutline } from 'ionicons/icons';
-import { format } from 'date-fns';
+import { calendarOutline, timeOutline, hourglassOutline } from 'ionicons/icons';
+import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Task } from '../models/Task';
 import './TaskActivationModal.css';
 
 interface TaskActivationModalProps {
-  task: Task | null;
   isOpen: boolean;
   onClose: () => void;
+  task: Task | null;
   onActivate: (task: Task) => void;
 }
 
-const TaskActivationModal: React.FC<TaskActivationModalProps> = ({ task, isOpen, onClose, onActivate }) => {
-  if (!task) return null;
+const TaskActivationModal: React.FC<TaskActivationModalProps> = ({ isOpen, onClose, task, onActivate }) => {
+  if (!task) {
+    return null;
+  }
+
+  const taskDate = task.scheduledStart
+    ? format(parseISO(task.scheduledStart), "eeee, d 'de' MMMM 'de' yyyy", { locale: es })
+    : 'Sin fecha';
+
+  const taskTime = task.scheduledStart
+    ? format(parseISO(task.scheduledStart), 'HH:mm', { locale: es })
+    : 'Sin hora';
+
+  const taskDuration = `${task.duration} minutos`;
 
   const handleActivate = () => {
     onActivate(task);
-    onClose();
   };
-
-  const scheduledStart = task.scheduledStart ? new Date(task.scheduledStart) : null;
 
   return (
     <IonModal isOpen={isOpen} onDidDismiss={onClose} cssClass="task-activation-modal">
       <IonContent>
-        <div className="modal-content">
-          <h2>{task.title}</h2>
-          <div className="task-details">
-            {scheduledStart && (
+        {/* This wrapper is key for vertical centering */}
+        <div className="modal-wrapper">
+          <div className="modal-content">
+            <h2>{task.title}</h2>
+            <div className="task-details">
               <div className="detail-item">
                 <IonIcon icon={calendarOutline} />
-                <span>{format(scheduledStart, "eeee, d 'de' MMMM 'de' yyyy", { locale: es })}</span>
+                <span>{taskDate}</span>
               </div>
-            )}
-            {scheduledStart && (
               <div className="detail-item">
                 <IonIcon icon={timeOutline} />
-                <span>{format(scheduledStart, 'HH:mm')}</span>
+                <span>{taskTime}</span>
               </div>
-            )}
-            <div className="detail-item">
-              <IonIcon icon={hourglassOutline} />
-              <span>{task.duration} minutos</span>
+              <div className="detail-item">
+                <IonIcon icon={hourglassOutline} />
+                <span>{taskDuration}</span>
+              </div>
             </div>
-          </div>
-          <div className="modal-actions">
-            <IonButton fill="clear" onClick={onClose} className="close-button">Cerrar</IonButton>
-            <IonButton onClick={handleActivate} className="activate-button">
-              <IonIcon slot="start" icon={playOutline} />
-              Cargar Tarea
-            </IonButton>
+            <div className="modal-actions">
+              <IonButton className="close-button" onClick={onClose}>Cerrar</IonButton>
+              <IonButton className="activate-button" onClick={handleActivate}>
+                <IonIcon slot="start" icon={timeOutline} />
+                Cargar Tarea
+              </IonButton>
+            </div>
           </div>
         </div>
       </IonContent>

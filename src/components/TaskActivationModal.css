@@ -5,19 +5,24 @@
   background: transparent;
 }
 
-/* This is the crucial part: Make the modal's own content wrapper invisible */
+/* Make the modal's own content wrapper invisible */
 .task-activation-modal::part(content) {
   background: transparent;
   border: none;
   box-shadow: none;
 }
 
-/* Ensure Ionic's content wrapper is also transparent and centers our custom modal */
+/* Set the content background to transparent */
 .task-activation-modal ion-content {
   --background: transparent;
+}
+
+/* This new wrapper is now our centering container */
+.task-activation-modal .modal-wrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;    /* Vertical alignment */
+  justify-content: center; /* Horizontal alignment */
+  height: 100%;            /* Take full height to enable vertical centering */
 }
 
 /* This is our custom content box that provides the visible UI */
@@ -92,41 +97,36 @@
 /* Responsive adjustments for smaller screens */
 @media (max-width: 480px) {
   .task-activation-modal .modal-content {
-    /* Make it more compact */
     padding: 1rem;
-    width: 95%; /* Use more screen width */
+    width: 95%;
     margin: 0.5rem;
   }
 
   .task-activation-modal h2 {
-    /* Smaller title */
     font-size: 1.1rem;
     margin-bottom: 1rem;
   }
 
   .task-activation-modal .task-details {
-    margin-bottom: 1rem; /* Less space */
+    margin-bottom: 1rem;
     gap: 0.5rem;
   }
 
   .task-activation-modal .detail-item {
-    /* Smaller text and padding */
     padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
     gap: 0.5rem;
   }
 
   .task-activation-modal .detail-item ion-icon {
-    font-size: 1rem; /* Smaller icon */
+    font-size: 1rem;
   }
 
   .task-activation-modal .modal-actions {
-    /* Keep buttons side-by-side */
     flex-direction: row;
     gap: 0.5rem;
   }
 
-  /* Reduce button text size for mobile */
   .task-activation-modal .close-button,
   .task-activation-modal .activate-button {
     font-size: 0.8rem;
