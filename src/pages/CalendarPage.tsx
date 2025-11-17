@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { IonPage, IonContent, IonButton, IonIcon } from '@ionic/react';
-import { add, format, startOfWeek, startOfMonth, eachDayOfInterval, parseISO, isToday, getHours, getMinutes } from 'date-fns';
+import { add, format, startOfWeek, startOfMonth, eachDayOfInterval, parseISO, isToday, getHours, getMinutes, isBefore } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { useApp } from '../context/AppContext';
@@ -10,6 +9,13 @@ import Header from '../components/Header';
 import './CalendarPage.css';
 
 type View = 'month' | 'week' | 'day';
+const PIXELS_PER_HOUR = 64; // Corresponds to 60px height + 4px gap
+
+//=========== Current Time Indicator ===========
+const CurrentTimeIndicator: React.FC<{ now: Date }> = ({ now }) => {
+    const top = (now.getHours() + now.getMinutes() / 60) * PIXELS_PER_HOUR;
+    return <div className="current-time-indicator" style={{ top: `${top}px` }} />;
+};
 
 //=========== Re-defining missing components ===========
 
@@ -80,11 +86,16 @@ const TimeGrid: React.FC<{
     tasks: Task[];
     currentDate: Date;
     hours: number[];
-}> = ({ type, tasks, currentDate, hours }) => {
-    const PIXELS_PER_HOUR = 64; // Corresponds to 60px height + 4px gap
-
+    now: Date;
+}> = ({ type, tasks, currentDate, hours, now }) => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekDays = eachDayOfInterval({ start: weekStart, end: add(weekStart, { days: 6 }) });
+
+    const getTaskStatusClass = (task: Task): string => {
+        if (task.status === 'completed') return 'completed';
+        if (task.dueDate && isBefore(parseISO(task.dueDate as string), now) && task.status !== 'completed') return 'overdue';
+        return 'pending';
+    };
 
     const getTasksForDay = (date: Date) => {
         return tasks.filter(task => {
@@ -99,9 +110,10 @@ const TimeGrid: React.FC<{
         const start = parseISO(task.scheduledStart as string);
         const top = (getHours(start) + getMinutes(start) / 60) * PIXELS_PER_HOUR;
         const height = (task.duration / 60) * PIXELS_PER_HOUR;
+        const statusClass = getTaskStatusClass(task);
 
         return (
-            <div key={task.id} className="task-block" style={{ top: `${top}px`, height: `${height}px` }}>
+            <div key={task.id} className={`task-block ${statusClass}`} style={{ top: `${top}px`, height: `${height}px` }}>
                 <div className="task-block-title">{task.title}</div>
             </div>
         );
@@ -121,17 +133,19 @@ const TimeGrid: React.FC<{
                     </div>
                     <div className="task-container">
                         {getTasksForDay(currentDate).map(renderTaskBlock)}
+                        {isToday(currentDate) && <CurrentTimeIndicator now={now} />}
                     </div>
                 </div>
             ) : (
                 <div className="grid-body">
                     {weekDays.map(day => (
-                        <div key={day.toISOString()} className="day-column">
+                        <div key={day.toISOString()} className={`day-column ${isToday(day) ? 'today' : ''}`}>
                             <div className="grid-lines">
                                 {hours.map(hour => <div key={hour} className="grid-line"></div>)}
                             </div>
                             <div className="task-container">
                                 {getTasksForDay(day).map(renderTaskBlock)}
+                                {isToday(day) && <CurrentTimeIndicator now={now} />}
                             </div>
                         </div>
                     ))}
@@ -147,8 +161,16 @@ const TimeGrid: React.FC<{
 const CalendarPage: React.FC = () => {
   const { tasks } = useApp();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [now, setNow] = useState(new Date());
   const [view, setView] = useState<View>('month');
   const [calendarTasks, setCalendarTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 60000); // Update every minute
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const filteredTasks = tasks.filter(task => task.scheduledStart);
@@ -192,26 +214,26 @@ const CalendarPage: React.FC = () => {
         <div className="week-header">
           <div className="time-label-spacer" />
           {weekDays.map(day => (
-            <div key={day.toISOString()} className="week-day-header">
+             <div key={day.toISOString()} className={`week-day-header ${isToday(day) ? 'today' : ''}`}>
               <span>{format(day, 'E', { locale: es })}</span>
               <span>{format(day, 'd')}</span>
             </div>
           ))}
         </div>
         <div className="week-body">
-           <TimeGrid type="week" tasks={calendarTasks} currentDate={currentDate} hours={hours} />
+           <TimeGrid type="week" tasks={calendarTasks} currentDate={currentDate} hours={hours} now={now} />
         </div>
       </div>
     );
-  }, [currentDate, calendarTasks]);
+  }, [currentDate, calendarTasks, now]);
 
 
   const renderDayView = useCallback(() => {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     return (
-       <TimeGrid type="day" tasks={calendarTasks} currentDate={currentDate} hours={hours} />
+       <TimeGrid type="day" tasks={calendarTasks} currentDate={currentDate} hours={hours} now={now} />
     );
-  }, [currentDate, calendarTasks]);
+  }, [currentDate, calendarTasks, now]);
 
   return (
     <IonPage>

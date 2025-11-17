@@ -32,8 +32,11 @@
 .calendar-day.today { border: 1px solid var(--ion-color-primary); opacity: 1; }
 .task-dots { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 0.25rem; }
 .task-dot { width: 5px; height: 5px; border-radius: 50%; }
-.task-dot.completed { background-color: var(--ion-color-success); }
+
+/* Colores de puntos de tarea por estado */
 .task-dot.pending { background-color: var(--ion-color-secondary); }
+.task-dot.completed { background-color: var(--ion-color-success); }
+.task-dot.overdue { background-color: var(--ion-color-danger); }
 
 /* --- VISTAS DE PARRILLA HORARIA (DÍA Y SEMANA) --- */
 .time-grid-view { display: flex; width: 100%; }
@@ -43,22 +46,44 @@
     height: var(--hour-slot-height);
     display: flex;
     align-items: flex-start;
-    transform: translateY(-7px); /* Fine-tune vertical alignment */
+    transform: translateY(-7px);
 }
 .grid-body { flex-grow: 1; position: relative; }
 .task-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 2; }
 .task-block {
     position: absolute;
-    background-color: rgba(16, 185, 129, 0.2);
-    border-left: 3px solid var(--ion-color-primary);
+    border-left-width: 3px;
+    border-left-style: solid;
     border-radius: 4px;
     padding: 4px;
     font-size: 0.7rem;
     color: white;
     overflow: hidden;
-    box-sizing: border-box; /* Ensures padding doesn't affect height calculation */
+    box-sizing: border-box;
+    min-height: 24px;
 }
-.task-block-title { font-weight: 600; }
+.task-block-title {
+    font-weight: 600;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-all; /* <-- FIX: Force word break */
+}
+
+/* --- Colores de bloques de tarea por estado --- */
+.task-block.pending {
+    background-color: rgba(90, 59, 255, 0.2);
+    border-left-color: var(--ion-color-secondary);
+}
+.task-block.completed {
+    background-color: rgba(45, 211, 111, 0.2);
+    border-left-color: var(--ion-color-success);
+}
+.task-block.overdue {
+    background-color: rgba(235, 68, 90, 0.2);
+    border-left-color: var(--ion-color-danger);
+}
+
+
 .grid-lines { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; z-index: 1; gap: var(--hour-row-gap); }
 .grid-line {
     flex-basis: var(--hour-row-height);
@@ -76,24 +101,42 @@
 .week-header { display: flex; margin-bottom: 1rem; gap: 0.25rem; }
 .time-label-spacer { flex: 0 0 50px; flex-shrink: 0; }
 .week-day-header { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; background: var(--ion-color-step-150, #2b3546); border-radius: 0.5rem; padding: 0.5rem 0; gap: 0.1rem; }
-
+.week-day-header.today { background: var(--ion-color-primary-tint); }
+.week-day-header.today span { color: var(--ion-color-primary-contrast); }
 .week-day-header span:first-child {
   font-size: 0.7rem;
   font-weight: 600;
-  color: white;
   text-transform: capitalize;
 }
-
 .week-day-header span:last-child {
   font-size: 0.6rem;
   font-weight: 400;
-  color: var(--ion-color-medium);
 }
-
 .week-body { display: flex; }
 .week-body .time-labels { flex: 0 0 50px; }
 .week-body .grid-body { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; flex-grow: 1; height: calc(var(--hour-slot-height) * 24); }
 .day-column { position: relative; }
+.day-column.today .grid-line { background-color: var(--ion-color-step-200, #374151); }
 .day-column .grid-lines { gap: var(--hour-row-gap); }
 .day-column .grid-line { margin-bottom: 0; }
 .day-column .task-container { left: 4px; right: 4px; }
+
+/* --- INDICADOR DE HORA ACTUAL --- */
+.current-time-indicator {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: var(--ion-color-primary);
+    z-index: 10; /* Ensure it is on top */
+}
+
+.current-time-indicator::before {
+    content: '';
+    position: absolute;
+    left: -6px; /* Position the dot to the left */
+    top: -3px; /* Center the dot vertically */
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--ion-color-primary);
+}
