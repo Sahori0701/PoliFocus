@@ -90,6 +90,7 @@ const TimeGrid: React.FC<{
 }> = ({ type, tasks, currentDate, hours, now }) => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekDays = eachDayOfInterval({ start: weekStart, end: add(weekStart, { days: 6 }) });
+    const daysToRender = type === 'week' ? weekDays : [currentDate];
 
     const getTaskStatusClass = (task: Task): string => {
         if (task.status === 'completed') return 'completed';
@@ -126,31 +127,19 @@ const TimeGrid: React.FC<{
                     <div key={hour} className="time-label">{`${hour.toString().padStart(2, '0')}:00`}</div>
                 ))}
             </div>
-            {type === 'day' ? (
-                <div className="grid-body">
-                    <div className="grid-lines">
-                        {hours.map(hour => <div key={hour} className="grid-line"></div>)}
-                    </div>
-                    <div className="task-container">
-                        {getTasksForDay(currentDate).map(renderTaskBlock)}
-                        {isToday(currentDate) && <CurrentTimeIndicator now={now} />}
-                    </div>
-                </div>
-            ) : (
-                <div className="grid-body">
-                    {weekDays.map(day => (
-                        <div key={day.toISOString()} className={`day-column ${isToday(day) ? 'today' : ''}`}>
-                            <div className="grid-lines">
-                                {hours.map(hour => <div key={hour} className="grid-line"></div>)}
-                            </div>
-                            <div className="task-container">
-                                {getTasksForDay(day).map(renderTaskBlock)}
-                                {isToday(day) && <CurrentTimeIndicator now={now} />}
-                            </div>
+            <div className="grid-body">
+                {daysToRender.map(day => (
+                    <div key={day.toISOString()} className={`day-column ${isToday(day) ? 'today' : ''}`}>
+                        <div className="grid-lines">
+                            {hours.map(hour => <div key={hour} className="grid-line"></div>)}
                         </div>
-                    ))}
-                </div>
-            )}
+                        <div className="task-container">
+                            {getTasksForDay(day).map(renderTaskBlock)}
+                            {isToday(day) && <CurrentTimeIndicator now={now} />}
+                        </div>
+                    </div>
+                ))}
+            </div>
         </>
     );
 };
@@ -220,7 +209,7 @@ const CalendarPage: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="week-body">
+        <div className="week-body time-grid-view">
            <TimeGrid type="week" tasks={calendarTasks} currentDate={currentDate} hours={hours} now={now} />
         </div>
       </div>
@@ -231,7 +220,9 @@ const CalendarPage: React.FC = () => {
   const renderDayView = useCallback(() => {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     return (
-       <TimeGrid type="day" tasks={calendarTasks} currentDate={currentDate} hours={hours} now={now} />
+       <div className="day-view time-grid-view">
+         <TimeGrid type="day" tasks={calendarTasks} currentDate={currentDate} hours={hours} now={now} />
+       </div>
     );
   }, [currentDate, calendarTasks, now]);
 

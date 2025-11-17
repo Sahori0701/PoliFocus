@@ -40,7 +40,17 @@
 
 /* --- VISTAS DE PARRILLA HORARIA (DÍA Y SEMANA) --- */
 .time-grid-view { display: flex; width: 100%; }
-.time-labels { display: flex; flex-direction: column; font-size: 0.7rem; color: var(--ion-color-medium); text-align: right; padding-right: 1rem; flex-shrink: 0; }
+.time-labels {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.7rem;
+    color: var(--ion-color-medium);
+    text-align: right;
+    padding-right: 1rem;
+    flex-shrink: 0;
+    padding-top: 7px; /* FIX: Add space for the first item's negative transform */
+    margin-top: -7px; /* FIX: Compensate for the padding */
+}
 .time-labels .time-label {
     flex-basis: var(--hour-slot-height);
     height: var(--hour-slot-height);
@@ -66,7 +76,7 @@
     font-weight: 600;
     white-space: normal;
     word-wrap: break-word;
-    word-break: break-all; /* <-- FIX: Force word break */
+    word-break: break-all;
 }
 
 /* --- Colores de bloques de tarea por estado --- */
@@ -94,7 +104,11 @@
 }
 
 /* --- VISTA DE DÍA --- */
-.day-view .grid-body { height: calc(var(--hour-slot-height) * 24); }
+.day-view .grid-body { 
+    height: calc(var(--hour-slot-height) * 24);
+    display: grid; /* NEW */
+    grid-template-columns: 1fr; /* NEW */
+}
 
 /* --- VISTA DE SEMANA --- */
 .week-view { flex-direction: column; }
@@ -113,8 +127,19 @@
   font-weight: 400;
 }
 .week-body { display: flex; }
-.week-body .time-labels { flex: 0 0 50px; }
-.week-body .grid-body { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; flex-grow: 1; height: calc(var(--hour-slot-height) * 24); }
+
+/* Make week body and day view use the time-grid-view layout */
+.time-grid-view .grid-body {
+    display: grid;
+    gap: 0.25rem;
+    flex-grow: 1;
+    height: calc(var(--hour-slot-height) * 24);
+}
+
+.week-body .grid-body { 
+    grid-template-columns: repeat(7, 1fr);
+}
+
 .day-column { position: relative; }
 .day-column.today .grid-line { background-color: var(--ion-color-step-200, #374151); }
 .day-column .grid-lines { gap: var(--hour-row-gap); }
