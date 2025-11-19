@@ -55,6 +55,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 0.5rem; /* Consistent spacing */
 }
 
 /* Aro de Progreso SVG */
@@ -81,28 +82,28 @@
 
 .time-text {
   font-family: 'Dosis', sans-serif;
-  font-size: 4.5rem; /* Reducido */
+  font-size: 4.5rem; 
   font-weight: 400;
   margin: 0;
   line-height: 1;
 }
 
 .time-status {
-  font-size: 1.1rem; /* Reducido */
+  font-size: 1.1rem; 
   font-weight: 600;
-  margin: 0.75rem 0;
+  margin: 0; /* Use gap in parent */
   color: var(--ion-color-primary);
 }
 
 .time-percentage {
-  font-size: 2.25rem; /* Reducido */
+  font-size: 1.75rem; /* Reduced size */
   font-weight: 700;
   line-height: 1;
-  margin-top: 0.5rem;
+  margin: 0; /* Use gap in parent */
 }
 
 .time-percentage-label {
-  font-size: 0.8rem; /* Reducido */
+  font-size: 0.8rem; 
   color: var(--ion-color-medium-tint);
 }
 

@@ -26,14 +26,13 @@ const TimerPage: React.FC = () => {
     timerState,
     setTimerState,
     activeTask,
-    setActiveTask,
     updateTask,
     setInitialTab,
     isLoading,
   } = useApp();
 
   const history = useHistory();
-  const [present] = useIonToast();
+  const [present, dismiss] = useIonToast();
 
   const durations = useMemo(() => ({
     focus: config.focusTime * 60,
@@ -41,34 +40,61 @@ const TimerPage: React.FC = () => {
     longBreak: config.longBreak * 60,
   }), [config]);
 
-  // Main timer effect
+  // Main Timer Effect - ROBUST VERSION
   useEffect(() => {
-    if (isLoading || !timerState.isRunning || !activeTask) {
-      return;
-    }
-
-    if (timerState.timeLeft <= 0) {
-      handleSessionEnd();
+    if (!timerState.isRunning) {
       return;
     }
 
     const interval = setInterval(() => {
       setTimerState(prev => {
-        const newTimeLeft = prev.timeLeft - 1;
-        // Only increment totalElapsed during focus mode
-        const newTotalElapsed = prev.mode === 'focus' ? (prev.totalElapsed || 0) + 1 : prev.totalElapsed;
-        
-        if (newTimeLeft < 0) {
-          return { ...prev, timeLeft: 0, totalElapsed: newTotalElapsed };
+        if (!prev.isRunning || !activeTask) {
+          return prev; // Stop if paused or no task
         }
 
-        return { ...prev, timeLeft: newTimeLeft, totalElapsed: newTotalElapsed };
+        // --- Session End Logic ---
+        if (prev.timeLeft <= 1) {
+          dismiss(); 
+          if (prev.mode === 'focus') {
+            present({ message: '🔔 ¡Tiempo de descanso!', duration: 2000, color: 'primary' });
+            return {
+              ...prev,
+              mode: 'shortBreak',
+              timeLeft: durations.shortBreak,
+              isRunning: true,
+            };
+          } else { // Break finished
+            present({ message: '🔔 ¡A trabajar de nuevo!', duration: 2000, color: 'primary' });
+            const timeRemainingInTask = (activeTask.duration * 60) - (prev.totalElapsed || 0);
+            const nextFocusDuration = Math.min(timeRemainingInTask, durations.focus);
+
+            if (nextFocusDuration <= 0) {
+               present({ message: 'Tarea terminada. ¡Márcala como completada!', duration: 3000, color: 'tertiary' });
+               return { ...prev, isRunning: false, timeLeft: 0, mode: 'focus' };
+            }
+
+            return {
+              ...prev,
+              mode: 'focus',
+              timeLeft: nextFocusDuration,
+              isRunning: true,
+            };
+          }
+        }
+
+        // --- Normal Tick Logic ---
+        const newTotalElapsed = prev.mode === 'focus' ? (prev.totalElapsed || 0) + 1 : (prev.totalElapsed || 0);
+
+        return {
+          ...prev,
+          timeLeft: prev.timeLeft - 1,
+          totalElapsed: newTotalElapsed,
+        };
       });
     }, 1000);
 
     return () => clearInterval(interval);
-
-  }, [timerState.isRunning, timerState.timeLeft, activeTask, isLoading]);
+  }, [timerState.isRunning, activeTask, setTimerState, present, dismiss, durations]);
 
 
   const handleToggleTimer = () => {
@@ -96,70 +122,9 @@ const TimerPage: React.FC = () => {
     setInitialTab('completed');
     history.push('/tasks');
   };
-
-  const handleSessionEnd = () => {
-    if (timerState.mode === 'focus') {
-      present({ message: '🔔 ¡Tiempo de descanso!', duration: 2000, color: 'primary' });
-      setTimerState(prev => ({
-        ...prev,
-        mode: 'shortBreak',
-        timeLeft: durations.shortBreak,
-        isRunning: true, 
-      }));
-    } else { // Break finished
-      if (!activeTask) return;
-      const timeRemainingInTask = (activeTask.duration * 60) - (timerState.totalElapsed || 0);
-
-      if (timeRemainingInTask > 0) {
-        present({ message: '🔔 ¡A trabajar de nuevo!', duration: 2000, color: 'primary' });
-        const nextFocusDuration = Math.min(timeRemainingInTask, durations.focus);
-        setTimerState(prev => ({
-          ...prev,
-          mode: 'focus',
-          timeLeft: nextFocusDuration,
-          isRunning: true, 
-        }));
-      } else {
-        present({ message: 'Tarea terminada. ¡Márcala como completada!', duration: 3000, color: 'tertiary' });
-        setTimerState(prev => ({ ...prev, isRunning: false, timeLeft: 0, mode: 'focus' }));
-      }
-    }
-  };
   
   const handleSkip = () => {
-    if(!activeTask) return;
-
-    const isFocus = timerState.mode === 'focus';
-    const nextMode = isFocus ? 'shortBreak' : 'focus';
-    present({ message: isFocus ? 'Saltando al descanso' : 'Volviendo a la tarea', duration: 1500, color: 'medium' });
-
-    let nextTimeLeft;
-
-    if (nextMode === 'focus') {
-      const totalElapsedOnTask = timerState.totalElapsed || 0;
-      const totalTaskDuration = activeTask.duration * 60;
-      const timeRemainingInTask = totalTaskDuration - totalElapsedOnTask;
-
-      const timeIntoCurrentPomodoro = totalElapsedOnTask % durations.focus;
-      const timeLeftInCurrentPomodoro = durations.focus - timeIntoCurrentPomodoro;
-      
-      nextTimeLeft = Math.min(timeRemainingInTask, timeLeftInCurrentPomodoro);
-
-      if (nextTimeLeft <= 0) {
-        present({ message: 'La tarea ya no tiene tiempo restante.', duration: 2000, color: 'warning' });
-        nextTimeLeft = 0;
-      }
-
-    } else { // Skipping to break
-      nextTimeLeft = durations.shortBreak;
-    }
-
-    setTimerState(prev => ({
-      ...prev,
-      mode: nextMode,
-      timeLeft: Math.max(0, nextTimeLeft), 
-      isRunning: false, // ALWAYS stop on manual skip
-    }));
+    setTimerState(prev => ({...prev, timeLeft: 1, isRunning: true }));
   };
 
   const formatTime = (seconds: number): string => {
@@ -169,18 +134,13 @@ const TimerPage: React.FC = () => {
     return `${mins}:${secs}`;
   };
 
-  const getSessionTotalDuration = () => {
-    if (timerState.mode === 'focus') {
-      return durations.focus;
-    }
-    return durations[timerState.mode];
-  }
-  const sessionTotalDuration = getSessionTotalDuration();
-  const percentageElapsed = sessionTotalDuration > 0
-    ? ((sessionTotalDuration - timerState.timeLeft) / sessionTotalDuration) * 100
+  // Correct percentage calculation for the WHOLE task
+  const totalTaskDurationInSeconds = activeTask ? activeTask.duration * 60 : 0;
+  const percentageElapsed = totalTaskDurationInSeconds > 0
+    ? ((timerState.totalElapsed || 0) / totalTaskDurationInSeconds) * 100
     : 0;
-  const strokeDashoffset = CIRCUMFERENCE - (Math.max(0, Math.min(100, percentageElapsed)) / 100) * CIRCUMFERENCE;
 
+  const strokeDashoffset = CIRCUMFERENCE - (Math.max(0, Math.min(100, percentageElapsed)) / 100) * CIRCUMFERENCE;
 
   const statusText = useMemo(() => {
     if (timerState.mode === 'shortBreak') return 'Descanso corto';
@@ -227,6 +187,12 @@ const TimerPage: React.FC = () => {
             <div className="timer-display">
               <h1 className="time-text">{formatTime(timerState.timeLeft)}</h1>
               <p className="time-status">{statusText}</p>
+              {/* Display the task progress percentage */}
+              {activeTask && (
+                <p className="time-percentage">
+                  {`${Math.floor(percentageElapsed)}%`}
+                </p>
+              )}
             </div>
           </div>
 
