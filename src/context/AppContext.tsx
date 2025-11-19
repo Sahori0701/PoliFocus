@@ -31,6 +31,7 @@ export interface AppContextType {
   setTimerState: React.Dispatch<React.SetStateAction<TimerState>>;
   activeTask: Task | null;
   setActiveTask: React.Dispatch<React.SetStateAction<Task | null>>;
+  startPomodoroForTask: (task: Task) => void;
 
   // Navigation state
   initialTab: string | null;
@@ -52,6 +53,7 @@ const DEFAULT_TIMER_STATE: TimerState = {
   mode: 'focus',
   totalElapsed: 0,
   startTime: null,
+  remainingTime: 0,
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -82,6 +84,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const startPomodoroForTask = (task: Task) => {
+    const focusTime = config.focusTime * 60;
+    const taskTime = task.duration * 60;
+    const timeLeft = Math.min(taskTime, focusTime);
+
+    setTimerState({
+      isRunning: true,
+      timeLeft: timeLeft,
+      mode: 'focus',
+      totalElapsed: 0,
+      startTime: Date.now(),
+      remainingTime: taskTime - timeLeft,
+    });
+    setActiveTask(task);
   };
 
   // ============================================
@@ -189,6 +207,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimerState,
     activeTask,
     setActiveTask,
+    startPomodoroForTask,
     initialTab,
     setInitialTab,
     showWelcomeModal,

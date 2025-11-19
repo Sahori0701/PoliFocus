@@ -31,13 +31,12 @@ const TimerPage: React.FC = () => {
     updateTask,
     setInitialTab,
     isLoading,
+    startPomodoroForTask
   } = useApp();
 
   const history = useHistory();
   const [present] = useIonToast();
   
-  const [pausedFocusTime, setPausedFocusTime] = useState<number | null>(null);
-
   const durations = useMemo(() => ({
     focus: config.focusTime || 25,
     shortBreak: config.shortBreak || 5,
@@ -58,7 +57,7 @@ const TimerPage: React.FC = () => {
       }, 1000);
       return () => clearInterval(interval);
     } else if (timerState.timeLeft <= 0 && timerState.isRunning) {
-      handleSkip();
+      handleSessionEnd();
     }
   }, [timerState.isRunning, timerState.timeLeft, activeTask, isLoading]);
 
@@ -82,34 +81,38 @@ const TimerPage: React.FC = () => {
     const efficiency = taskService.calculateEfficiency(activeTask.duration, actualDuration);
     present({ message: `✅ ${activeTask.title} ${efficiency.icon}`, duration: 3000, color: 'success' });
     setActiveTask(null);
-    setTimerState({ isRunning: false, timeLeft: durations.focus * 60, mode: 'focus', totalElapsed: 0, startTime: null });
-    setPausedFocusTime(null);
+    setTimerState({ isRunning: false, timeLeft: durations.focus * 60, mode: 'focus', totalElapsed: 0, startTime: null, remainingTime: 0 });
     setInitialTab('completed');
     history.push('/tasks');
   };
 
-  const handleSkip = () => {
-    const isStartingBreak = timerState.mode === 'focus';
-    const nextMode = isStartingBreak ? 'shortBreak' : 'focus';
-    const message = isStartingBreak ? '🔔 ¡Tiempo de descanso!' : '🔔 ¡A trabajar de nuevo!';
-    present({ message, duration: 2000, color: 'primary' });
-    if (isStartingBreak) {
-      setPausedFocusTime(timerState.timeLeft);
+  const handleSessionEnd = () => {
+    if (timerState.mode === 'focus') {
+        if (timerState.remainingTime > 0) {
+            // More focus time needed for this task
+            present({ message: '🔔 ¡Tiempo de descanso!', duration: 2000, color: 'primary' });
+            setTimerState(prev => ({
+                ...prev,
+                mode: 'shortBreak',
+                timeLeft: durations.shortBreak * 60,
+                isRunning: true, // Auto-start break
+            }));
+        } else {
+            // Task finished
+            handleCompleteTask();
+        }
+    } else { // Break finished
+        present({ message: '🔔 ¡A trabajar de nuevo!', duration: 2000, color: 'primary' });
+        const focusTime = config.focusTime * 60;
+        const timeLeft = Math.min(timerState.remainingTime, focusTime);
+        setTimerState(prev => ({
+            ...prev,
+            mode: 'focus',
+            timeLeft: timeLeft,
+            remainingTime: prev.remainingTime - timeLeft,
+            isRunning: true, // Auto-start next focus session
+        }));
     }
-    const newTimeLeft = (nextMode === 'focus' && pausedFocusTime !== null)
-        ? pausedFocusTime
-        : durations[nextMode] * 60;
-    if (nextMode === 'focus') {
-        setPausedFocusTime(null);
-    }
-    setTimerState(prev => ({
-      ...prev,
-      isRunning: false,
-      mode: nextMode,
-      timeLeft: newTimeLeft,
-      totalElapsed: 0,
-      startTime: null,
-    }));
   };
 
   const formatTime = (seconds: number): string => {
@@ -184,7 +187,7 @@ const TimerPage: React.FC = () => {
               </IonButton>
             )}
 
-            <IonButton onClick={handleSkip} className="control-button-skip" color="primary">
+            <IonButton onClick={handleSessionEnd} className="control-button-skip" color="primary">
               <IonIcon slot="icon-only" icon={playSkipForwardOutline} />
             </IonButton>
           </div>
