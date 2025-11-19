@@ -40,7 +40,6 @@ const TimerPage: React.FC = () => {
     longBreak: config.longBreak * 60,
   }), [config]);
 
-  // Main Timer Effect - ROBUST VERSION
   useEffect(() => {
     if (!timerState.isRunning) {
       return;
@@ -49,12 +48,11 @@ const TimerPage: React.FC = () => {
     const interval = setInterval(() => {
       setTimerState(prev => {
         if (!prev.isRunning || !activeTask) {
-          return prev; // Stop if paused or no task
+          return prev;
         }
 
-        // --- Session End Logic ---
         if (prev.timeLeft <= 1) {
-          dismiss(); 
+          dismiss();
           if (prev.mode === 'focus') {
             present({ message: '🔔 ¡Tiempo de descanso!', duration: 2000, color: 'primary' });
             return {
@@ -63,16 +61,16 @@ const TimerPage: React.FC = () => {
               timeLeft: durations.shortBreak,
               isRunning: true,
             };
-          } else { // Break finished
+          } else {
             present({ message: '🔔 ¡A trabajar de nuevo!', duration: 2000, color: 'primary' });
             const timeRemainingInTask = (activeTask.duration * 60) - (prev.totalElapsed || 0);
-            const nextFocusDuration = Math.min(timeRemainingInTask, durations.focus);
-
-            if (nextFocusDuration <= 0) {
-               present({ message: 'Tarea terminada. ¡Márcala como completada!', duration: 3000, color: 'tertiary' });
-               return { ...prev, isRunning: false, timeLeft: 0, mode: 'focus' };
+            if (timeRemainingInTask <= 0) {
+              present({ message: 'Tarea terminada. ¡Márcala como completada!', duration: 3000, color: 'tertiary' });
+              return { ...prev, isRunning: false, timeLeft: 0, mode: 'focus' };
             }
-
+            const elapsedInCurrentCycle = (prev.totalElapsed || 0) % durations.focus;
+            const timeRemainingInCycle = durations.focus - elapsedInCurrentCycle;
+            const nextFocusDuration = Math.min(timeRemainingInTask, timeRemainingInCycle);
             return {
               ...prev,
               mode: 'focus',
@@ -82,9 +80,7 @@ const TimerPage: React.FC = () => {
           }
         }
 
-        // --- Normal Tick Logic ---
         const newTotalElapsed = prev.mode === 'focus' ? (prev.totalElapsed || 0) + 1 : (prev.totalElapsed || 0);
-
         return {
           ...prev,
           timeLeft: prev.timeLeft - 1,
@@ -95,7 +91,6 @@ const TimerPage: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [timerState.isRunning, activeTask, setTimerState, present, dismiss, durations]);
-
 
   const handleToggleTimer = () => {
     if (!activeTask && timerState.mode === 'focus') {
@@ -109,22 +104,19 @@ const TimerPage: React.FC = () => {
   const handleCompleteTask = async () => {
     if (!activeTask) return;
     const actualDuration = Math.ceil((timerState.totalElapsed || 0) / 60);
-
     await updateTask(activeTask.id, {
       status: 'completed',
       completedAt: new Date().toISOString(),
       actualDuration: actualDuration,
     });
-
     const efficiency = taskService.calculateEfficiency(activeTask.duration, actualDuration);
     present({ message: `✅ ${activeTask.title} ${efficiency.icon}`, duration: 3000, color: 'success' });
-    
     setInitialTab('completed');
     history.push('/tasks');
   };
-  
+
   const handleSkip = () => {
-    setTimerState(prev => ({...prev, timeLeft: 1, isRunning: true }));
+    setTimerState(prev => ({ ...prev, timeLeft: 1, isRunning: true }));
   };
 
   const formatTime = (seconds: number): string => {
@@ -134,7 +126,6 @@ const TimerPage: React.FC = () => {
     return `${mins}:${secs}`;
   };
 
-  // Correct percentage calculation for the WHOLE task
   const totalTaskDurationInSeconds = activeTask ? activeTask.duration * 60 : 0;
   const percentageElapsed = totalTaskDurationInSeconds > 0
     ? ((timerState.totalElapsed || 0) / totalTaskDurationInSeconds) * 100
@@ -165,17 +156,10 @@ const TimerPage: React.FC = () => {
       <Header />
       <IonContent fullscreen className="ion-padding">
         <div className="timer-container">
-
           <div className="active-task-display"><p className="task-name">{activeTask?.title || 'Ninguna tarea seleccionada'}</p></div>
-
           <div className="timer-display-wrapper">
             <svg className="progress-ring" width="280" height="280">
-              <circle
-                className="progress-ring__background"
-                cx="140" cy="140" r={RADIUS}
-                fill="transparent"
-                strokeWidth="16"
-              />
+              <circle className="progress-ring__background" cx="140" cy="140" r={RADIUS} fill="transparent" strokeWidth="16" />
               <circle
                 className="progress-ring__progress"
                 cx="140" cy="140" r={RADIUS}
@@ -187,40 +171,39 @@ const TimerPage: React.FC = () => {
             <div className="timer-display">
               <h1 className="time-text">{formatTime(timerState.timeLeft)}</h1>
               <p className="time-status">{statusText}</p>
-              {/* Display the task progress percentage */}
               {activeTask && (
-                <p className="time-percentage">
-                  {`${Math.floor(percentageElapsed)}%`}
-                </p>
+                <p className="time-percentage">{`${Math.floor(percentageElapsed)}%`}</p>
               )}
             </div>
           </div>
-
           <div className="timer-controls">
             <IonButton onClick={handleToggleTimer} className="control-button-pause" color={timerState.isRunning ? 'danger' : 'success'} disabled={timerState.timeLeft === 0 && activeTask !== null}>
               <IonIcon slot="start" icon={timerState.isRunning ? pause : play} />
               {timerState.isRunning ? 'Pausar' : 'Iniciar'}
             </IonButton>
-            
             {activeTask && (
               <IonButton onClick={handleCompleteTask} className="control-button-complete" color="success" fill="outline">
                 <IonIcon slot="icon-only" icon={checkmark} />
               </IonButton>
             )}
-
-            <IonButton onClick={handleSkip} disabled={!activeTask} className="control-button-skip" color="primary">
-              <IonIcon slot="icon-only" icon={playSkipForwardOutline} />
-            </IonButton>
+            {/* ** NEW LOGIC FOR SKIP BUTTON ** */}
+            {activeTask && activeTask.duration >= config.focusTime && (
+              <IonButton
+                onClick={handleSkip}
+                disabled={timerState.mode === 'focus'}
+                className="control-button-skip"
+                color="primary"
+              >
+                <IonIcon slot="icon-only" icon={playSkipForwardOutline} />
+              </IonButton>
+            )}
           </div>
-
           <div className="footer-info">ⓘ Marca la tarea como completada solo con el botón de check (✓)</div>
-          
           <IonFab vertical="bottom" horizontal="end" slot="fixed">
             <IonFabButton onClick={() => history.push('/tasks')}>
               <IonIcon icon={search} />
             </IonFabButton>
           </IonFab>
-
         </div>
       </IonContent>
     </IonPage>

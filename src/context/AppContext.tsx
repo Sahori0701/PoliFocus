@@ -85,6 +85,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const startPomodoroForTask = (task: Task) => {
+    // If the task being started is already the active one, do nothing.
+    if (activeTask && activeTask.id === task.id) {
+      return;
+    }
+
     const focusTime = config.focusTime * 60;
     const taskTime = task.duration * 60;
     const timeLeft = Math.min(taskTime, focusTime);
