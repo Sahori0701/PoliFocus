@@ -1,30 +1,20 @@
-// models/Pomodoro.ts
+import { Task } from './Task';
 
-export type SessionType = 'focus' | 'shortBreak' | 'longBreak';
-
-export interface PomodoroSession {
-  id: number;
-  taskId: number;
-  startTime: string; // ISO string
-  endTime?: string; // ISO string
-  type: SessionType;
-  completed: boolean;
-  interrupted: boolean;
-  cycleNumber: number;
-}
+export type TimerMode = 'focus' | 'shortBreak' | 'longBreak';
 
 export interface TimerState {
   isRunning: boolean;
-  timeLeft: number; // segundos
-  mode: SessionType;
-  totalElapsed: number; // segundos
-  startTime: string | null; // ISO string
+  timeLeft: number;
+  mode: TimerMode;
+  totalElapsed: number;
+  startTime: number | null;
 }
 
-export interface PomodoroConfig {
-  focusTime: number; // minutos
-  shortBreak: number; // minutos
-  longBreak: number; // minutos
-  alertTimes: number[]; // minutos antes de alertar [15, 5]
-  longBreakInterval: number; // cada cuántos ciclos
+export interface PomodoroSession {
+  id: number;
+  startTime: string;
+  endTime: string;
+  duration: number; // en minutos
+  task: Task | null;
+  wasCompleted: boolean;
 }

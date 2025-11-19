@@ -1,6 +1,5 @@
-
 // pages/TimerPage.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   IonContent,
   IonPage,
@@ -18,7 +17,7 @@ import Header from '../components/Header';
 import './TimerPage.css';
 import { taskService } from '../services/task.service';
 
-const RADIUS = 130; // Radio del círculo
+const RADIUS = 130;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 const TimerPage: React.FC = () => {
@@ -31,35 +30,46 @@ const TimerPage: React.FC = () => {
     updateTask,
     setInitialTab,
     isLoading,
-    startPomodoroForTask
   } = useApp();
 
   const history = useHistory();
   const [present] = useIonToast();
-  
+
   const durations = useMemo(() => ({
-    focus: config.focusTime || 25,
-    shortBreak: config.shortBreak || 5,
-    longBreak: config.longBreak || 15,
+    focus: config.focusTime * 60,
+    shortBreak: config.shortBreak * 60,
+    longBreak: config.longBreak * 60,
   }), [config]);
 
+  // Main timer effect
   useEffect(() => {
-    if (isLoading) return;
-    if (!activeTask && timerState.mode === 'focus') {
-      if (timerState.isRunning) {
-        setTimerState(prev => ({ ...prev, isRunning: false }));
-      }
+    if (isLoading || !timerState.isRunning || !activeTask) {
       return;
     }
-    if (timerState.isRunning && timerState.timeLeft > 0) {
-      const interval = setInterval(() => {
-        setTimerState(prev => ({ ...prev, timeLeft: prev.timeLeft - 1, totalElapsed: prev.totalElapsed + 1 }));
-      }, 1000);
-      return () => clearInterval(interval);
-    } else if (timerState.timeLeft <= 0 && timerState.isRunning) {
+
+    if (timerState.timeLeft <= 0) {
       handleSessionEnd();
+      return;
     }
+
+    const interval = setInterval(() => {
+      setTimerState(prev => {
+        const newTimeLeft = prev.timeLeft - 1;
+        // Only increment totalElapsed during focus mode
+        const newTotalElapsed = prev.mode === 'focus' ? (prev.totalElapsed || 0) + 1 : prev.totalElapsed;
+        
+        if (newTimeLeft < 0) {
+          return { ...prev, timeLeft: 0, totalElapsed: newTotalElapsed };
+        }
+
+        return { ...prev, timeLeft: newTimeLeft, totalElapsed: newTotalElapsed };
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+
   }, [timerState.isRunning, timerState.timeLeft, activeTask, isLoading]);
+
 
   const handleToggleTimer = () => {
     if (!activeTask && timerState.mode === 'focus') {
@@ -72,47 +82,84 @@ const TimerPage: React.FC = () => {
 
   const handleCompleteTask = async () => {
     if (!activeTask) return;
-    const actualDuration = Math.ceil(timerState.totalElapsed / 60);
+    const actualDuration = Math.ceil((timerState.totalElapsed || 0) / 60);
+
     await updateTask(activeTask.id, {
       status: 'completed',
       completedAt: new Date().toISOString(),
       actualDuration: actualDuration,
     });
+
     const efficiency = taskService.calculateEfficiency(activeTask.duration, actualDuration);
     present({ message: `✅ ${activeTask.title} ${efficiency.icon}`, duration: 3000, color: 'success' });
-    setActiveTask(null);
-    setTimerState({ isRunning: false, timeLeft: durations.focus * 60, mode: 'focus', totalElapsed: 0, startTime: null, remainingTime: 0 });
+    
     setInitialTab('completed');
     history.push('/tasks');
   };
 
   const handleSessionEnd = () => {
     if (timerState.mode === 'focus') {
-        if (timerState.remainingTime > 0) {
-            // More focus time needed for this task
-            present({ message: '🔔 ¡Tiempo de descanso!', duration: 2000, color: 'primary' });
-            setTimerState(prev => ({
-                ...prev,
-                mode: 'shortBreak',
-                timeLeft: durations.shortBreak * 60,
-                isRunning: true, // Auto-start break
-            }));
-        } else {
-            // Task finished
-            handleCompleteTask();
-        }
+      present({ message: '🔔 ¡Tiempo de descanso!', duration: 2000, color: 'primary' });
+      setTimerState(prev => ({
+        ...prev,
+        mode: 'shortBreak',
+        timeLeft: durations.shortBreak,
+        isRunning: true, 
+      }));
     } else { // Break finished
+      if (!activeTask) return;
+      const timeRemainingInTask = (activeTask.duration * 60) - (timerState.totalElapsed || 0);
+
+      if (timeRemainingInTask > 0) {
         present({ message: '🔔 ¡A trabajar de nuevo!', duration: 2000, color: 'primary' });
-        const focusTime = config.focusTime * 60;
-        const timeLeft = Math.min(timerState.remainingTime, focusTime);
+        const nextFocusDuration = Math.min(timeRemainingInTask, durations.focus);
         setTimerState(prev => ({
-            ...prev,
-            mode: 'focus',
-            timeLeft: timeLeft,
-            remainingTime: prev.remainingTime - timeLeft,
-            isRunning: true, // Auto-start next focus session
+          ...prev,
+          mode: 'focus',
+          timeLeft: nextFocusDuration,
+          isRunning: true, 
         }));
+      } else {
+        present({ message: 'Tarea terminada. ¡Márcala como completada!', duration: 3000, color: 'tertiary' });
+        setTimerState(prev => ({ ...prev, isRunning: false, timeLeft: 0, mode: 'focus' }));
+      }
     }
+  };
+  
+  const handleSkip = () => {
+    if(!activeTask) return;
+
+    const isFocus = timerState.mode === 'focus';
+    const nextMode = isFocus ? 'shortBreak' : 'focus';
+    present({ message: isFocus ? 'Saltando al descanso' : 'Volviendo a la tarea', duration: 1500, color: 'medium' });
+
+    let nextTimeLeft;
+
+    if (nextMode === 'focus') {
+      const totalElapsedOnTask = timerState.totalElapsed || 0;
+      const totalTaskDuration = activeTask.duration * 60;
+      const timeRemainingInTask = totalTaskDuration - totalElapsedOnTask;
+
+      const timeIntoCurrentPomodoro = totalElapsedOnTask % durations.focus;
+      const timeLeftInCurrentPomodoro = durations.focus - timeIntoCurrentPomodoro;
+      
+      nextTimeLeft = Math.min(timeRemainingInTask, timeLeftInCurrentPomodoro);
+
+      if (nextTimeLeft <= 0) {
+        present({ message: 'La tarea ya no tiene tiempo restante.', duration: 2000, color: 'warning' });
+        nextTimeLeft = 0;
+      }
+
+    } else { // Skipping to break
+      nextTimeLeft = durations.shortBreak;
+    }
+
+    setTimerState(prev => ({
+      ...prev,
+      mode: nextMode,
+      timeLeft: Math.max(0, nextTimeLeft), 
+      isRunning: false, // ALWAYS stop on manual skip
+    }));
   };
 
   const formatTime = (seconds: number): string => {
@@ -121,18 +168,28 @@ const TimerPage: React.FC = () => {
     const secs = (seconds % 60).toString().padStart(2, '0');
     return `${mins}:${secs}`;
   };
-  
-  const totalDuration = durations[timerState.mode] * 60;
-  const percentageRemaining = totalDuration > 0 ? (timerState.timeLeft / totalDuration) * 100 : 100;
-  const percentageElapsed = 100 - percentageRemaining;
-  const strokeDashoffset = CIRCUMFERENCE - (percentageElapsed / 100) * CIRCUMFERENCE;
+
+  const getSessionTotalDuration = () => {
+    if (timerState.mode === 'focus') {
+      return durations.focus;
+    }
+    return durations[timerState.mode];
+  }
+  const sessionTotalDuration = getSessionTotalDuration();
+  const percentageElapsed = sessionTotalDuration > 0
+    ? ((sessionTotalDuration - timerState.timeLeft) / sessionTotalDuration) * 100
+    : 0;
+  const strokeDashoffset = CIRCUMFERENCE - (Math.max(0, Math.min(100, percentageElapsed)) / 100) * CIRCUMFERENCE;
+
 
   const statusText = useMemo(() => {
     if (timerState.mode === 'shortBreak') return 'Descanso corto';
     if (timerState.mode === 'longBreak') return 'Descanso largo';
+    if (!activeTask) return 'Selecciona una tarea';
     if (timerState.isRunning) return '¡A trabajar!';
+    if (timerState.timeLeft <= 0) return 'Tarea terminada';
     return 'En pausa';
-  }, [timerState.isRunning, timerState.mode]);
+  }, [timerState.isRunning, timerState.mode, timerState.timeLeft, activeTask]);
 
   if (isLoading) {
     return (
@@ -156,7 +213,7 @@ const TimerPage: React.FC = () => {
               <circle
                 className="progress-ring__background"
                 cx="140" cy="140" r={RADIUS}
-                fill="transparent" 
+                fill="transparent"
                 strokeWidth="16"
               />
               <circle
@@ -170,29 +227,27 @@ const TimerPage: React.FC = () => {
             <div className="timer-display">
               <h1 className="time-text">{formatTime(timerState.timeLeft)}</h1>
               <p className="time-status">{statusText}</p>
-              <div className="time-percentage">{`${Math.ceil(percentageRemaining)}%`}</div>
-              <div className="time-percentage-label">restante</div>
             </div>
           </div>
 
           <div className="timer-controls">
-            <IonButton onClick={handleToggleTimer} className="control-button-pause" color={timerState.isRunning ? 'danger' : 'success'}>
+            <IonButton onClick={handleToggleTimer} className="control-button-pause" color={timerState.isRunning ? 'danger' : 'success'} disabled={timerState.timeLeft === 0 && activeTask !== null}>
               <IonIcon slot="start" icon={timerState.isRunning ? pause : play} />
               {timerState.isRunning ? 'Pausar' : 'Iniciar'}
             </IonButton>
             
-            {activeTask && timerState.mode === 'focus' && (
-              <IonButton onClick={handleCompleteTask} className="control-button-complete" color="success">
+            {activeTask && (
+              <IonButton onClick={handleCompleteTask} className="control-button-complete" color="success" fill="outline">
                 <IonIcon slot="icon-only" icon={checkmark} />
               </IonButton>
             )}
 
-            <IonButton onClick={handleSessionEnd} className="control-button-skip" color="primary">
+            <IonButton onClick={handleSkip} disabled={!activeTask} className="control-button-skip" color="primary">
               <IonIcon slot="icon-only" icon={playSkipForwardOutline} />
             </IonButton>
           </div>
 
-          <div className="footer-info">ⓘ El botón de check marca la tarea como completada.</div>
+          <div className="footer-info">ⓘ Marca la tarea como completada solo con el botón de check (✓)</div>
           
           <IonFab vertical="bottom" horizontal="end" slot="fixed">
             <IonFabButton onClick={() => history.push('/tasks')}>

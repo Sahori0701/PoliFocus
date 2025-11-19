@@ -53,7 +53,6 @@ const DEFAULT_TIMER_STATE: TimerState = {
   mode: 'focus',
   totalElapsed: 0,
   startTime: null,
-  remainingTime: 0,
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -66,7 +65,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [initialTab, setInitialTab] = useState<string | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
-  // Cargar datos iniciales
   useEffect(() => {
     loadInitialData();
   }, []);
@@ -91,19 +89,49 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const taskTime = task.duration * 60;
     const timeLeft = Math.min(taskTime, focusTime);
 
-    setTimerState({
+    const newTimerState: TimerState = {
       isRunning: true,
       timeLeft: timeLeft,
       mode: 'focus',
       totalElapsed: 0,
       startTime: Date.now(),
-      remainingTime: taskTime - timeLeft,
-    });
+    };
+    setTimerState(newTimerState);
     setActiveTask(task);
   };
 
+  const updateTask = async (taskId: number, updates: Partial<Task>) => {
+    try {
+      await storageService.updateTask(taskId, updates);
+       if (updates.status === 'completed' || updates.status === 'cancelled') {
+        if (activeTask && activeTask.id === taskId) {
+          setActiveTask(null);
+          setTimerState(DEFAULT_TIMER_STATE);
+        }
+      }
+      await loadTasks();
+    } catch (error) {
+      console.error('Error updating task:', error);
+      throw error;
+    }
+  };
+
+  const deleteTask = async (taskId: number) => {
+    try {
+      await storageService.deleteTask(taskId);
+       if (activeTask && activeTask.id === taskId) {
+          setActiveTask(null);
+          setTimerState(DEFAULT_TIMER_STATE);
+      }
+      await loadTasks();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      throw error;
+    }
+  };
+
   // ============================================
-  // TASKS FUNCTIONS
+  // TASKS FUNCTIONS (sin cambios)
   // ============================================
   const loadTasks = async () => {
     try {
@@ -124,28 +152,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const updateTask = async (taskId: number, updates: Partial<Task>) => {
-    try {
-      await storageService.updateTask(taskId, updates);
-      await loadTasks();
-    } catch (error) {
-      console.error('Error updating task:', error);
-      throw error;
-    }
-  };
-
-  const deleteTask = async (taskId: number) => {
-    try {
-      await storageService.deleteTask(taskId);
-      await loadTasks();
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      throw error;
-    }
-  };
-
   // ============================================
-  // SESSIONS FUNCTIONS
+  // SESSIONS FUNCTIONS (sin cambios)
   // ============================================
   const loadSessions = async () => {
     try {
@@ -167,7 +175,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   // ============================================
-  // CONFIG FUNCTIONS
+  // CONFIG FUNCTIONS (sin cambios)
   // ============================================
   const loadConfig = async () => {
     try {
@@ -218,7 +226,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
-// Hook personalizado para usar el contexto
 export const useApp = () => {
   const context = useContext(AppContext);
   if (context === undefined) {
