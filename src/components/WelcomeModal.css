@@ -1,120 +1,160 @@
 /* src/components/WelcomeModal.css */
 
 .welcome-modal {
-    --height: 100%;
-    --width: 100%;
-    --border-radius: 0;
-  }
-  
-  .welcome-modal .ion-toolbar {
-    --background: var(--ion-color-step-100, #1f2937);
-    --color: #FFFFFF;
-    font-family: 'Dosis', sans-serif;
-  }
-  
-  .welcome-modal .ion-title {
-    font-weight: 700;
-  }
-  
-  .welcome-modal .ion-content {
-    --background: var(--ion-color-step-50, #111827);
-    --color: #FFFFFF;
-  }
-  
-  /* Swiper Styles */
-  .mySwiper {
-    width: 100%;
-    height: 100%;
-  }
-  
-  .swiper-slide {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .slide-content {
-    text-align: center;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    max-width: 80%;
-  }
-  
-  .slide-icon {
-    font-size: 6rem;
-    color: var(--ion-color-primary, #10b981);
-    margin-bottom: 1rem;
-  }
-  
-  .slide-content h2 {
-    font-family: 'Dosis', sans-serif;
-    font-weight: 700;
-    font-size: 2.2rem; /* Adjusted for more content */
-    color: #FFFFFF;
-    margin: 0;
-  }
-  
-  .slide-content p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    opacity: 0.8;
-    max-width: 350px;
-  }
+  --height: 100%;
+  --width: 100%;
+  --border-radius: 0;
+}
 
-  /* Sub-slide for task states */
-  .sub-slide-container {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    margin-bottom: 1.5rem;
-  }
+.welcome-modal .ion-content {
+  --background: var(--ion-color-step-50, #111827);
+  --color: #FFFFFF;
+}
 
-  .sub-slide-container > div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-  }
+.header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: calc(env(safe-area-inset-top) + 1rem);
+  margin-bottom: 1rem;
+  text-align: center;
+}
 
-  .sub-slide-icon {
-    font-size: 3rem;
-    color: var(--ion-color-primary, #10b981);
-  }
+.header-logo-slider {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 0.75rem;
+}
 
-  .sub-slide-icon.overdue {
-    color: var(--ion-color-danger, #ef4444);
-  }
+.header-logo-slider svg {
+  width: 100%;
+  height: 100%;
+}
 
-  .sub-slide-icon.completed {
-    color: var(--ion-color-success, #22c55e);
-  }
+.header-title {
+  font-family: 'Dosis', sans-serif;
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #FFFFFF;
+  margin: 0;
+}
 
-  .sub-slide-container h3 {
-    font-family: 'Dosis', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0;
-    color: #fff;
-  }
-  
-  .start-button-slide {
-    --background: var(--ion-color-primary, #10b981);
-    --color: white;
-    font-weight: 600;
-    border-radius: 0.75rem;
-    margin-top: 2rem;
-  }
+/* Swiper Styles */
+.mySwiper {
+  width: 100%;
+  height: 100%;
+}
 
-  /* Swiper Pagination */
-  .swiper-pagination-bullet {
-      background: rgba(255, 255, 255, 0.5);
-      width: 10px;
-      height: 10px;
-  }
-    
-  .swiper-pagination-bullet-active {
-      background: var(--ion-color-primary, #10b981);
-  }
+.swiper-slide {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.slide-content {
+  text-align: center;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  max-width: 90%;
+}
+
+.slide-icon {
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: 1rem;
+  color: var(--ion-color-primary, #10b981);
+}
+
+.slide-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.slide-content h2 {
+  font-family: 'Dosis', sans-serif;
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.slide-content p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  opacity: 0.8;
+  max-width: 320px;
+}
+
+/* Sub-slide for task states */
+.sub-slide-container {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.sub-slide-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sub-slide-icon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--ion-color-primary, #10b981);
+}
+
+.sub-slide-icon.overdue {
+  color: var(--ion-color-danger, #ef4444);
+}
+
+.sub-slide-icon.completed {
+  color: var(--ion-color-success, #22c55e);
+}
+
+.sub-slide-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.sub-slide-container h3 {
+  font-family: 'Dosis', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  color: #fff;
+}
+
+.start-button-slide {
+  --background: var(--ion-color-primary, #10b981);
+  --color: white;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+/* Swiper Pagination */
+.swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.5);
+  width: 8px;
+  height: 8px;
+}
+
+.swiper-pagination-bullet-active {
+  background: var(--ion-color-primary, #10b981);
+}
+
+.skip-button {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 0.5rem);
+  right: 1rem;
+  --background: transparent;
+  --color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  z-index: 10;
+}
