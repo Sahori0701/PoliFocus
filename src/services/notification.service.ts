@@ -41,9 +41,9 @@ class NotificationService {
           {
             id: this.getNotificationId(task.id, NOTIFICATION_ID_15_MIN),
             title: "Tarea Próxima",
-            body: `¡Tu tarea "${task.title}" comienza en 15 minutos!`,
+            body: `¡Tu tarea \"${task.title}\" comienza en 15 minutos!`,
             schedule: { at: new Date(fifteenMinutesBefore) },
-            sound: 'beep.wav',
+            sound: 'beep',
             smallIcon: 'ic_stat_icon_config_material',
           },
         ],
@@ -59,9 +59,9 @@ class NotificationService {
               {
                 id: this.getNotificationId(task.id, NOTIFICATION_ID_5_MIN),
                 title: "Tarea Próxima",
-                body: `¡Tu tarea "${task.title}" comienza en 5 minutos!`,
+                body: `¡Tu tarea \"${task.title}\" comienza en 5 minutos!`,
                 schedule: { at: new Date(fiveMinutesBefore) },
-                sound: 'beep.wav',
+                sound: 'beep',
                 smallIcon: 'ic_stat_icon_config_material',
               },
             ],

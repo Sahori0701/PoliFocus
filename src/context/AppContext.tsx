@@ -113,7 +113,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addTask = async (task: Task) => {
     try {
       const newTask = await storageService.addTask(task);
-      await notificationService.scheduleTaskNotifications(newTask);
+      
+      // Schedule notifications silently
+      notificationService.scheduleTaskNotifications(newTask).catch(error => {
+        console.error('Failed to schedule notifications, but task was added:', error);
+      });
+
       await loadTasks();
     } catch (error) {
       console.error('Error adding task:', error);
