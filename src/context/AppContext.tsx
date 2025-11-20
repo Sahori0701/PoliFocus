@@ -169,7 +169,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const loadTasks = async () => {
     try {
       const loadedTasks = await storageService.getTasks();
-      setTasks(loadedTasks);
+      
+      // Data migration from startDate to scheduledStart
+      const migratedTasks = loadedTasks.map((task: any) => {
+        if (task && task.startDate && !task.scheduledStart) {
+          const { startDate, ...rest } = task;
+          return { ...rest, scheduledStart: startDate };
+        }
+        return task;
+      });
+
+      setTasks(migratedTasks);
     } catch (error) {
       console.error('Error loading tasks:', error);
     }
