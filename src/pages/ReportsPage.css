@@ -1,0 +1,198 @@
+/* src/pages/ReportsPage.css */
+
+ion-content {
+  --background: var(--ion-background-color);
+}
+
+ion-grid {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  ion-grid {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+}
+
+/* --- Stat Card Styles --- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--app-bg-card);
+  border-radius: var(--app-radius-lg);
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  min-height: 70px;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px); 
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card-title {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: var(--app-text-secondary);
+  margin-bottom: 6px;
+  text-transform: capitalize; 
+  line-height: 1;
+}
+
+.stat-card-value {
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.stat-card-number {
+  font-size: 1.1em;
+  font-weight: 600; 
+  color: var(--ion-text-color);
+}
+
+.stat-card-value ion-icon {
+  font-size: 1.0em;
+}
+
+/* --- Icon Colors (Corrected) --- */
+.icon-total     { color: var(--ion-color-secondary); }
+.icon-active    { color: var(--ion-color-primary); }   /* Green */
+.icon-completed { color: var(--ion-color-success); }   /* Blue */
+.icon-expired   { color: var(--ion-color-danger); }
+.icon-focus     { color: var(--ion-color-tertiary); }
+.icon-efficiency{ color: var(--ion-color-warning); }
+
+
+/* --- Chart Layout and Styles --- */
+
+.doughnut-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .doughnut-charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.chart-wrapper {
+  background: var(--app-bg-card);
+  border-radius: var(--app-radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.full-width-chart {
+  margin-top: 2rem;
+}
+
+.chart-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ion-text-color);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.doughnut-chart-container {
+  position: relative;
+  height: 280px;
+  width: 100%;
+}
+
+.bar-chart-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+}
+
+/* --- Table Styles --- */
+.task-table-container {
+  overflow-x: auto;
+}
+
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.task-table th, .task-table td {
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--app-border);
+  color: var(--ion-text-color);
+  white-space: nowrap;
+}
+
+.task-table th {
+  background-color: var(--app-bg-elevated);
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--app-text-secondary);
+  text-transform: uppercase;
+}
+
+/* --- Mobile-specific adjustments --- */
+@media (max-width: 767px) {
+  ion-grid {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .chart-wrapper {
+    padding: 0.8rem;
+  }
+
+  .doughnut-chart-container {
+    height: 240px; /* Further reduced height */
+  }
+
+  .bar-chart-container {
+    height: 320px;
+  }
+}
+
+.task-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.task-table tbody tr:hover {
+  background-color: var(--app-bg-elevated);
+}
+
+.efficiency-cell {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- No Data Message --- */
+.no-data-message {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--app-bg-card);
+  border-radius: var(--app-radius-lg);
+}
+
+.no-data-message p {
+  color: var(--app-text-secondary);
+  font-size: 1.1em;
+}
