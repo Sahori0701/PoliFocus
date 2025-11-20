@@ -20,7 +20,7 @@ const ReportsPage: React.FC = () => {
   const durationChartInstance = useRef<Chart | null>(null);
 
   const completedTasks = useMemo(() => 
-    taskService.sortTasks(taskService.filterTasksByStatus(tasks, 'completed'), 'completedAt', 'desc'),
+    taskService.sortTasks(taskService.filterTasksByStatus(tasks, 'completed'), 'date', 'desc'),
     [tasks]
   );
 

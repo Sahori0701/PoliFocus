@@ -33,7 +33,7 @@ const TaskActivationModal: React.FC<TaskActivationModalProps> = ({ isOpen, onClo
   };
 
   return (
-    <IonModal isOpen={isOpen} onDidDismiss={onClose} cssClass="task-activation-modal">
+    <IonModal isOpen={isOpen} onDidDismiss={onClose}>
       <IonContent>
         {/* This wrapper is key for vertical centering */}
         <div className="modal-wrapper">

@@ -1,9 +1,11 @@
+
 // contexts/AppContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Task } from '../models/Task';
 import { PomodoroSession, TimerState } from '../models/Pomodoro';
 import { AppConfig, DEFAULT_CONFIG } from '../models/Config';
 import { storageService } from '../services/storage.service';
+import { notificationService } from '../services/notification.service';
 
 export interface AppContextType {
   // Tasks
@@ -77,6 +79,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         loadSessions(),
         loadConfig(),
       ]);
+       // Al iniciar, asegurarse de que los permisos de notificación están solicitados
+      if (!(await notificationService.hasPermission())) {
+        await notificationService.requestPermission();
+      }
     } catch (error) {
       console.error('Error loading initial data:', error);
     } finally {
@@ -85,7 +91,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const startPomodoroForTask = (task: Task) => {
-    // If the task being started is already the active one, do nothing.
     if (activeTask && activeTask.id === task.id) {
       return;
     }
@@ -105,10 +110,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setActiveTask(task);
   };
 
+  const addTask = async (task: Task) => {
+    try {
+      const newTask = await storageService.addTask(task);
+      await notificationService.scheduleTaskNotifications(newTask);
+      await loadTasks();
+    } catch (error) {
+      console.error('Error adding task:', error);
+      throw error;
+    }
+  };
+
   const updateTask = async (taskId: number, updates: Partial<Task>) => {
     try {
-      await storageService.updateTask(taskId, updates);
-       if (updates.status === 'completed' || updates.status === 'cancelled') {
+      const originalTask = tasks.find(t => t.id === taskId);
+      if (originalTask) {
+        await notificationService.cancelTaskNotifications(originalTask);
+      }
+
+      const updatedTask = await storageService.updateTask(taskId, updates);
+      if (updatedTask) {
+        await notificationService.scheduleTaskNotifications(updatedTask);
+      }
+
+      if (updates.status === 'completed' || updates.status === 'cancelled') {
         if (activeTask && activeTask.id === taskId) {
           setActiveTask(null);
           setTimerState(DEFAULT_TIMER_STATE);
@@ -123,8 +148,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const deleteTask = async (taskId: number) => {
     try {
+      const taskToDelete = tasks.find(t => t.id === taskId);
+      if (taskToDelete) {
+        await notificationService.cancelTaskNotifications(taskToDelete);
+      }
+
       await storageService.deleteTask(taskId);
-       if (activeTask && activeTask.id === taskId) {
+
+      if (activeTask && activeTask.id === taskId) {
           setActiveTask(null);
           setTimerState(DEFAULT_TIMER_STATE);
       }
@@ -135,9 +166,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // ============================================
-  // TASKS FUNCTIONS (sin cambios)
-  // ============================================
   const loadTasks = async () => {
     try {
       const loadedTasks = await storageService.getTasks();
@@ -147,19 +175,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const addTask = async (task: Task) => {
-    try {
-      await storageService.addTask(task);
-      await loadTasks();
-    } catch (error) {
-      console.error('Error adding task:', error);
-      throw error;
-    }
-  };
-
-  // ============================================
-  // SESSIONS FUNCTIONS (sin cambios)
-  // ============================================
   const loadSessions = async () => {
     try {
       const loadedSessions = await storageService.getSessions();
@@ -179,9 +194,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // ============================================
-  // CONFIG FUNCTIONS (sin cambios)
-  // ============================================
   const loadConfig = async () => {
     try {
       const loadedConfig = await storageService.getConfig();
