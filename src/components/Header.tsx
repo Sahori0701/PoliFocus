@@ -9,7 +9,8 @@ const Header: React.FC = () => {
 
   return (
     <IonHeader className="ion-no-border">
-      <IonToolbar>
+      {/* La magia sucede aquí: se añade un padding-top dinámico */}
+      <IonToolbar style={{ paddingTop: 'var(--ion-safe-area-top)' }}>
         <div className="header-container">
           <div className="header-logo">
             <svg
@@ -18,10 +19,8 @@ const Header: React.FC = () => {
               viewBox="0 0 32 32"
               xmlns="http://www.w3.org/2000/svg"
             >
-              {/* Dibuja el círculo exterior y la línea primero */}
               <circle cx="16" cy="16" r="10" fill="none" stroke="white" strokeWidth="3" />
               <line x1="23" y1="9" x2="9" y2="23" stroke="white" strokeWidth="3" strokeLinecap="round" />
-              {/* Dibuja el círculo interior al final para que quede encima */}
               <circle cx="16" cy="16" r="3.5" fill="white" />
             </svg>
           </div>
