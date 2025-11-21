@@ -56,7 +56,7 @@ const ReportsPage: React.FC = () => {
     const textColor = style.getPropertyValue('--app-text-secondary').trim();
     const cardBgColor = style.getPropertyValue('--app-bg-card').trim();
 
-    const commonFont = { size: 11, weight: '600' };
+    const commonFont = { size: 13, weight: '500' };
 
     if (statusChartInstance.current) statusChartInstance.current.destroy();
     if (priorityChartInstance.current) priorityChartInstance.current.destroy();
@@ -165,13 +165,13 @@ const ReportsPage: React.FC = () => {
               <div className="stats-grid">
                  <div className="stat-card">
                   <div className="stat-card-header">
-                    <span className="stat-card-title">📊 Total</span>
+                    <span className="stat-card-title">📌 Total</span>
                   </div>
                   <div className="stat-card-value">{reportMetrics.totalTasks}</div>
                 </div>
                 <div className="stat-card">
                   <div className="stat-card-header">
-                    <span className="stat-card-title">▶️ Activas</span>
+                    <span className="stat-card-title">⚡ Activas</span>
                   </div>
                   <div className="stat-card-value">{reportMetrics.statusCounts.active}</div>
                 </div>
@@ -183,19 +183,19 @@ const ReportsPage: React.FC = () => {
                 </div>
                 <div className="stat-card">
                   <div className="stat-card-header">
-                    <span className="stat-card-title">❌ Vencidas</span>
+                    <span className="stat-card-title">⏰ Vencidas</span>
                   </div>
                   <div className="stat-card-value">{reportMetrics.statusCounts.expired}</div>
                 </div>
                 <div className="stat-card">
                   <div className="stat-card-header">
-                    <span className="stat-card-title">⏱️ Horas</span>
+                    <span className="stat-card-title">⏳ Horas</span>
                   </div>
                   <div className="stat-card-value">{reportMetrics.totalFocusHours}</div>
                 </div>
                 <div className="stat-card">
                   <div className="stat-card-header">
-                    <span className="stat-card-title">⚡️ Eficiencia</span>
+                    <span className="stat-card-title">🏆 Eficiencia</span>
                   </div>
                   <div className="stat-card-value">{reportMetrics.overallEfficiency}%</div>
                 </div>
@@ -205,7 +205,7 @@ const ReportsPage: React.FC = () => {
                 <>
                   <div className="doughnut-charts-grid">
                     <div className="chart-wrapper">
-                      <h3 className="chart-title">📊 Distribución de tareas</h3>
+                      <h3 className="chart-title">🗓️ Distribución de tareas</h3>
                       <div className="doughnut-chart-container"><canvas ref={statusChartRef}></canvas></div>
                     </div>
                     <div className="chart-wrapper">
