@@ -1,7 +1,6 @@
 // src/pages/ReportsPage.tsx
 import React, { useMemo, useEffect, useRef } from 'react';
-import { IonContent, IonPage, IonGrid, IonRow, IonCol, IonIcon } from '@ionic/react';
-import { listOutline, playCircleOutline, checkmarkDoneCircleOutline, closeCircleOutline, stopwatchOutline, flashOutline } from 'ionicons/icons';
+import { IonContent, IonPage, IonGrid, IonRow, IonCol } from '@ionic/react';
 import { Chart, registerables, ChartConfiguration } from 'chart.js';
 import { useApp } from '../context/AppContext';
 import { taskService } from '../services/task.service';
@@ -50,13 +49,14 @@ const ReportsPage: React.FC = () => {
 
   useEffect(() => {
     const style = getComputedStyle(document.documentElement);
-    const primaryColor = style.getPropertyValue('--ion-color-primary').trim(); // This is Green in your app
-    const successColor = style.getPropertyValue('--ion-color-success').trim(); // This is Blue in your app
+    const primaryColor = style.getPropertyValue('--ion-color-primary').trim();
+    const successColor = style.getPropertyValue('--ion-color-success').trim();
     const dangerColor = style.getPropertyValue('--ion-color-danger').trim();
     const secondaryColor = style.getPropertyValue('--ion-color-secondary').trim();
     const textColor = style.getPropertyValue('--app-text-secondary').trim();
-    const borderColor = style.getPropertyValue('--app-border').trim();
     const cardBgColor = style.getPropertyValue('--app-bg-card').trim();
+
+    const commonFont = { size: 11, weight: '600' };
 
     if (statusChartInstance.current) statusChartInstance.current.destroy();
     if (priorityChartInstance.current) priorityChartInstance.current.destroy();
@@ -64,9 +64,9 @@ const ReportsPage: React.FC = () => {
 
     const legendLabelOptions = { 
       color: textColor, 
-      boxWidth: 12, 
-      padding: 20,
-      font: { size: 12 }
+      boxWidth: 10,
+      padding: 15,
+      font: commonFont
     };
 
     const commonDoughnutOptions = {
@@ -81,7 +81,6 @@ const ReportsPage: React.FC = () => {
       }
     };
 
-    // Chart 1: Task Status Distribution - Using the correct color variables
     if (statusChartRef.current) {
       const ctx = statusChartRef.current.getContext('2d');
       if (ctx) {
@@ -93,7 +92,6 @@ const ReportsPage: React.FC = () => {
       }
     }
 
-    // Chart 2: Task Priority Distribution
     if (priorityChartRef.current) {
       const ctx = priorityChartRef.current.getContext('2d');
       if (ctx) {
@@ -105,7 +103,6 @@ const ReportsPage: React.FC = () => {
       }
     }
 
-    // Chart 3: Planned vs. Real Duration
     if (durationChartRef.current && completedTasks.length > 0) {
         const lastTasks = completedTasks.slice(0, 7).reverse();
         const ctx = durationChartRef.current.getContext('2d');
@@ -115,16 +112,40 @@ const ReportsPage: React.FC = () => {
                 data: {
                     labels: lastTasks.map(t => new Date(t.completedAt || 0).toLocaleDateString('es-ES', {day: '2-digit', month: 'short'})),
                     datasets: [
-                        { label: 'Tiempo Planificado', data: lastTasks.map(t => t.duration), backgroundColor: secondaryColor + 'B3', borderRadius: 4 },
-                        { label: 'Tiempo Real', data: lastTasks.map(t => t.actualDuration || 0), backgroundColor: dangerColor + 'B3', borderRadius: 4 }
+                        {
+                            label: 'Tiempo Planificado',
+                            data: lastTasks.map(t => t.duration),
+                            backgroundColor: successColor,
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'Tiempo Real',
+                            data: lastTasks.map(t => t.actualDuration || 0),
+                            backgroundColor: dangerColor,
+                            borderRadius: 4,
+                        }
                     ]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: legendLabelOptions } },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: legendLabelOptions
+                        }
+                    },
                     scales: {
-                        y: { beginAtZero: true, ticks: { color: textColor, padding: 10, font: { size: 12 } }, grid: { color: borderColor }, title: { display: true, text: 'Minutos', color: textColor, font: { size: 14, weight: 'bold'} } },
-                        x: { ticks: { color: textColor, font: { size: 12 } }, grid: { display: false } }
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: textColor, padding: 10, font: commonFont },
+                            grid: { display: false },
+                            title: { display: true, text: 'Minutos', color: textColor, font: { ...commonFont, size: 12 } }
+                        },
+                        x: {
+                            ticks: { color: textColor, font: commonFont },
+                            grid: { display: false }
+                        }
                     }
                 }
             } as ChartConfiguration);
@@ -142,23 +163,53 @@ const ReportsPage: React.FC = () => {
             <IonCol>
 
               <div className="stats-grid">
-                <div className="stat-card"><div className="stat-card-title">Total de Tareas</div><div className="stat-card-value"><IonIcon icon={listOutline} className="icon-total" /><span className="stat-card-number">{reportMetrics.totalTasks}</span></div></div>
-                <div className="stat-card"><div className="stat-card-title">Tareas Activas</div><div className="stat-card-value"><IonIcon icon={playCircleOutline} className="icon-active" /><span className="stat-card-number">{reportMetrics.statusCounts.active}</span></div></div>
-                <div className="stat-card"><div className="stat-card-title">Tareas Completadas</div><div className="stat-card-value"><IonIcon icon={checkmarkDoneCircleOutline} className="icon-completed" /><span className="stat-card-number">{reportMetrics.totalCompleted}</span></div></div>
-                <div className="stat-card"><div className="stat-card-title">Tareas Vencidas</div><div className="stat-card-value"><IonIcon icon={closeCircleOutline} className="icon-expired" /><span className="stat-card-number">{reportMetrics.statusCounts.expired}</span></div></div>
-                <div className="stat-card"><div className="stat-card-title">Horas de Foco</div><div className="stat-card-value"><IonIcon icon={stopwatchOutline} className="icon-focus" /><span className="stat-card-number">{reportMetrics.totalFocusHours}</span></div></div>
-                <div className="stat-card"><div className="stat-card-title">Eficiencia</div><div className="stat-card-value"><IonIcon icon={flashOutline} className="icon-efficiency" /><span className="stat-card-number">{reportMetrics.overallEfficiency}%</span></div></div>
+                 <div className="stat-card">
+                  <div className="stat-card-header">
+                    <span className="stat-card-title">📊 Total</span>
+                  </div>
+                  <div className="stat-card-value">{reportMetrics.totalTasks}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-card-header">
+                    <span className="stat-card-title">▶️ Activas</span>
+                  </div>
+                  <div className="stat-card-value">{reportMetrics.statusCounts.active}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-card-header">
+                    <span className="stat-card-title">✅ Completadas</span>
+                  </div>
+                  <div className="stat-card-value">{reportMetrics.totalCompleted}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-card-header">
+                    <span className="stat-card-title">❌ Vencidas</span>
+                  </div>
+                  <div className="stat-card-value">{reportMetrics.statusCounts.expired}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-card-header">
+                    <span className="stat-card-title">⏱️ Horas</span>
+                  </div>
+                  <div className="stat-card-value">{reportMetrics.totalFocusHours}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-card-header">
+                    <span className="stat-card-title">⚡️ Eficiencia</span>
+                  </div>
+                  <div className="stat-card-value">{reportMetrics.overallEfficiency}%</div>
+                </div>
               </div>
               
               {tasks.length > 0 ? (
                 <>
                   <div className="doughnut-charts-grid">
                     <div className="chart-wrapper">
-                      <h3 className="chart-title">Distribución de Tareas</h3>
+                      <h3 className="chart-title">📊 Distribución de tareas</h3>
                       <div className="doughnut-chart-container"><canvas ref={statusChartRef}></canvas></div>
                     </div>
                     <div className="chart-wrapper">
-                      <h3 className="chart-title">Prioridades de Tareas</h3>
+                      <h3 className="chart-title">🚩 Prioridades de tareas</h3>
                       <div className="doughnut-chart-container"><canvas ref={priorityChartRef}></canvas></div>
                     </div>
                   </div>
@@ -166,26 +217,37 @@ const ReportsPage: React.FC = () => {
                   {completedTasks.length > 0 && (
                     <>
                       <div className="chart-wrapper full-width-chart">
-                        <h3 className="chart-title">Planificado vs. Real (Últimas 7 Tareas)</h3>
+                        <h3 className="chart-title">📈 Planificado vs. Real</h3>
                         <div className="bar-chart-container">
                           <canvas ref={durationChartRef}></canvas>
                         </div>
                       </div>
 
                       <div className="chart-wrapper full-width-chart">
-                        <h3 className="chart-title">Detalle de Tareas Completadas</h3>
+                        <h3 className="chart-title">📋 Detalle de Tareas</h3>
                         <div className="task-table-container">
                           <table className="task-table">
-                            <thead><tr><th>Tarea</th><th>Planificado</th><th>Real</th><th>Eficiencia</th></tr></thead>
+                            <thead>
+                              <tr>
+                                <th>Tarea</th>
+                                <th>Prioridad</th>
+                                <th>Fecha</th>
+                                <th>Planificado</th>
+                                <th>Real</th>
+                                <th>Eficiencia</th>
+                              </tr>
+                            </thead>
                             <tbody>
                               {completedTasks.slice(0, 10).map(task => {
                                 const efficiency = taskService.calculateEfficiency(task.duration, task.actualDuration || 0);
                                 return (
                                   <tr key={task.id}>
-                                    <td>{task.title}</td>
-                                    <td>{task.duration} min</td>
-                                    <td>{task.actualDuration || 0} min</td>
-                                    <td className="efficiency-cell">{efficiency.icon} {Number(efficiency.percentage).toFixed(0)}%</td>
+                                    <td data-label="Tarea">{task.title}</td>
+                                    <td data-label="Prioridad" className={`priority-${task.priority}`}>{task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</td>
+                                    <td data-label="Fecha">{new Date(task.completedAt || 0).toLocaleDateString('es-ES', { day: '2-digit', month: 'short'})}</td>
+                                    <td data-label="Planificado">{task.duration} min</td>
+                                    <td data-label="Real">{task.actualDuration || 0} min</td>
+                                    <td data-label="Eficiencia" className="efficiency-cell">{efficiency.icon} {Number(efficiency.percentage).toFixed(0)}%</td>
                                   </tr>
                                 );
                               })}
