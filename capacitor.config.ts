@@ -9,13 +9,10 @@ const config: CapacitorConfig = {
     androidScheme: 'https',
   },
   plugins: {
-    // ---👇 Configuración de la Barra de Estado --- 
     StatusBar: {
-      style: 'dark',       // Iconos claros para fondo oscuro
-      overlay: false,    // ¡Esta es la clave! Evita la superposición
-      backgroundColor: '#111827' // Mismo color que la cabecera
+      style: 'dark',
+      backgroundColor: '#111827'
     },
-    // ------------------------------------------
     LocalNotifications: {
       smallIcon: 'ic_stat_icon_config_sample',
       iconColor: '#10b981',
@@ -24,7 +21,11 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 2000,
       backgroundColor: '#111827',
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER',
       showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
     },
   },
 };

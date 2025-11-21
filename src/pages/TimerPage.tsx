@@ -1,5 +1,5 @@
 // pages/TimerPage.tsx
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   IonContent,
   IonPage,
@@ -22,85 +22,35 @@ const TimerPage: React.FC = () => {
   const {
     config,
     timerState,
-    setTimerState,
     activeTask,
     updateTask,
     setInitialTab,
     isLoading,
+    startPomodoroForTask,
+    pausePomodoro,
+    skipBreak,
   } = useApp();
 
   const history = useHistory();
-  const [present, dismiss] = useIonToast();
-
-  const durations = useMemo(() => ({
-    focus: config.focusTime * 60,
-    shortBreak: config.shortBreak * 60,
-    longBreak: config.longBreak * 60,
-  }), [config]);
-
-  useEffect(() => {
-    if (!timerState.isRunning) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setTimerState(prev => {
-        if (!prev.isRunning || !activeTask) {
-          return prev;
-        }
-
-        if (prev.timeLeft <= 1) {
-          dismiss();
-          if (prev.mode === 'focus') {
-            present({ message: '🔔 ¡Tiempo de descanso!', duration: 2000, color: 'primary' });
-            return {
-              ...prev,
-              mode: 'shortBreak',
-              timeLeft: durations.shortBreak,
-              isRunning: true,
-            };
-          } else {
-            present({ message: '🔔 ¡A trabajar de nuevo!', duration: 2000, color: 'primary' });
-            const timeRemainingInTask = (activeTask.duration * 60) - (prev.totalElapsed || 0);
-            if (timeRemainingInTask <= 0) {
-              present({ message: 'Tarea terminada. ¡Márcala como completada!', duration: 3000, color: 'tertiary' });
-              return { ...prev, isRunning: false, timeLeft: 0, mode: 'focus' };
-            }
-            const elapsedInCurrentCycle = (prev.totalElapsed || 0) % durations.focus;
-            const timeRemainingInCycle = durations.focus - elapsedInCurrentCycle;
-            const nextFocusDuration = Math.min(timeRemainingInTask, timeRemainingInCycle);
-            return {
-              ...prev,
-              mode: 'focus',
-              timeLeft: nextFocusDuration,
-              isRunning: true,
-            };
-          }
-        }
-
-        const newTotalElapsed = prev.mode === 'focus' ? (prev.totalElapsed || 0) + 1 : (prev.totalElapsed || 0);
-        return {
-          ...prev,
-          timeLeft: prev.timeLeft - 1,
-          totalElapsed: newTotalElapsed,
-        };
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [timerState.isRunning, activeTask, setTimerState, present, dismiss, durations]);
+  const [present] = useIonToast();
 
   const handleToggleTimer = () => {
-    if (!activeTask && timerState.mode === 'focus') {
-      present({ message: 'Selecciona una tarea para comenzar', duration: 2000, color: 'warning' });
-      history.push('/tasks');
-      return;
+    if (timerState.isRunning) {
+      pausePomodoro();
+    } else {
+      if (!activeTask) {
+        present({ message: 'Selecciona una tarea para comenzar', duration: 2000, color: 'warning' });
+        history.push('/tasks');
+        return;
+      }
+      startPomodoroForTask(activeTask);
     }
-    setTimerState(prev => ({ ...prev, isRunning: !prev.isRunning }));
   };
 
   const handleCompleteTask = async () => {
     if (!activeTask) return;
+    pausePomodoro();
+
     const actualDuration = Math.ceil((timerState.totalElapsed || 0) / 60);
     await updateTask(activeTask.id, {
       status: 'completed',
@@ -114,7 +64,9 @@ const TimerPage: React.FC = () => {
   };
 
   const handleSkip = () => {
-    setTimerState(prev => ({ ...prev, timeLeft: 1, isRunning: true }));
+    if (timerState.mode !== 'focus') {
+      skipBreak();
+    }
   };
 
   const formatTime = (seconds: number): string => {
@@ -136,9 +88,8 @@ const TimerPage: React.FC = () => {
     if (timerState.mode === 'longBreak') return 'Descanso largo';
     if (!activeTask) return 'Selecciona una tarea';
     if (timerState.isRunning) return '¡A trabajar!';
-    if (timerState.timeLeft <= 0) return 'Tarea terminada';
     return 'En pausa';
-  }, [timerState.isRunning, timerState.mode, timerState.timeLeft, activeTask]);
+  }, [timerState.isRunning, timerState.mode, activeTask]);
 
   if (isLoading) {
     return (
@@ -175,20 +126,19 @@ const TimerPage: React.FC = () => {
             </div>
           </div>
           <div className="timer-controls">
-            <IonButton onClick={handleToggleTimer} className="control-button-pause" color={timerState.isRunning ? 'danger' : 'success'} disabled={timerState.timeLeft === 0 && activeTask !== null}>
+            <IonButton onClick={handleToggleTimer} className="control-button-pause" color={timerState.isRunning ? 'danger' : 'success'} disabled={!activeTask && timerState.timeLeft === 0}>
               <IonIcon slot="start" icon={timerState.isRunning ? pause : play} />
               {timerState.isRunning ? 'Pausar' : 'Iniciar'}
             </IonButton>
             {activeTask && (
-              <IonButton onClick={handleCompleteTask} className="control-button-complete" color="success" fill="outline">
+              <IonButton onClick={handleCompleteTask} className="control-button-complete" color="success" fill="outline" disabled={!activeTask}>
                 <IonIcon slot="icon-only" icon={checkmark} />
               </IonButton>
             )}
-            {/* ** NEW LOGIC FOR SKIP BUTTON ** */}
-            {activeTask && activeTask.duration >= config.focusTime && (
+            {activeTask && (
               <IonButton
                 onClick={handleSkip}
-                disabled={timerState.mode === 'focus'}
+                disabled={timerState.mode === 'focus' || !timerState.isRunning}
                 className="control-button-skip"
                 color="primary"
               >
