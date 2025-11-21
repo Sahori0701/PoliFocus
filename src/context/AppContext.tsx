@@ -8,14 +8,13 @@ import { AppConfig, DEFAULT_CONFIG } from '../models/Config';
 import { storageService } from '../services/storage.service';
 import { notificationService } from '../services/notification.service';
 
-// ... (interface and other setup remains the same)
-
 export interface AppContextType {
   // Tasks
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   loadTasks: () => Promise<void>;
-  addTask: (task: Task) => Promise<void>;
+  // La data de la tarea viene sin ID, ya que el storage service lo genera
+  addTask: (taskData: Omit<Task, 'id'>) => Promise<void>;
   updateTask: (taskId: number, updates: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: number) => Promise<void>;
   
@@ -118,10 +117,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setActiveTask(task);
   };
 
-  const addTask = async (task: Task) => {
+  const addTask = async (taskData: Omit<Task, 'id'>) => {
     try {
-      const newTask = await storageService.addTask(task);
-      // The notification service is now smart enough to only run on native
+      const newTask = await storageService.addTask(taskData);
       await notificationService.scheduleTaskNotifications(newTask);
       await loadTasks();
     } catch (error) {
@@ -134,13 +132,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const originalTask = tasks.find(t => t.id === taskId);
       if (originalTask) {
-        // Cancel old notifications before updating
         await notificationService.cancelTaskNotifications(originalTask);
       }
 
       const updatedTask = await storageService.updateTask(taskId, updates);
       
-      // Schedule new notifications for the updated task
       if (updatedTask) {
         await notificationService.scheduleTaskNotifications(updatedTask);
       }
@@ -162,7 +158,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const taskToDelete = tasks.find(t => t.id === taskId);
       if (taskToDelete) {
-        // Cancel notifications for the deleted task
         await notificationService.cancelTaskNotifications(taskToDelete);
       }
 
@@ -195,6 +190,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  // ... (resto del archivo sin cambios)
   const loadSessions = async () => {
     try {
       const loadedSessions = await storageService.getSessions();

@@ -30,7 +30,7 @@ const TasksPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [conflictingTasks, setConflictingTasks] = useState<Task[]>([]);
-  const [pendingTask, setPendingTask] = useState<Task | null>(null);
+  const [pendingTask, setPendingTask] = useState<Omit<Task, 'id'> | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showToast, setShowToast] = useState(false);
@@ -48,24 +48,17 @@ const TasksPage: React.FC = () => {
   }, [initialTab, setInitialTab]);
 
   const getFilteredTasks = () => {
+    // ... (sin cambios)
     let filtered: Task[] = [];
     switch (activeTab) {
-      case 'active':
-        filtered = taskService.filterTasksByStatus(tasks, 'active');
-        break;
-      case 'expired':
-        filtered = taskService.filterTasksByStatus(tasks, 'expired');
-        break;
-      case 'completed':
-        filtered = taskService.filterTasksByStatus(tasks, 'completed');
-        break;
+      case 'active': filtered = taskService.filterTasksByStatus(tasks, 'active'); break;
+      case 'expired': filtered = taskService.filterTasksByStatus(tasks, 'expired'); break;
+      case 'completed': filtered = taskService.filterTasksByStatus(tasks, 'completed'); break;
       default: filtered = [];
     }
-
     if (searchTerm.trim() && activeTab === 'active') {
       filtered = taskService.searchTasks(filtered, searchTerm);
     }
-
     if (activeTab !== 'completed') {
       filtered = taskService.sortTasks(filtered, 'date', 'asc');
     } else {
@@ -74,28 +67,28 @@ const TasksPage: React.FC = () => {
     return filtered;
   };
 
-  const handleCreateTask = async (task: Task): Promise<boolean> => {
+  const handleCreateTask = async (taskData: Omit<Task, 'id'>): Promise<boolean> => {
     try {
-      const tasksToAdd = taskService.generateRecurringTasks(task);
-      const allConflicts: Task[] = [];
-      tasksToAdd.forEach(t => {
-        const conflicts = taskService.checkConflicts(t, tasks);
-        allConflicts.push(...conflicts);
-      });
+      // Añadimos un ID temporal para que `generateRecurringTasks` y `checkConflicts` funcionen.
+      const baseTaskWithTempId: Task = { ...taskData, id: Date.now() };
+      const tasksToAdd = taskService.generateRecurringTasks(baseTaskWithTempId);
+      
+      const allConflicts = tasksToAdd.flatMap(t => taskService.checkConflicts(t, tasks));
 
       if (allConflicts.length > 0) {
-        const uniqueConflicts = allConflicts.filter(
-          (task, index, self) => index === self.findIndex(t => t.id === task.id)
-        );
+        const uniqueConflicts = [...new Map(allConflicts.map(item => [item.id, item])).values()];
         setConflictingTasks(uniqueConflicts);
-        setPendingTask(task);
+        setPendingTask(taskData); // Guardamos la tarea original SIN ID
         setShowConflictModal(true);
         return false;
       }
 
-      for (const taskToAdd of tasksToAdd) {
-        await addTask(taskToAdd);
+      for (const task of tasksToAdd) {
+        // Quitamos el ID temporal antes de pasarlo al servicio de storage
+        const { id, ...taskDataForStorage } = task;
+        await addTask(taskDataForStorage);
       }
+      
       showSuccessToast(tasksToAdd.length === 1 ? 'Tarea creada exitosamente' : `${tasksToAdd.length} tareas creadas`);
       setActiveTab('active');
       return true;
@@ -109,16 +102,24 @@ const TasksPage: React.FC = () => {
   const handleConfirmWithConflicts = async () => {
     if (!pendingTask) return;
     try {
-      const tasksToAdd = taskService.generateRecurringTasks(pendingTask);
-      for (const taskToAdd of tasksToAdd) { await addTask(taskToAdd); }
+      // Añadimos un ID temporal, igual que en handleCreateTask
+      const baseTaskWithTempId: Task = { ...pendingTask, id: Date.now() };
+      const tasksToAdd = taskService.generateRecurringTasks(baseTaskWithTempId);
+      
+      for (const task of tasksToAdd) {
+        // Quitamos el ID temporal antes de guardar
+        const { id, ...taskDataForStorage } = task;
+        await addTask(taskDataForStorage);
+      }
+      
       showWarningToast(`${tasksToAdd.length === 1 ? 'Tarea creada' : `${tasksToAdd.length} tareas creadas`} con conflictos`);
       setShowConflictModal(false);
       setPendingTask(null);
       setConflictingTasks([]);
       setActiveTab('active');
     } catch (error) {
-      showErrorToast('Error al crear tarea');
-      console.error('Error creating task:', error);
+      showErrorToast('Error al crear tarea con conflictos');
+      console.error('Error creating task with conflicts:', error);
     }
   };
 
@@ -130,22 +131,13 @@ const TasksPage: React.FC = () => {
       header: 'Confirmar Eliminación',
       message: `¿Estás seguro de que quieres eliminar la tarea "${taskToDelete.title}"? Esta acción no se puede deshacer.`,
       buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'alert-button-cancel',
-        },
+        { text: 'Cancelar', role: 'cancel', cssClass: 'alert-button-cancel' },
         {
           text: 'Eliminar',
           cssClass: 'alert-button-danger',
           handler: async () => {
-            try {
-              await deleteTask(taskId);
-              showSuccessToast('Tarea eliminada');
-            } catch (error) {
-              showErrorToast('Error al eliminar tarea');
-              console.error('Error deleting task:', error);
-            }
+            try { await deleteTask(taskId); showSuccessToast('Tarea eliminada'); } 
+            catch (error) { showErrorToast('Error al eliminar tarea'); }
           },
         },
       ],
@@ -162,7 +154,6 @@ const TasksPage: React.FC = () => {
       showSuccessToast('Tarea completada');
     } catch (error) {
       showErrorToast('Error al completar tarea');
-      console.error('Error completing task:', error);
     }
   };
 
@@ -172,11 +163,7 @@ const TasksPage: React.FC = () => {
     history.push('/timer');
   };
 
-  const handleViewTask = (task: Task) => {
-    setSelectedTask(task);
-    setShowTaskModal(true);
-  };
-
+  const handleViewTask = (task: Task) => { setSelectedTask(task); setShowTaskModal(true); };
   const showSuccessToast = (message: string) => { setToastMessage(message); setToastColor('success'); setShowToast(true); };
   const showWarningToast = (message: string) => { setToastMessage(message); setToastColor('warning'); setShowToast(true); };
   const showErrorToast = (message: string) => { setToastMessage(message); setToastColor('danger'); setShowToast(true); };
@@ -188,7 +175,6 @@ const TasksPage: React.FC = () => {
       <Header />
       <IonContent fullscreen>
         <div className="tasks-container">
-          
           <div className="tabs-wrapper">
             <IonSegment value={activeTab} onIonChange={e => setActiveTab(e.detail.value as any)} scrollable className="custom-segment">
               <IonSegmentButton value="planning"><IonLabel>📝 Planificar</IonLabel></IonSegmentButton>
@@ -204,39 +190,26 @@ const TasksPage: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'active' && (
-            <div className="tab-content">
-              <IonSearchbar value={searchTerm} onIonChange={e => setSearchTerm(e.detail.value!)} placeholder="Buscar tarea..." className="custom-searchbar" />
+          {activeTab !== 'planning' && (
+             <div className="tab-content">
+              {activeTab === 'active' && <IonSearchbar value={searchTerm} onIonChange={e => setSearchTerm(e.detail.value!)} placeholder="Buscar tarea..." className="custom-searchbar" />}
               <TaskList
                 tasks={filteredTasks}
-                emptyMessage={searchTerm.trim() ? 'No se encontraron tareas' : 'Sin tareas pendientes'}
-                emptyIcon="✅"
-                onSelectTask={handleSelectTask}
+                emptyMessage={
+                  activeTab === 'active' ? (searchTerm.trim() ? 'No se encontraron tareas' : 'Sin tareas pendientes') :
+                  activeTab === 'expired' ? 'Sin tareas vencidas' :
+                  'Sin tareas completadas aún'
+                }
+                emptyIcon={
+                  activeTab === 'active' ? '✅' :
+                  activeTab === 'expired' ? '🎉' :
+                  '🏆'
+                }
+                onSelectTask={activeTab === 'active' ? handleSelectTask : undefined}
                 onDeleteTask={handleDeleteTask}
-                onCompleteTask={handleCompleteTask}
-                showConflicts
+                onCompleteTask={activeTab === 'active' ? handleCompleteTask : undefined}
+                showConflicts={activeTab === 'active'}
                 allTasks={tasks}
-              />
-            </div>
-          )}
-
-          {activeTab === 'expired' && (
-            <div className="tab-content">
-              <TaskList
-                tasks={filteredTasks}
-                emptyMessage="Sin tareas vencidas"
-                emptyIcon="🎉"
-                onDeleteTask={handleDeleteTask}
-              />
-            </div>
-          )}
-
-          {activeTab === 'completed' && (
-            <div className="tab-content">
-              <TaskList
-                tasks={filteredTasks}
-                emptyMessage="Sin tareas completadas aún"
-                emptyIcon="🏆"
               />
             </div>
           )}

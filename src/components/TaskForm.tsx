@@ -13,11 +13,10 @@ import {
 } from '@ionic/react';
 import { Task, RecurrenceType, TimeUnit } from '../models/Task';
 import { dateUtils } from '../utils/dateUtils';
-import { taskUtils } from '../utils/taskUtils';
 import './TaskForm.css';
 
 interface TaskFormProps {
-  onSubmit: (task: Task) => Promise<boolean>;
+  onSubmit: (task: Omit<Task, 'id'>) => Promise<boolean>;
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
@@ -82,8 +81,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
     }
 
     const scheduledStart = dateUtils.combineDateAndTime(date, time);
-    const baseTask: Task = {
-      id: taskUtils.generateTaskId(),
+    const baseTask: Omit<Task, 'id'> = {
       title: title.trim(),
       scheduledStart: scheduledStart.toISOString(),
       duration,

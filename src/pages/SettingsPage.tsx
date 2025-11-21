@@ -28,8 +28,7 @@ const SettingsPage: React.FC = () => {
 
   const handleTestStorage = async () => {
     try {
-      const testTask: Task = {
-        id: Date.now(),
+      const testTaskData: Omit<Task, 'id'> = {
         title: testTitle || 'Tarea de Prueba',
         scheduledStart: new Date().toISOString(),
         duration: 25,
@@ -38,7 +37,7 @@ const SettingsPage: React.FC = () => {
         createdAt: new Date().toISOString(),
         isRecurring: false,
       };
-      await addTask(testTask);
+      await addTask(testTaskData);
       setToastMessage('✅ Tarea guardada correctamente');
       setShowToast(true);
       setTestTitle('');
@@ -173,7 +172,7 @@ const SettingsPage: React.FC = () => {
             <IonCardContent>
               <p style={{ color: 'var(--app-text-secondary)', marginBottom: '1rem' }}>
                 <strong style={{ color: 'var(--app-primary)' }}>
-                  PoliFocusTask v11 - Ionic
+                  PoliFocusTask v12 - ID Secuencial
                 </strong>
               </p>
               <p style={{ fontSize: '0.875rem', color: 'var(--app-text-secondary)' }}>
