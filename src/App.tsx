@@ -9,6 +9,7 @@ import {
   IonTabBar,
   IonTabButton,
   IonTabs,
+  isPlatform,
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
@@ -19,6 +20,9 @@ import {
   statsChartOutline, 
   settingsOutline 
 } from 'ionicons/icons';
+
+/* Services */
+import { notificationService } from './services/notification.service';
 
 /* Core CSS */
 import '@ionic/react/css/core.css';
@@ -58,6 +62,14 @@ const AppContent: React.FC = () => {
   const { showWelcomeModal, setShowWelcomeModal } = useApp();
 
   useEffect(() => {
+    // Inicializa los servicios de la app
+    const initializeAppServices = async () => {
+      await notificationService.requestPermissions();
+      if (isPlatform('android')) {
+        await notificationService.createNotificationChannel();
+      }
+    };
+    
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeModal');
     const loadingTimeout = setTimeout(() => {
       setIsAppReady(true);
@@ -65,6 +77,8 @@ const AppContent: React.FC = () => {
         setShowWelcomeModal(true);
       }
     }, 2500);
+
+    initializeAppServices();
     return () => clearTimeout(loadingTimeout);
   }, [setShowWelcomeModal]);
 

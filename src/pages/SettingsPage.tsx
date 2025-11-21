@@ -16,6 +16,7 @@ import {
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { storageService } from '../services/storage.service';
+import { notificationService } from '../services/notification.service';
 import { Task } from '../models/Task';
 import Header from '../components/Header';
 
@@ -27,7 +28,6 @@ const SettingsPage: React.FC = () => {
 
   const handleTestStorage = async () => {
     try {
-      // Crear tarea de prueba
       const testTask: Task = {
         id: Date.now(),
         title: testTitle || 'Tarea de Prueba',
@@ -38,7 +38,6 @@ const SettingsPage: React.FC = () => {
         createdAt: new Date().toISOString(),
         isRecurring: false,
       };
-
       await addTask(testTask);
       setToastMessage('✅ Tarea guardada correctamente');
       setShowToast(true);
@@ -47,6 +46,12 @@ const SettingsPage: React.FC = () => {
       setToastMessage('❌ Error al guardar tarea');
       setShowToast(true);
     }
+  };
+
+  const handleTestNotification = async () => {
+    setToastMessage('🔔 Programando notificación de prueba...');
+    setShowToast(true);
+    await notificationService.scheduleTestNotification();
   };
 
   const handleClearData = async () => {
@@ -66,8 +71,6 @@ const SettingsPage: React.FC = () => {
   const handleExportData = async () => {
     try {
       const data = await storageService.exportData();
-      
-      // Crear blob y descargar
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -77,7 +80,6 @@ const SettingsPage: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
       setToastMessage('📦 Datos exportados correctamente');
       setShowToast(true);
     } catch (error) {
@@ -97,6 +99,26 @@ const SettingsPage: React.FC = () => {
           <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>
             Ajustes ⚙️
           </h2>
+
+          {/* Prueba de Notificaciones */}
+          <IonCard>
+            <IonCardHeader>
+              <IonCardTitle style={{ color: 'var(--app-primary)' }}>
+                🧪 Prueba de Notificaciones
+              </IonCardTitle>
+            </IonCardHeader>
+            <IonCardContent>
+              <p style={{ fontSize: '0.875rem', color: 'var(--app-text-secondary)', marginBottom: '1rem' }}>
+                Presiona el botón para programar una notificación de prueba. Debería aparecer en 5 segundos, incluso si la app está en segundo plano.
+              </p>
+              <IonButton 
+                expand="block" 
+                onClick={handleTestNotification}
+              >
+                Probar Notificación
+              </IonButton>
+            </IonCardContent>
+          </IonCard>
 
           {/* Prueba de Storage */}
           <IonCard>
@@ -151,7 +173,7 @@ const SettingsPage: React.FC = () => {
             <IonCardContent>
               <p style={{ color: 'var(--app-text-secondary)', marginBottom: '1rem' }}>
                 <strong style={{ color: 'var(--app-primary)' }}>
-                  PoliFocusTask v10 - Ionic
+                  PoliFocusTask v11 - Ionic
                 </strong>
               </p>
               <p style={{ fontSize: '0.875rem', color: 'var(--app-text-secondary)' }}>

@@ -1,11 +1,14 @@
 
 // contexts/AppContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { isPlatform } from '@ionic/react';
 import { Task } from '../models/Task';
 import { PomodoroSession, TimerState } from '../models/Pomodoro';
 import { AppConfig, DEFAULT_CONFIG } from '../models/Config';
 import { storageService } from '../services/storage.service';
 import { notificationService } from '../services/notification.service';
+
+// ... (interface and other setup remains the same)
 
 export interface AppContextType {
   // Tasks
@@ -79,9 +82,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         loadSessions(),
         loadConfig(),
       ]);
-       // Al iniciar, asegurarse de que los permisos de notificación están solicitados
-      if (!(await notificationService.hasPermission())) {
-        await notificationService.requestPermission();
+      // On native platforms, handle notification permissions and channel creation
+      if (isPlatform('hybrid')) {
+        if (!(await notificationService.hasPermission())) {
+          await notificationService.requestPermissions();
+        }
+        if (isPlatform('android')) {
+          await notificationService.createNotificationChannel();
+        }
       }
     } catch (error) {
       console.error('Error loading initial data:', error);
@@ -113,12 +121,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addTask = async (task: Task) => {
     try {
       const newTask = await storageService.addTask(task);
-      
-      // Schedule notifications silently
-      notificationService.scheduleTaskNotifications(newTask).catch(error => {
-        console.error('Failed to schedule notifications, but task was added:', error);
-      });
-
+      // The notification service is now smart enough to only run on native
+      await notificationService.scheduleTaskNotifications(newTask);
       await loadTasks();
     } catch (error) {
       console.error('Error adding task:', error);
@@ -130,10 +134,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const originalTask = tasks.find(t => t.id === taskId);
       if (originalTask) {
+        // Cancel old notifications before updating
         await notificationService.cancelTaskNotifications(originalTask);
       }
 
       const updatedTask = await storageService.updateTask(taskId, updates);
+      
+      // Schedule new notifications for the updated task
       if (updatedTask) {
         await notificationService.scheduleTaskNotifications(updatedTask);
       }
@@ -155,6 +162,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const taskToDelete = tasks.find(t => t.id === taskId);
       if (taskToDelete) {
+        // Cancel notifications for the deleted task
         await notificationService.cancelTaskNotifications(taskToDelete);
       }
 
@@ -174,8 +182,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const loadTasks = async () => {
     try {
       const loadedTasks = await storageService.getTasks();
-      
-      // Data migration from startDate to scheduledStart
       const migratedTasks = loadedTasks.map((task: any) => {
         if (task && task.startDate && !task.scheduledStart) {
           const { startDate, ...rest } = task;
@@ -183,7 +189,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
         return task;
       });
-
       setTasks(migratedTasks);
     } catch (error) {
       console.error('Error loading tasks:', error);

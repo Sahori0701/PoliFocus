@@ -1,90 +1,178 @@
 
-import { LocalNotifications, ScheduleOptions, CancelOptions, PermissionStatus } from '@capacitor/local-notifications';
+// src/services/notification.service.ts
+import { LocalNotifications, Channel } from '@capacitor/local-notifications';
+import { isPlatform } from '@ionic/react';
 import { Task } from '../models/Task';
-
-// IDs para las notificaciones (15 y 5 minutos antes)
-const NOTIFICATION_ID_15_MIN = 15;
-const NOTIFICATION_ID_5_MIN = 5;
 
 class NotificationService {
 
+  // Propiedad privada para verificar si estamos en un dispositivo móvil (iOS/Android)
+  private isNative = isPlatform('hybrid');
+
+  /**
+   * Verifica si la aplicación tiene permisos para enviar notificaciones.
+   * Devuelve `false` si no está en un dispositivo nativo.
+   */
   async hasPermission(): Promise<boolean> {
-    const status: PermissionStatus = await LocalNotifications.checkPermissions();
-    return status.display === 'granted';
+    if (!this.isNative) return false;
+    try {
+      const permissions = await LocalNotifications.checkPermissions();
+      return permissions.display === 'granted';
+    } catch (error) {
+      console.error('Error al verificar permisos de notificación:', error);
+      return false;
+    }
   }
 
-  async requestPermission(): Promise<boolean> {
-    const status: PermissionStatus = await LocalNotifications.requestPermissions();
-    return status.display === 'granted';
+  /**
+   * Solicita al usuario permiso para enviar notificaciones.
+   * Solo se ejecuta en plataformas nativas.
+   */
+  async requestPermissions(): Promise<boolean> {
+    if (!this.isNative) return false;
+    try {
+      const result = await LocalNotifications.requestPermissions();
+      return result.display === 'granted';
+    } catch (error) {
+      console.error('Error al solicitar permisos de notificación:', error);
+      return false;
+    }
   }
 
-  async scheduleTaskNotifications(task: Task): Promise<void> {
-    if (!task.scheduledStart || task.status !== 'pending') {
+  /**
+   * Crea un canal de notificación para Android (obligatorio para Android 8.0+).
+   * Solo se ejecuta en dispositivos Android.
+   */
+  async createNotificationChannel() {
+    if (!this.isNative || !isPlatform('android')) return;
+    try {
+      const channel: Channel = {
+        id: 'task_alerts',
+        name: 'Alertas de Tareas',
+        description: 'Notificaciones para tareas próximas a vencer.',
+        importance: 4, // Urgente
+        visibility: 1, // Público
+        sound: 'default',
+        vibration: true,
+      };
+      await LocalNotifications.createChannel(channel);
+    } catch (error) {
+      console.error('Error al crear el canal de notificación:', error);
+    }
+  }
+
+  /**
+   * Programa notificaciones para una tarea específica (15 y 5 minutos antes).
+   * Solo se ejecuta en plataformas nativas y si la tarea está pendiente.
+   */
+  async scheduleTaskNotifications(task: Task) {
+    if (!this.isNative || task.status !== 'pending' || !task.scheduledStart) return;
+
+    if (!(await this.hasPermission())) {
+      console.warn("No se pueden programar notificaciones, el permiso no fue concedido.");
+      return;
+    }
+    
+    const now = Date.now();
+    const startTime = new Date(task.scheduledStart).getTime();
+    const notifications = [];
+
+    // Alerta 1: 15 minutos antes
+    const fifteenMinBefore = startTime - 15 * 60 * 1000;
+    if (fifteenMinBefore > now) {
+      notifications.push({
+        id: task.id * 10 + 1, // ID único para la alerta de 15 min
+        title: `¡Tu tarea va a empezar! (${task.title})`,
+        body: `Faltan 15 minutos para que comience tu tarea. ¡Prepárate!`,
+        schedule: { at: new Date(fifteenMinBefore) },
+        channelId: 'task_alerts',
+        sound: 'default',
+      });
+    }
+
+    // Alerta 2: 5 minutos antes
+    const fiveMinBefore = startTime - 5 * 60 * 1000;
+    if (fiveMinBefore > now) {
+      notifications.push({
+        id: task.id * 10 + 2, // ID único para la alerta de 5 min
+        title: `¡Tu tarea casi empieza! (${task.title})`,
+        body: `¡Solo 5 minutos para que comience tu tarea!`,
+        schedule: { at: new Date(fiveMinBefore) },
+        channelId: 'task_alerts',
+        sound: 'default',
+      });
+    }
+
+    if (notifications.length > 0) {
+      try {
+        await LocalNotifications.schedule({ notifications });
+      } catch (error) {
+        console.error(`Error al programar notificaciones para la tarea ${task.id}:`, error);
+      }
+    }
+  }
+
+  /**
+   * Cancela todas las notificaciones pendientes para una tarea específica.
+   * Útil si la tarea se completa, edita o elimina.
+   * Solo se ejecuta en plataformas nativas.
+   */
+  async cancelTaskNotifications(task: Task) {
+    if (!this.isNative) return;
+    try {
+      const pending = await LocalNotifications.getPending();
+      const notificationIdsToCancel = [
+        task.id * 10 + 1, // ID de alerta de 15 min
+        task.id * 10 + 2, // ID de alerta de 5 min
+      ];
+      
+      const notificationsToCancel = pending.notifications.filter(notif => 
+        notificationIdsToCancel.includes(notif.id)
+      );
+
+      if (notificationsToCancel.length > 0) {
+        await LocalNotifications.cancel({ notifications: notificationsToCancel });
+      }
+    } catch (error) {
+      console.error(`Error al cancelar notificaciones para la tarea ${task.id}:`, error);
+    }
+  }
+
+  /**
+   * Programa una notificación de prueba para dispararse en 5 segundos.
+   * Solo se ejecuta en plataformas nativas.
+   */
+  async scheduleTestNotification() {
+    if (!this.isNative) {
+      alert("Las notificaciones solo se pueden probar en un dispositivo móvil.");
+      console.warn("Prueba de notificación omitida: no es una plataforma nativa.");
       return;
     }
 
     if (!(await this.hasPermission())) {
-      if (!(await this.requestPermission())) {
-        console.log("Permission for notifications was not granted.");
-        return;
-      }
+      alert("Permiso de notificación no concedido. Ve a los ajustes de la app para habilitarlo.");
+      return;
     }
-    
-    const now = new Date().getTime();
-    const startTime = new Date(task.scheduledStart).getTime();
 
-    // Notificación 15 minutos antes
-    const fifteenMinutesBefore = startTime - 15 * 60 * 1000;
-    if (fifteenMinutesBefore > now) {
-      const options: ScheduleOptions = {
+    try {
+      await LocalNotifications.schedule({
         notifications: [
           {
-            id: this.getNotificationId(task.id, NOTIFICATION_ID_15_MIN),
-            title: "Tarea Próxima",
-            body: `¡Tu tarea \"${task.title}\" comienza en 15 minutos!`,
-            schedule: { at: new Date(fifteenMinutesBefore) },
-            sound: 'beep',
-            smallIcon: 'ic_stat_icon_config_material',
-          },
-        ],
-      };
-      await LocalNotifications.schedule(options);
+            title: "¡PoliFocusTask dice hola! 🧪",
+            body: "Si ves esto, las notificaciones funcionan perfectamente.",
+            id: 1, // ID estático para la prueba
+            schedule: { at: new Date(Date.now() + 1000 * 5) }, // 5 segundos desde ahora
+            sound: 'default',
+            channelId: 'task_alerts',
+          }
+        ]
+      });
+      console.log("Notificación de prueba programada.");
+    } catch (error) {
+      console.error('Error al programar la notificación de prueba:', error);
     }
-
-    // Notificación 5 minutos antes
-    const fiveMinutesBefore = startTime - 5 * 60 * 1000;
-    if (fiveMinutesBefore > now) {
-        const options: ScheduleOptions = {
-            notifications: [
-              {
-                id: this.getNotificationId(task.id, NOTIFICATION_ID_5_MIN),
-                title: "Tarea Próxima",
-                body: `¡Tu tarea \"${task.title}\" comienza en 5 minutos!`,
-                schedule: { at: new Date(fiveMinutesBefore) },
-                sound: 'beep',
-                smallIcon: 'ic_stat_icon_config_material',
-              },
-            ],
-          };
-          await LocalNotifications.schedule(options);
-    }
-  }
-
-  async cancelTaskNotifications(task: Task): Promise<void> {
-    const options: CancelOptions = {
-      notifications: [
-        { id: this.getNotificationId(task.id, NOTIFICATION_ID_15_MIN) },
-        { id: this.getNotificationId(task.id, NOTIFICATION_ID_5_MIN) },
-      ],
-    };
-    await LocalNotifications.cancel(options);
-  }
-
-  // Genera un ID numérico único para la notificación
-  private getNotificationId(taskId: number, type: number): number {
-    // Combina el ID de la tarea con el tipo de notificación
-    return taskId * 10 + type;
   }
 }
 
+// Exportamos una única instancia del servicio (Patrón Singleton)
 export const notificationService = new NotificationService();
