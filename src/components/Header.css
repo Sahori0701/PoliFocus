@@ -13,11 +13,11 @@
   height: 42px;
   margin-right: 0.9rem;
   border-radius: 12px;
-  background: linear-gradient(145deg, #3b82f6, #2563eb);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.7);
+  box-shadow: none;
   flex-shrink: 0;
 }
 

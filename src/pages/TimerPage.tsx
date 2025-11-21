@@ -5,12 +5,10 @@ import {
   IonPage,
   IonButton,
   IonIcon,
-  IonFab,
-  IonFabButton,
   IonSpinner,
   useIonToast,
 } from '@ionic/react';
-import { play, pause, checkmark, playSkipForwardOutline, search } from 'ionicons/icons';
+import { play, pause, checkmark, playSkipForwardOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Header from '../components/Header';
@@ -199,11 +197,6 @@ const TimerPage: React.FC = () => {
             )}
           </div>
           <div className="footer-info">ⓘ Marca la tarea como completada solo con el botón de check (✓)</div>
-          <IonFab vertical="bottom" horizontal="end" slot="fixed">
-            <IonFabButton onClick={() => history.push('/tasks')}>
-              <IonIcon icon={search} />
-            </IonFabButton>
-          </IonFab>
         </div>
       </IonContent>
     </IonPage>

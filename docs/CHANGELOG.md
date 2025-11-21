@@ -4,6 +4,17 @@ Registro de cambios por fase de desarrollo.
 
 ---
 
+## [1.2.0] - 2025-01-20 - ID Secuencial y Notificaciones
+
+### 🐛 Corregido (Fixed)
+- **Bug de Notificaciones**: Se ha solucionado un error crítico que impedía que las notificaciones para tareas futuras se programaran correctamente. El problema se debía a la generación de IDs de tarea basados en `Date.now()`, lo que causaba colisiones. El sistema de notificaciones ahora es fiable, independientemente de la fecha de programación de la tarea.
+
+### ✨ Mejorado (Improved)
+- **IDs de Tarea Secuenciales**: Se ha refactorizado por completo el sistema de almacenamiento (`storage.service`) para utilizar **IDs numéricos, autoincrementales y seguros**. El servicio ahora busca el ID más alto existente y le suma uno, garantizando identificadores únicos y eliminando la posibilidad de colisiones.
+- **Flujo de Creación de Tareas**: Se ha ajustado toda la cadena de creación de tareas (`AppContext`, `TaskForm`, `TasksPage`) para delegar la generación de IDs exclusivamente a la capa de almacenamiento. Esto simplifica el código, lo hace más robusto y centraliza la lógica de negocio.
+
+---
+
 ## [Fase 2] - 2025-01-XX - Storage y Persistencia
 
 ### ✅ Agregado
@@ -43,11 +54,6 @@ Registro de cambios por fase de desarrollo.
 - ✅ Recarga de página mantiene datos
 - ✅ Cierre/reapertura de app mantiene datos
 - ✅ Exportación de datos a JSON
-
-### 📊 Métricas
-- **Archivos creados**: 5
-- **Líneas de código**: ~800
-- **Cobertura de tests**: Pendiente
 
 ---
 
@@ -94,34 +100,6 @@ Registro de cambios por fase de desarrollo.
 - ✅ Build para Android
 - ✅ Instalación en dispositivo físico
 - ✅ Navegación entre tabs fluida
-
-### 📊 Métricas
-- **Archivos creados**: 12
-- **Líneas de código**: ~600
-- **Tiempo de compilación**: <5s
-
----
-
-## [Próximas Versiones]
-
-### Fase 3 - Gestión de Tareas (Planificada)
-- [ ] Formulario completo de creación
-- [ ] Lista de tareas con filtros
-- [ ] Detección de conflictos
-- [ ] Tareas recurrentes
-- [ ] Búsqueda y ordenamiento
-
-### Fase 4 - Temporizador Pomodoro (Planificada)
-- [ ] UI del círculo de progreso
-- [ ] Controles play/pause/skip
-- [ ] División automática de tareas largas
-- [ ] Modos focus/break
-
-### Fase 5 - Background y Notificaciones (Planificada)
-- [ ] Ejecución en segundo plano
-- [ ] Notificaciones locales
-- [ ] Alertas de tareas (15min, 5min)
-- [ ] Alertas de timer (5min antes)
 
 ---
 
