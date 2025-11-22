@@ -1,5 +1,5 @@
 // pages/TimerPage.tsx
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import {
   IonContent,
   IonPage,
@@ -25,7 +25,6 @@ const TimerPage: React.FC = () => {
     updateTask,
     setInitialTab,
     isLoading,
-    // CORREGIDO: Se importa `resumePomodoro`
     resumePomodoro,
     pausePomodoro,
     skipBreak,
@@ -35,48 +34,10 @@ const TimerPage: React.FC = () => {
   } = useApp();
 
   const history = useHistory();
-  const [present, dismiss] = useIonToast();
+  const [present] = useIonToast(); // CORREGIDO: No se necesita `dismiss`
 
-  useEffect(() => {
-    if (confirmationPending) {
-      present({
-        message: '🏁 ¡Ciclo de enfoque terminado! ¿Tarea completa?',
-        duration: 0, // Persiste hasta que el usuario interactúa
-        position: 'bottom',
-        color: 'light',
-        buttons: [
-          {
-            text: '😴 no, a descansar',
-            role: 'cancel',
-            handler: () => {
-              proceedToBreak();
-            },
-          },
-          {
-            text: '✅ sí, terminada',
-            role: 'confirm',
-            handler: async () => {
-              await confirmTaskCompletion();
-              setInitialTab('completed');
-              history.push('/tasks');
-            },
-          },
-        ],
-        onDidDismiss: (e) => {
-          if (e.detail.role !== 'confirm' && e.detail.role !== 'cancel') {
-            proceedToBreak();
-          }
-        },
-      });
-    } else {
-      dismiss();
-    }
-    return () => {
-      dismiss();
-    };
-  }, [confirmationPending, present, dismiss, history, setInitialTab, proceedToBreak, confirmTaskCompletion]);
+  // CORREGIDO: Se elimina el `useEffect` que usaba IonToast para la confirmación.
 
-  // CORREGIDO: La lógica del botón ahora usa `resumePomodoro`
   const handleToggleTimer = () => {
     if (timerState.isRunning) {
       pausePomodoro();
@@ -86,7 +47,7 @@ const TimerPage: React.FC = () => {
         history.push('/tasks');
         return;
       }
-      resumePomodoro(); // <-- USA LA NUEVA FUNCIÓN
+      resumePomodoro();
     }
   };
 
@@ -121,7 +82,7 @@ const TimerPage: React.FC = () => {
 
   const totalDurationInSeconds = timerState.mode === 'focus' && activeTask
     ? activeTask.duration * 60
-    : (timerState.mode === 'shortBreak' ? timerState.timeLeft : timerState.timeLeft); // Placeholder for break duration
+    : (timerState.mode === 'shortBreak' ? timerState.timeLeft : timerState.timeLeft);
 
   const percentageElapsed = totalDurationInSeconds > 0
     ? ((totalDurationInSeconds - timerState.timeLeft) / totalDurationInSeconds) * 100
@@ -195,6 +156,36 @@ const TimerPage: React.FC = () => {
           </div>
         </div>
       </IonContent>
+
+      {/* CORREGIDO: Notificación personalizada para fin de ciclo */}
+      {confirmationPending && (
+        <div className="focus-complete-toast">
+          <div className="toast-content">
+            <span className="toast-icon">🏁</span>
+            <p className="toast-message">¡Ciclo de enfoque terminado! ¿Tarea completa?</p>
+          </div>
+          <div className="toast-actions">
+            <IonButton
+              fill="clear"
+              className="toast-button toast-button-cancel"
+              onClick={() => proceedToBreak()}
+            >
+              😴 no, a descansar
+            </IonButton>
+            <IonButton
+              fill="clear"
+              className="toast-button toast-button-confirm"
+              onClick={async () => {
+                await confirmTaskCompletion();
+                setInitialTab('completed');
+                history.push('/tasks');
+              }}
+            >
+              ✅ sí, terminada
+            </IonButton>
+          </div>
+        </div>
+      )}
     </IonPage>
   );
 };

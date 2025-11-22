@@ -1,18 +1,16 @@
 // components/TaskItem.tsx
 import React from 'react';
-import { IonCard, IonButton, IonIcon } from '@ionic/react';
-import { playOutline, trashOutline, checkmarkOutline } from 'ionicons/icons';
+import { IonCard, IonButton } from '@ionic/react';
 import { Task } from '../models/Task';
 import { taskService } from '../services/task.service';
 import './TaskItem.css';
 
-// CORREGIDO: Se añade `onViewTask` a las propiedades
 interface TaskItemProps {
   task: Task;
   onSelect?: (task: Task) => void;
   onDelete?: (taskId: number) => void;
   onComplete?: (taskId: number) => void;
-  onViewTask?: (task: Task) => void; // <-- AÑADIDO
+  onViewTask?: (task: Task) => void;
   hasConflict?: boolean;
 }
 
@@ -21,7 +19,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
   onSelect,
   onDelete,
   onComplete,
-  onViewTask, // <-- AÑADIDO
+  onViewTask,
   hasConflict = false,
 }) => {
   const isCompleted = task.status === 'completed';
@@ -50,9 +48,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
     return classes[urgencyClass] || 'time-badge-normal';
   };
 
-  // CORREGIDO: Manejador de clic para la tarjeta
   const handleCardClick = (e: React.MouseEvent) => {
-    // Si existe `onViewTask` y el clic no se hizo en un botón, se ejecuta
     const target = e.target as HTMLElement;
     if (onViewTask && !target.closest('ion-button')) {
       onViewTask(task);
@@ -61,10 +57,9 @@ const TaskItem: React.FC<TaskItemProps> = ({
 
   return (
     <IonCard
-      // CORREGIDO: Se añade la clase `task-is-clickable` si hay acción de vista
       className={`task-item-card ${hasConflict ? 'task-conflict' : ''} ${onViewTask ? 'task-is-clickable' : ''}`}
       style={{ borderLeft: `4px solid ${isCompleted ? 'var(--ion-color-success)' : priorityColor}` }}
-      onClick={handleCardClick} // <-- AÑADIDO
+      onClick={handleCardClick}
     >
       <div className="task-item-wrapper">
         <div className="task-header">
@@ -112,20 +107,21 @@ const TaskItem: React.FC<TaskItemProps> = ({
                  <span className="badge-text">{urgencyBadge.text}</span>
               </div>
             )}
+            {/* CORREGIDO: Se usan emojis en botones transparentes */}
             <div className="task-actions">
               {onSelect && (
-                <IonButton size="small" color="primary" onClick={(e) => { e.stopPropagation(); onSelect(task); }} fill="solid">
-                  <IonIcon icon={playOutline} slot="icon-only" />
+                <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onSelect(task); }}>
+                  <span>▶️</span>
                 </IonButton>
               )}
               {onComplete && (
-                <IonButton size="small" color="success" onClick={(e) => { e.stopPropagation(); onComplete(task.id); }} fill="solid">
-                  <IonIcon icon={checkmarkOutline} slot="icon-only" />
+                <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onComplete(task.id); }}>
+                  <span>✅</span>
                 </IonButton>
               )}
               {onDelete && (
-                <IonButton size="small" color="danger" onClick={(e) => { e.stopPropagation(); onDelete(task.id); }} fill="solid">
-                  <IonIcon icon={trashOutline} slot="icon-only" />
+                <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}>
+                  <span>🗑️</span>
                 </IonButton>
               )}
             </div>
