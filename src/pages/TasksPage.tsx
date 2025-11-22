@@ -10,7 +10,7 @@ import {
   IonToast,
   useIonAlert,
 } from '@ionic/react';
-import { useHistory } from 'react-router-dom'; 
+import { useHistory } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Task } from '../models/Task';
 import { taskService } from '../services/task.service';
@@ -22,7 +22,8 @@ import Header from '../components/Header';
 import './TasksPage.css';
 
 const TasksPage: React.FC = () => {
-  const { tasks, addTask, deleteTask, updateTask, startPomodoroForTask, initialTab, setInitialTab } = useApp();
+  // CORREGIDO: Se vuelve a importar `selectTask` desde el contexto
+  const { tasks, addTask, deleteTask, updateTask, selectTask, initialTab, setInitialTab } = useApp();
   const history = useHistory();
   const [presentAlert] = useIonAlert();
   
@@ -32,7 +33,7 @@ const TasksPage: React.FC = () => {
   const [conflictingTasks, setConflictingTasks] = useState<Task[]>([]);
   const [pendingTask, setPendingTask] = useState<Omit<Task, 'id'> | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTaskForModal, setSelectedTaskForModal] = useState<Task | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastColor, setToastColor] = useState<'success' | 'warning' | 'danger'>('success');
@@ -48,7 +49,6 @@ const TasksPage: React.FC = () => {
   }, [initialTab, setInitialTab]);
 
   const getFilteredTasks = () => {
-    // ... (sin cambios)
     let filtered: Task[] = [];
     switch (activeTab) {
       case 'active': filtered = taskService.filterTasksByStatus(tasks, 'active'); break;
@@ -69,7 +69,6 @@ const TasksPage: React.FC = () => {
 
   const handleCreateTask = async (taskData: Omit<Task, 'id'>): Promise<boolean> => {
     try {
-      // Añadimos un ID temporal para que `generateRecurringTasks` y `checkConflicts` funcionen.
       const baseTaskWithTempId: Task = { ...taskData, id: Date.now() };
       const tasksToAdd = taskService.generateRecurringTasks(baseTaskWithTempId);
       
@@ -78,13 +77,12 @@ const TasksPage: React.FC = () => {
       if (allConflicts.length > 0) {
         const uniqueConflicts = [...new Map(allConflicts.map(item => [item.id, item])).values()];
         setConflictingTasks(uniqueConflicts);
-        setPendingTask(taskData); // Guardamos la tarea original SIN ID
+        setPendingTask(taskData);
         setShowConflictModal(true);
         return false;
       }
 
       for (const task of tasksToAdd) {
-        // Quitamos el ID temporal antes de pasarlo al servicio de storage
         const { id, ...taskDataForStorage } = task;
         await addTask(taskDataForStorage);
       }
@@ -94,7 +92,6 @@ const TasksPage: React.FC = () => {
       return true;
     } catch (error) {
       showErrorToast('Error al crear tarea');
-      console.error('Error creating task:', error);
       return false;
     }
   };
@@ -102,12 +99,10 @@ const TasksPage: React.FC = () => {
   const handleConfirmWithConflicts = async () => {
     if (!pendingTask) return;
     try {
-      // Añadimos un ID temporal, igual que en handleCreateTask
       const baseTaskWithTempId: Task = { ...pendingTask, id: Date.now() };
       const tasksToAdd = taskService.generateRecurringTasks(baseTaskWithTempId);
       
       for (const task of tasksToAdd) {
-        // Quitamos el ID temporal antes de guardar
         const { id, ...taskDataForStorage } = task;
         await addTask(taskDataForStorage);
       }
@@ -119,7 +114,6 @@ const TasksPage: React.FC = () => {
       setActiveTab('active');
     } catch (error) {
       showErrorToast('Error al crear tarea con conflictos');
-      console.error('Error creating task with conflicts:', error);
     }
   };
 
@@ -156,14 +150,15 @@ const TasksPage: React.FC = () => {
       showErrorToast('Error al completar tarea');
     }
   };
-
+  
+  // CORREGIDO: La función ahora usa `selectTask` para establecer la tarea activa globalmente
   const handleSelectTask = (task: Task) => {
-    startPomodoroForTask(task);
+    selectTask(task); // <-- ESTA ES LA LÍNEA CRÍTICA
     showSuccessToast(`Cargada: ${task.title}`);
     history.push('/timer');
   };
 
-  const handleViewTask = (task: Task) => { setSelectedTask(task); setShowTaskModal(true); };
+  const handleViewTask = (task: Task) => { setSelectedTaskForModal(task); setShowTaskModal(true); };
   const showSuccessToast = (message: string) => { setToastMessage(message); setToastColor('success'); setShowToast(true); };
   const showWarningToast = (message: string) => { setToastMessage(message); setToastColor('warning'); setShowToast(true); };
   const showErrorToast = (message: string) => { setToastMessage(message); setToastColor('danger'); setShowToast(true); };
@@ -208,6 +203,7 @@ const TasksPage: React.FC = () => {
                 onSelectTask={activeTab === 'active' ? handleSelectTask : undefined}
                 onDeleteTask={handleDeleteTask}
                 onCompleteTask={activeTab === 'active' ? handleCompleteTask : undefined}
+                 onViewTask={handleViewTask} // Se pasa el manejador para abrir el modal
                 showConflicts={activeTab === 'active'}
                 allTasks={tasks}
               />
@@ -216,7 +212,7 @@ const TasksPage: React.FC = () => {
         </div>
 
         <ConflictModal isOpen={showConflictModal} conflicts={conflictingTasks} onClose={() => { setShowConflictModal(false); setPendingTask(null); setConflictingTasks([]); }} onConfirm={handleConfirmWithConflicts} />
-        <TaskModal isOpen={showTaskModal} task={selectedTask} onClose={() => { setShowTaskModal(false); setSelectedTask(null); }} onLoadTask={handleSelectTask} />
+        <TaskModal isOpen={showTaskModal} task={selectedTaskForModal} onClose={() => { setShowTaskModal(false); setSelectedTaskForModal(null); }} onLoadTask={handleSelectTask} />
         <IonToast isOpen={showToast} onDidDismiss={() => setShowToast(false)} message={toastMessage} duration={2000} position="bottom" color={toastColor} />
       </IonContent>
     </IonPage>

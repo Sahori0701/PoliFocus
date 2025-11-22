@@ -25,7 +25,8 @@ const TimerPage: React.FC = () => {
     updateTask,
     setInitialTab,
     isLoading,
-    startPomodoroForTask,
+    // CORREGIDO: Se importa `resumePomodoro`
+    resumePomodoro,
     pausePomodoro,
     skipBreak,
     confirmationPending,
@@ -68,17 +69,14 @@ const TimerPage: React.FC = () => {
         },
       });
     } else {
-      // Si ya no hay confirmación pendiente, asegurarse de que el toast se oculte.
       dismiss();
     }
-
-    // Función de limpieza: se ejecuta si el componente se desmonta
-    // o si el efecto se vuelve a ejecutar. Garantiza que no queden toasts perdidos.
     return () => {
       dismiss();
     };
   }, [confirmationPending, present, dismiss, history, setInitialTab, proceedToBreak, confirmTaskCompletion]);
 
+  // CORREGIDO: La lógica del botón ahora usa `resumePomodoro`
   const handleToggleTimer = () => {
     if (timerState.isRunning) {
       pausePomodoro();
@@ -88,7 +86,7 @@ const TimerPage: React.FC = () => {
         history.push('/tasks');
         return;
       }
-      startPomodoroForTask(activeTask);
+      resumePomodoro(); // <-- USA LA NUEVA FUNCIÓN
     }
   };
 
@@ -121,11 +119,14 @@ const TimerPage: React.FC = () => {
     return `${mins}:${secs}`;
   };
 
-  const totalTaskDurationInSeconds = activeTask ? activeTask.duration * 60 : 0;
-  const percentageElapsed = totalTaskDurationInSeconds > 0
-    ? ((timerState.totalElapsed || 0) / totalTaskDurationInSeconds) * 100
-    : 0;
+  const totalDurationInSeconds = timerState.mode === 'focus' && activeTask
+    ? activeTask.duration * 60
+    : (timerState.mode === 'shortBreak' ? timerState.timeLeft : timerState.timeLeft); // Placeholder for break duration
 
+  const percentageElapsed = totalDurationInSeconds > 0
+    ? ((totalDurationInSeconds - timerState.timeLeft) / totalDurationInSeconds) * 100
+    : 0;
+    
   const strokeDashoffset = CIRCUMFERENCE - (Math.max(0, Math.min(100, percentageElapsed)) / 100) * CIRCUMFERENCE;
 
   const statusText = useMemo(() => {
@@ -166,13 +167,13 @@ const TimerPage: React.FC = () => {
             <div className="timer-display">
               <h1 className="time-text">{formatTime(timerState.timeLeft)}</h1>
               <p className="time-status">{statusText}</p>
-              {activeTask && (
+              {activeTask && timerState.mode === 'focus' && (
                 <p className="time-percentage">{`${Math.floor(percentageElapsed)}%`}</p>
               )}
             </div>
           </div>
           <div className="timer-controls">
-            <IonButton onClick={handleToggleTimer} className="control-button-pause" color={timerState.isRunning ? 'danger' : 'success'} disabled={!activeTask && timerState.timeLeft === 0 || confirmationPending}>
+            <IonButton onClick={handleToggleTimer} className="control-button-pause" color={timerState.isRunning ? 'danger' : 'success'} disabled={!activeTask || confirmationPending}>
               <IonIcon slot="start" icon={timerState.isRunning ? pause : play} />
               {timerState.isRunning ? 'Pausar' : 'Iniciar'}
             </IonButton>

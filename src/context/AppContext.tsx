@@ -10,12 +10,14 @@ import { AppConfig, DEFAULT_CONFIG } from '../models/Config';
 import { storageService } from '../services/storage.service';
 import { notificationService } from '../services/notification.service';
 
+// CORREGIDO: Se añade `resumePomodoro`
 export interface AppContextType {
   tasks: Task[];
   loadTasks: () => Promise<Task[]>;
   addTask: (taskData: Omit<Task, 'id'>) => Promise<void>;
   updateTask: (taskId: number, updates: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: number) => Promise<void>;
+  selectTask: (task: Task) => void;
   sessions: PomodoroSession[];
   loadSessions: () => Promise<void>;
   addSession: (session: PomodoroSession) => Promise<void>;
@@ -25,6 +27,7 @@ export interface AppContextType {
   activeTask: Task | null;
   startPomodoroForTask: (task: Task) => void;
   pausePomodoro: () => void;
+  resumePomodoro: () => void; // <-- AÑADIDO
   skipBreak: () => void;
   initialTab: string | null;
   setInitialTab: React.Dispatch<React.SetStateAction<string | null>>;
@@ -55,7 +58,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const [initialTab, setInitialTab] = useState<string | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  
   const [confirmationPending, setConfirmationPending] = useState<boolean>(false);
   const [nextModeInfo, setNextModeInfo] = useState<any>(null);
 
@@ -74,11 +76,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (backgroundTaskId.current) {
       BackgroundTask.finish({ taskId: backgroundTaskId.current });
       backgroundTaskId.current = null;
-      console.log('Background task finished.');
     }
   }, []);
 
-  // MODIFICADO: Lógica de "Tierra Arrasada" al volver a la App
   useEffect(() => {
     if (!isPlatform('hybrid')) return;
     let listener: PluginListenerHandle | null = null;
@@ -86,18 +86,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       listener = await CapApp.addListener('appStateChange', async ({ isActive }) => {
         if (isActive) {
           finishBackgroundTask();
-          console.log('App is active, running notification audit...');
           const currentTasks = await storageService.getTasks();
           await notificationService.rescheduleAll(currentTasks);
         } else {
           if (isRunningRef.current) {
-            try {
-              backgroundTaskId.current = await BackgroundTask.beforeExit(async () => {
-                console.log('Background task for timer started.');
-              });
-            } catch (e) {
-              console.error('Failed to start background task', e);
-            }
+            try { backgroundTaskId.current = await BackgroundTask.beforeExit(async () => {}); }
+            catch (e) { console.error('Failed to start background task', e); }
           }
         }
       });
@@ -113,7 +107,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setTasks(migratedTasks);
       return migratedTasks;
     } catch (error) {
-      console.error('Error loading tasks:', error);
       return [];
     }
   }, []);
@@ -132,43 +125,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const updateTask = useCallback(async (taskId: number, updates: Partial<Task>) => {
     try {
       const updatedTask = await storageService.updateTask(taskId, updates);
-      if (updatedTask) {
-        await notificationService.scheduleTaskNotifications(updatedTask);
-      }
+      if (updatedTask) { await notificationService.scheduleTaskNotifications(updatedTask); }
       if ((updates.status === 'completed' || updates.status === 'cancelled') && activeTask && activeTask.id === taskId) {
         stopAndResetTimer();
       }
       await loadTasks();
     } catch (error) {
-      console.error('Error updating task:', error); throw error;
+      throw error;
     }
   }, [activeTask, loadTasks, stopAndResetTimer]);
-  
-  // ... (resto de las funciones sin cambios significativos en su llamada)
 
   const loadSessions = useCallback(async () => {
-    try {
-      setSessions(await storageService.getSessions());
-    } catch (error) {
-      console.error('Error loading sessions:', error);
-    }
+    try { setSessions(await storageService.getSessions()); } catch (error) { console.error('Error loading sessions:', error); }
   }, []);
 
-  // MODIFICADO: Lógica de "Tierra Arrasada" en el arranque inicial
   const loadInitialData = useCallback(async () => {
     setIsLoading(true);
     try {
       await notificationService.init();
       const loadedConfig = await storageService.getConfig();
       setConfig(loadedConfig);
-      
       const [loadedTasks] = await Promise.all([loadTasks(), loadSessions()]);
-
-      if (isPlatform('hybrid') && loadedTasks) {
-        console.log('Initial app load, running notification audit...');
-        await notificationService.rescheduleAll(loadedTasks);
-      }
-
+      if (isPlatform('hybrid') && loadedTasks) { await notificationService.rescheduleAll(loadedTasks); }
       setTimerState(prev => ({ ...prev, timeLeft: loadedConfig.focusTime * 60 }));
       if (timerWorker.current) {
         const newDurations = { focus: loadedConfig.focusTime * 60, shortBreak: loadedConfig.shortBreak * 60, longBreak: loadedConfig.longBreak * 60 };
@@ -188,9 +166,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const newTask = await storageService.addTask(taskData);
       await notificationService.scheduleTaskNotifications(newTask);
       await loadTasks();
-    } catch (error) {
-      console.error('Error adding task:', error); throw error;
-    }
+    } catch (error) { throw error; }
   };
 
   const deleteTask = useCallback(async (taskId: number) => {
@@ -198,16 +174,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const taskToDelete = tasks.find(t => t.id === taskId);
       if (taskToDelete) await notificationService.cancelTaskNotifications(taskToDelete);
       await storageService.deleteTask(taskId);
-      if (activeTask && activeTask.id === taskId) {
-        stopAndResetTimer();
-      }
+      if (activeTask && activeTask.id === taskId) { stopAndResetTimer(); }
       await loadTasks();
-    } catch (error) {
-      console.error('Error deleting task:', error); throw error;
-    }
+    } catch (error) { throw error; }
   }, [tasks, activeTask, loadTasks, stopAndResetTimer]);
-  
-  // ... (resto de funciones sin cambios como addSession, updateConfig, etc.)
 
   const confirmTaskCompletion = useCallback(async () => {
     if (!activeTaskRef.current) return;
@@ -225,16 +195,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const proceedToBreak = useCallback(() => {
     if (!nextModeInfo) return;
     present({ message: nextModeInfo.message, duration: 2000, color: 'primary' });
-    setTimerState(prev => ({
-      ...prev,
-      mode: nextModeInfo.mode,
-      timeLeft: nextModeInfo.timeLeft,
-      isRunning: true,
-      startTime: Date.now()
-    }));
-    if (timerWorker.current) {
-      timerWorker.current.postMessage({ type: 'START' });
-    }
+    setTimerState(prev => ({ ...prev, mode: nextModeInfo.mode, timeLeft: nextModeInfo.timeLeft, isRunning: true, startTime: Date.now() }));
+    if (timerWorker.current) { timerWorker.current.postMessage({ type: 'START' }); }
     setConfirmationPending(false);
     setNextModeInfo(null);
   }, [nextModeInfo, present]);
@@ -242,15 +204,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     const worker = new Worker('/timer.worker.js');
     timerWorker.current = worker;
-
     worker.onmessage = (e) => {
       const { type, payload } = e.data;
       switch (type) {
-        case 'TICK':
-          if (isRunningRef.current) {
-            setTimerState(prev => ({ ...prev, timeLeft: payload.timeLeft, totalElapsed: payload.totalElapsed }));
-          }
-          break;
+        case 'TICK': if (isRunningRef.current) { setTimerState(prev => ({ ...prev, timeLeft: payload.timeLeft, totalElapsed: payload.totalElapsed })); } break;
         case 'MODE_CHANGE':
           notificationService.showProgressNotification(payload.message, activeTaskRef.current?.title || 'Pomodoro');
           if (modeRef.current === 'focus') {
@@ -263,68 +220,104 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             if (timerWorker.current) timerWorker.current.postMessage({ type: 'START' });
           }
           break;
-        case 'PROGRESS_NOTIFICATION':
-          if (isPlatform('hybrid')) {
-            notificationService.showProgressNotification(payload.message, activeTaskRef.current?.title || 'Pomodoro');
-          }
-          break;
-        case 'STATE_UPDATE':
-          setTimerState(prev => ({ ...prev, ...payload }));
-          break;
+        case 'PROGRESS_NOTIFICATION': if (isPlatform('hybrid')) { notificationService.showProgressNotification(payload.message, activeTaskRef.current?.title || 'Pomodoro'); } break;
+        case 'STATE_UPDATE': setTimerState(prev => ({ ...prev, ...payload })); break;
       }
     };
-
     const initialDurations = { focus: config.focusTime * 60, shortBreak: config.shortBreak * 60, longBreak: config.longBreak * 60 };
     worker.postMessage({ type: 'SET_STATE', payload: { durations: initialDurations } });
-
     return () => worker.terminate();
   }, [present, config]);
   
+  // CORREGIDO: `selectTask` ahora usa la duración de la tarea
+  const selectTask = useCallback((task: Task) => {
+    stopAndResetTimer();
+    setActiveTask(task);
+    
+    const newTimeLeft = task.duration * 60;
+    const newState: TimerState = {
+      isRunning: false,
+      mode: 'focus',
+      timeLeft: newTimeLeft,
+      totalElapsed: 0,
+      startTime: null,
+    };
+    
+    setTimerState(newState);
+    if (timerWorker.current) {
+      const newDurations = { focus: task.duration * 60, shortBreak: config.shortBreak * 60, longBreak: config.longBreak * 60 };
+      timerWorker.current.postMessage({ type: 'SET_STATE', payload: { ...newState, durations: newDurations }});
+    }
+  }, [config.shortBreak, config.longBreak, stopAndResetTimer]);
+
+  // CORREGIDO: `resumePomodoro` para reanudar el temporizador
+  const resumePomodoro = useCallback(() => {
+    if (!timerState.isRunning && activeTask) {
+      setTimerState(prev => ({
+        ...prev,
+        isRunning: true,
+        startTime: Date.now(),
+      }));
+      if (timerWorker.current) {
+        timerWorker.current.postMessage({ type: 'START' });
+      }
+    }
+  }, [timerState.isRunning, activeTask]);
+
+  // CORREGIDO: `startPomodoroForTask` ahora usa `resume`
   const startPomodoroForTask = (task: Task) => {
-    // ... (sin cambios)
+    selectTask(task);
+    // Pequeño delay para asegurar que el estado se actualiza antes de iniciar
+    setTimeout(() => {
+      setTimerState(prev => ({ ...prev, isRunning: true, startTime: Date.now() }));
+      if (timerWorker.current) {
+        timerWorker.current.postMessage({ type: 'START' });
+      }
+    }, 50);
   };
 
   const pausePomodoro = () => {
-    // ... (sin cambios)
+    if (timerState.isRunning) {
+      setTimerState(prev => ({ ...prev, isRunning: false }));
+      if (timerWorker.current) {
+        timerWorker.current.postMessage({ type: 'PAUSE' });
+      }
+      finishBackgroundTask();
+    }
   };
 
   const skipBreak = useCallback(() => {
-    // ... (sin cambios)
-  }, [activeTask, config.focusTime, present, timerState.totalElapsed]);
+    if (timerState.mode !== 'focus') {
+      if (activeTask) {
+        present({ message: 'Saltando al siguiente bloque de concentración...', duration: 2000, color: 'secondary' });
+        startPomodoroForTask(activeTask);
+      } else { stopAndResetTimer(); }
+    }
+  }, [activeTask, present, startPomodoroForTask, stopAndResetTimer, timerState.mode]);
 
   const addSession = async (session: PomodoroSession) => {
-    // ... (sin cambios)
+    try {
+      await storageService.addSession(session);
+      await loadSessions();
+    } catch (error) { console.error('Error adding session:', error); }
   };
 
-  const updateConfig = async (updates: Partial<AppConfig>) => {
-    // ... (sin cambios)
-  };
+  const updateConfig = useCallback(async (updates: Partial<AppConfig>) => {
+    try {
+      const newConfig = { ...config, ...updates };
+      await storageService.saveConfig(newConfig);
+      setConfig(newConfig);
+      
+      if (!activeTask) {
+        setTimerState(prev => ({ ...prev, timeLeft: newConfig.focusTime * 60 }));
+      }
+    } catch (error) {
+      console.error('Error updating config:', error);
+    }
+  }, [config, activeTask]);
 
-  const value: AppContextType = { 
-    tasks, 
-    loadTasks, 
-    addTask, 
-    updateTask, 
-    deleteTask, 
-    sessions, 
-    loadSessions, 
-    addSession, 
-    config, 
-    updateConfig, 
-    timerState, 
-    activeTask, 
-    startPomodoroForTask, 
-    pausePomodoro, 
-    skipBreak, 
-    initialTab, 
-    setInitialTab, 
-    showWelcomeModal, 
-    setShowWelcomeModal, 
-    isLoading, 
-    confirmationPending, 
-    confirmTaskCompletion, 
-    proceedToBreak 
-  };
+  // CORREGIDO: Se añade `resumePomodoro` al valor del contexto
+  const value: AppContextType = { tasks, loadTasks, addTask, updateTask, deleteTask, selectTask, sessions, loadSessions, addSession, config, updateConfig, timerState, activeTask, startPomodoroForTask, pausePomodoro, resumePomodoro, skipBreak, initialTab, setInitialTab, showWelcomeModal, setShowWelcomeModal, isLoading, confirmationPending, confirmTaskCompletion, proceedToBreak };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
