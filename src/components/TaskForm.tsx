@@ -167,20 +167,22 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
 
               {recurrenceType === 'custom' && (
                 <div className="custom-interval-section">
-                  <IonLabel className="section-label">Repetir cada</IonLabel>
+                  <IonLabel className="section-label">🔁 Repetir cada</IonLabel>
                   <div className="form-row">
                     <IonInput className="form-flex-item" type="number" value={customInterval} min={1} onIonInput={e => setCustomInterval(parseInt(e.detail.value!, 10) || 1)} />
                     <IonSelect className="form-flex-item" value={customUnit} onIonChange={e => setCustomUnit(e.detail.value)} interface="action-sheet" cancelText="Cancelar" placeholder="Unidad">
-                      <IonSelectOption value="days">Días</IonSelectOption>
-                      <IonSelectOption value="weeks">Semanas</IonSelectOption>
-                      <IonSelectOption value="months">Meses</IonSelectOption>
+                      <IonSelectOption value="minutes">⏱️ Minutos</IonSelectOption>
+                      <IonSelectOption value="hours">🕐 Horas</IonSelectOption>
+                      <IonSelectOption value="days">📅 Días</IonSelectOption>
+                      <IonSelectOption value="weeks">📅 Semanas</IonSelectOption>
+                      <IonSelectOption value="months">📅 Meses</IonSelectOption>
                     </IonSelect>
                   </div>
                 </div>
               )}
 
               <div className="date-range-section">
-                <IonLabel className="section-label">Período de recurrencia</IonLabel>
+                <IonLabel className="section-label">⏳ Período de recurrencia</IonLabel>
                 <div className="form-row">
                   <IonInput className="form-flex-item date-time-input recurrence-date-picker" type="date" value={recurrenceStart} onIonInput={e => setRecurrenceStart(e.detail.value!)} />
                   <IonInput className="form-flex-item date-time-input recurrence-date-picker" type="date" value={recurrenceEnd} onIonInput={e => setRecurrenceEnd(e.detail.value!)} />
