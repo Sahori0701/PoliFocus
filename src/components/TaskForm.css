@@ -11,11 +11,16 @@
 }
 
 .form-card-title {
-  font-family: 'Dosis', sans-serif;
+  display: flex; /* Para centrar el emoji y el texto */
+  justify-content: center; /* Centrado horizontal */
+  align-items: center; /* Centrado vertical */
+  gap: 0.5rem; /* Espacio entre emoji y texto */
+  
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1rem;
   color: var(--ion-color-primary);
-  padding-left: 8px;
+  text-align: center;
+  padding-left: 0;
 }
 
 .task-form {
@@ -46,7 +51,7 @@
   --padding-end: 16px;
   --placeholder-color: #9ca3af;
   --placeholder-opacity: 1;
-  font-size: 0.9rem; 
+  font-size: 0.9rem;
 }
 
 /* Estilos para los campos que ocupan toda la fila */
@@ -54,7 +59,9 @@
   width: 100%;
   background: #374151;
   border-radius: 8px;
-  min-height: 52px;
+  min-height: 44px; /* Reducido para menor altura */
+  display: flex; /* Centrado vertical */
+  align-items: center; /* Centrado vertical */
 }
 
 /* Aplicamos estilos internos a los inputs/selects dentro del contenedor single */
@@ -68,13 +75,15 @@
   --padding-start: 16px;
   --padding-end: 16px;
   font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left; /* Centrado horizontal del placeholder */
 }
 
 /* Clase específica para inputs de fecha y hora principales */
 .date-time-input {
   font-size: 0.8rem;   /* Tamaño grande y visible */
   font-weight: 500;
-  text-align: left; /* Texto centrado */
+  text-align: left; /* Texto a la izquierda para fechas/horas */
 }
 
 /* Reducción para los selectores de fecha de recurrencia (AJUSTADO PARA ANDROID) */
@@ -104,8 +113,8 @@
 .submit-button {
   margin-top: 0.5rem;
   --border-radius: 8px;
-  height: 48px; 
-  font-size: 0.85rem; 
+  height: 48px;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 

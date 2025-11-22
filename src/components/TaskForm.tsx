@@ -117,12 +117,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
   return (
     <IonCard className="task-form-card">
       <IonCardHeader>
-        <IonCardTitle className="form-card-title">Nueva Tarea</IonCardTitle>
+        <IonCardTitle className="form-card-title">✅ Programa tu tarea</IonCardTitle>
       </IonCardHeader>
       <IonCardContent>
         <form onSubmit={handleSubmit} className="task-form">
           <div className="form-item-wrapper-single">
-             <IonInput value={title} placeholder="Descripción de la tarea" onIonInput={e => setTitle(e.detail.value!)} required />
+             <IonInput value={title} placeholder="🗂️ Descripción de la tarea" onIonInput={e => setTitle(e.detail.value!)} required />
           </div>
 
           <div className="form-row">
@@ -133,20 +133,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
           <div className="form-row">
             <IonInput className="form-flex-item" type="number" value={duration} placeholder="Minutos" onIonInput={e => setDuration(parseInt(e.detail.value || '0', 10))} />
             <IonSelect className="form-flex-item" value={priority} placeholder="Media" onIonChange={e => setPriority(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
-              <IonSelectOption value="low">Baja</IonSelectOption>
-              <IonSelectOption value="medium">Media</IonSelectOption>
-              <IonSelectOption value="high">Alta</IonSelectOption>
+              <IonSelectOption value="low">❄️ Baja</IonSelectOption>
+              <IonSelectOption value="medium">⚡ Media</IonSelectOption>
+              <IonSelectOption value="high">🔥 Alta</IonSelectOption>
             </IonSelect>
           </div>
           
           <div className="form-item-wrapper-single">
-            <IonSelect value={recurrenceType} placeholder="Sin repetición" onIonChange={e => setRecurrenceType(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
-                <IonSelectOption value="none">Sin repetición</IonSelectOption>
-                <IonSelectOption value="daily">Diaria</IonSelectOption>
-                <IonSelectOption value="weekly">Semanal</IonSelectOption>
-                <IonSelectOption value="monthly">Mensual</IonSelectOption>
-                <IonSelectOption value="weekdays">Días específicos</IonSelectOption>
-                <IonSelectOption value="custom">Personalizada</IonSelectOption>
+            <IonSelect value={recurrenceType} placeholder="🔄 Sin repetición" onIonChange={e => setRecurrenceType(e.detail.value)} interface="action-sheet" cancelText="Cancelar">
+                <IonSelectOption value="none">🚫 Sin repetición</IonSelectOption>
+                <IonSelectOption value="daily">📅 Diaria</IonSelectOption>
+                <IonSelectOption value="weekly">📅 Semanal</IonSelectOption>
+                <IonSelectOption value="monthly">📅 Mensual</IonSelectOption>
+                <IonSelectOption value="weekdays">📋 Días específicos</IonSelectOption>
+                <IonSelectOption value="custom">⚙️ Personalizada</IonSelectOption>
             </IonSelect>
           </div>
 
@@ -191,7 +191,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
 
           <IonButton expand="block" type="submit" color="primary" className="submit-button">
             <span style={{ marginRight: '0.5rem' }}>➕</span>
-            Crear Tarea
+            Programar Tarea
           </IonButton>
         </form>
       </IonCardContent>
