@@ -117,7 +117,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
   return (
     <IonCard className="task-form-card">
       <IonCardHeader>
-        <IonCardTitle className="form-card-title">✅ Programa tu tarea</IonCardTitle>
+        <IonCardTitle className="form-card-title">Programa tu tarea</IonCardTitle>
       </IonCardHeader>
       <IonCardContent>
         <form onSubmit={handleSubmit} className="task-form">
@@ -190,8 +190,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
           )}
 
           <IonButton expand="block" type="submit" color="primary" className="submit-button">
-            <span style={{ marginRight: '0.5rem' }}>➕</span>
-            Programar Tarea
+            <span style={{ marginRight: '0.5rem' }}>✍️</span>
+            Crear tarea
           </IonButton>
         </form>
       </IonCardContent>
