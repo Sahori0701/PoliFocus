@@ -11,12 +11,36 @@ let state = {
   pomodorosUntilLongBreak: 4,
   totalElapsed: 0,
   activeTaskDuration: 0, // in seconds
+  notificationTimestamps: {
+    '15': false,
+    '5': false,
+    '2': false,
+  },
 };
 
 function tick() {
   state.timeLeft--;
   state.totalElapsed++;
 
+  // Send progress notifications during focus mode
+  if (state.mode === 'focus') {
+    const remainingMinutes = Math.floor(state.timeLeft / 60);
+    const remainingSecondsInMinute = state.timeLeft % 60;
+
+    if (remainingMinutes === 15 && remainingSecondsInMinute === 0 && !state.notificationTimestamps['15']) {
+      self.postMessage({ type: 'PROGRESS_NOTIFICATION', payload: { message: '⏳ ¡Solo quedan 15 minutos!' } });
+      state.notificationTimestamps['15'] = true;
+    }
+    if (remainingMinutes === 5 && remainingSecondsInMinute === 0 && !state.notificationTimestamps['5']) {
+      self.postMessage({ type: 'PROGRESS_NOTIFICATION', payload: { message: '⏳ ¡Últimos 5 minutos, vamos!' } });
+      state.notificationTimestamps['5'] = true;
+    }
+    if (remainingMinutes === 2 && remainingSecondsInMinute === 0 && !state.notificationTimestamps['2']) {
+      self.postMessage({ type: 'PROGRESS_NOTIFICATION', payload: { message: '⏳ ¡Recta final! Quedan 2 minutos.' } });
+      state.notificationTimestamps['2'] = true;
+    }
+  }
+  
   const taskTimeIsUp = state.activeTaskDuration > 0 && state.totalElapsed >= state.activeTaskDuration;
 
   if (taskTimeIsUp) {
@@ -71,6 +95,7 @@ function reset() {
   state.mode = 'focus';
   state.totalElapsed = 0;
   state.activeTaskDuration = 0;
+  state.notificationTimestamps = { '15': false, '5': false, '2': false }; // Reset flags
   self.postMessage({
     type: 'STATE_UPDATE',
     payload: {
@@ -96,9 +121,12 @@ self.onmessage = (e) => {
       }
       break;
     case 'SET_STATE':
+      // When a new focus session starts, reset notification flags
+      if (payload.totalElapsed === 0 && payload.mode === 'focus') {
+        state.notificationTimestamps = { '15': false, '5': false, '2': false };
+      }
       state = { ...state, ...payload };
-      // If durations are updated, and we are in a resting state, reflect the new focus duration.
-      if(payload.durations && !state.intervalId) {
+      if (payload.durations && !state.intervalId) {
         reset();
       }
       break;

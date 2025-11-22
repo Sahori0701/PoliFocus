@@ -1,5 +1,5 @@
 // pages/TimerPage.tsx
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   IonContent,
   IonPage,
@@ -20,7 +20,6 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 const TimerPage: React.FC = () => {
   const {
-    config,
     timerState,
     activeTask,
     updateTask,
@@ -29,10 +28,56 @@ const TimerPage: React.FC = () => {
     startPomodoroForTask,
     pausePomodoro,
     skipBreak,
+    confirmationPending,
+    confirmTaskCompletion,
+    proceedToBreak,
   } = useApp();
 
   const history = useHistory();
-  const [present] = useIonToast();
+  const [present, dismiss] = useIonToast();
+
+  useEffect(() => {
+    if (confirmationPending) {
+      present({
+        message: '🏁 ¡Ciclo de enfoque terminado! ¿Tarea completa?',
+        duration: 0, // Persiste hasta que el usuario interactúa
+        position: 'bottom',
+        color: 'light',
+        buttons: [
+          {
+            text: '😴 no, a descansar',
+            role: 'cancel',
+            handler: () => {
+              proceedToBreak();
+            },
+          },
+          {
+            text: '✅ sí, terminada',
+            role: 'confirm',
+            handler: async () => {
+              await confirmTaskCompletion();
+              setInitialTab('completed');
+              history.push('/tasks');
+            },
+          },
+        ],
+        onDidDismiss: (e) => {
+          if (e.detail.role !== 'confirm' && e.detail.role !== 'cancel') {
+            proceedToBreak();
+          }
+        },
+      });
+    } else {
+      // Si ya no hay confirmación pendiente, asegurarse de que el toast se oculte.
+      dismiss();
+    }
+
+    // Función de limpieza: se ejecuta si el componente se desmonta
+    // o si el efecto se vuelve a ejecutar. Garantiza que no queden toasts perdidos.
+    return () => {
+      dismiss();
+    };
+  }, [confirmationPending, present, dismiss, history, setInitialTab, proceedToBreak, confirmTaskCompletion]);
 
   const handleToggleTimer = () => {
     if (timerState.isRunning) {
@@ -84,12 +129,13 @@ const TimerPage: React.FC = () => {
   const strokeDashoffset = CIRCUMFERENCE - (Math.max(0, Math.min(100, percentageElapsed)) / 100) * CIRCUMFERENCE;
 
   const statusText = useMemo(() => {
+    if (confirmationPending) return '¡Buen trabajo!';
     if (timerState.mode === 'shortBreak') return 'Descanso corto';
     if (timerState.mode === 'longBreak') return 'Descanso largo';
     if (!activeTask) return 'Selecciona una tarea';
     if (timerState.isRunning) return '¡A trabajar!';
     return 'En pausa';
-  }, [timerState.isRunning, timerState.mode, activeTask]);
+  }, [timerState.isRunning, timerState.mode, activeTask, confirmationPending]);
 
   if (isLoading) {
     return (
@@ -126,19 +172,19 @@ const TimerPage: React.FC = () => {
             </div>
           </div>
           <div className="timer-controls">
-            <IonButton onClick={handleToggleTimer} className="control-button-pause" color={timerState.isRunning ? 'danger' : 'success'} disabled={!activeTask && timerState.timeLeft === 0}>
+            <IonButton onClick={handleToggleTimer} className="control-button-pause" color={timerState.isRunning ? 'danger' : 'success'} disabled={!activeTask && timerState.timeLeft === 0 || confirmationPending}>
               <IonIcon slot="start" icon={timerState.isRunning ? pause : play} />
               {timerState.isRunning ? 'Pausar' : 'Iniciar'}
             </IonButton>
             {activeTask && (
-              <IonButton onClick={handleCompleteTask} className="control-button-complete" color="success" fill="outline" disabled={!activeTask}>
+              <IonButton onClick={handleCompleteTask} className="control-button-complete" color="success" fill="outline" disabled={!activeTask || confirmationPending}>
                 <IonIcon slot="icon-only" icon={checkmark} />
               </IonButton>
             )}
             {activeTask && (
               <IonButton
                 onClick={handleSkip}
-                disabled={timerState.mode === 'focus' || !timerState.isRunning}
+                disabled={timerState.mode === 'focus' || !timerState.isRunning || confirmationPending}
                 className="control-button-skip"
                 color="primary"
               >
@@ -146,7 +192,6 @@ const TimerPage: React.FC = () => {
               </IonButton>
             )}
           </div>
-          <div className="footer-info">ⓘ Marca la tarea como completada solo con el botón de check (✓)</div>
         </div>
       </IonContent>
     </IonPage>
