@@ -23,11 +23,12 @@
 }
 
 .section-title {
-  /*font-family: 'Dosis', sans-serif;*/
+  font-family: 'Dosis', sans-serif;
   font-size: 0.9rem; 
   font-weight: 700;
   margin-bottom: 1rem;
   color: var(--ion-text-color);
+  text-align: center;
 }
 
 .tabs-wrapper {
@@ -48,11 +49,14 @@
 .custom-segment ion-segment-button {
   --indicator-color: var(--ion-color-primary);
   --color-checked: white;
-  font-size: 0.5rem;
   font-weight: 600;
   min-width: fit-content;
   padding: 0 0.75rem;
   text-transform: none;
+}
+
+.custom-segment ion-segment-button ion-label {
+  font-size: 0.9rem !important;
 }
 
 .custom-segment ion-label {
@@ -102,7 +106,6 @@
   }
 
   .custom-segment ion-segment-button {
-    font-size: 1rem;
     padding: 0 1rem;
   }
 }
