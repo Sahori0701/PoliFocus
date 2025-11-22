@@ -177,7 +177,7 @@ const TasksPage: React.FC = () => {
         <div className="tasks-container">
           <div className="tabs-wrapper">
             <IonSegment value={activeTab} onIonChange={e => setActiveTab(e.detail.value as any)} scrollable className="custom-segment">
-              <IonSegmentButton value="planning"><IonLabel>📝 Planificar</IonLabel></IonSegmentButton>
+              <IonSegmentButton value="planning"><IonLabel>📌 Planificar</IonLabel></IonSegmentButton>
               <IonSegmentButton value="active"><IonLabel>⚡ Activas</IonLabel></IonSegmentButton>
               <IonSegmentButton value="expired"><IonLabel>⏰ Vencidas</IonLabel></IonSegmentButton>
               <IonSegmentButton value="completed"><IonLabel>✅ Completadas</IonLabel></IonSegmentButton>

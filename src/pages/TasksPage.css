@@ -11,7 +11,7 @@
 .page-title {
   display: flex;
   align-items: center;
-  font-family: 'Dosis', sans-serif;
+  /*font-family: 'Dosis', sans-serif;*/
   font-weight: 800;
 }
 
@@ -23,8 +23,8 @@
 }
 
 .section-title {
-  font-family: 'Dosis', sans-serif;
-  font-size: 1.2rem; 
+  /*font-family: 'Dosis', sans-serif;*/
+  font-size: 0.9rem; 
   font-weight: 700;
   margin-bottom: 1rem;
   color: var(--ion-text-color);
@@ -48,7 +48,7 @@
 .custom-segment ion-segment-button {
   --indicator-color: var(--ion-color-primary);
   --color-checked: white;
-  font-size: 0.875rem;
+  font-size: 0.5rem;
   font-weight: 600;
   min-width: fit-content;
   padding: 0 0.75rem;
