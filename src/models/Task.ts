@@ -10,7 +10,7 @@ export type Priority = 'low' | 'medium' | 'high';
 export type RecurrenceType = 'none' | 'daily' | 'weekly' | 'monthly' | 'weekdays' | 'custom';
 
 // Unidad de tiempo para la recurrencia personalizada
-export type TimeUnit = 'days' | 'weeks' | 'months';
+export type TimeUnit = 'minutes' | 'hours' | 'days' | 'weeks' | 'months';
 
 // Interfaz para la configuración de recurrencia
 export interface Recurrence {

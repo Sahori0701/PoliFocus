@@ -32,81 +32,87 @@ class TaskService {
   }
 
   /**
-   * Generar tareas recurrentes
+   * Generar tareas recurrentes con soporte para minutos, horas, días, etc.
    */
   generateRecurringTasks(baseTask: Task): Task[] {
-    if (!baseTask.recurrence || baseTask.recurrence.type === 'none') {
+    if (!baseTask.isRecurring || !baseTask.recurrence || baseTask.recurrence.type === 'none') {
       return [baseTask];
     }
 
     const tasks: Task[] = [];
-    const recurrence = baseTask.recurrence;
-    const startDate = new Date(recurrence.startDate);
+    const { recurrence } = baseTask;
     const endDate = new Date(recurrence.endDate);
-    const taskTime = new Date(baseTask.scheduledStart);
-    const hours = taskTime.getHours();
-    const minutes = taskTime.getMinutes();
+    let currentDate = new Date(baseTask.scheduledStart);
 
-    let currentDate = new Date(startDate);
-    currentDate.setHours(hours, minutes, 0, 0);
+    const isCustom = recurrence.type === 'custom';
+    const isDaily = recurrence.type === 'daily';
+    const isWeekly = recurrence.type === 'weekly';
+    const isMonthly = recurrence.type === 'monthly';
 
-    while (currentDate <= endDate) {
-      let shouldAdd = false;
+    let loopCount = 0; // Safety break para evitar bucles infinitos
+    while (currentDate <= endDate && loopCount < 1000) {
+      loopCount++;
 
-      switch (recurrence.type) {
-        case 'daily':
-          shouldAdd = true;
-          break;
-
-        case 'weekly':
-          shouldAdd = currentDate.getDay() === startDate.getDay();
-          break;
-
-        case 'monthly':
-          shouldAdd = currentDate.getDate() === startDate.getDate();
-          break;
-
-        case 'weekdays':
-          if (recurrence.weekdays) {
-            shouldAdd = recurrence.weekdays.includes(currentDate.getDay());
-          }
-          break;
-
-        case 'custom':
-          if (recurrence.interval && recurrence.unit) {
-            const daysDiff = Math.floor(
-              (currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-            );
-            
-            if (recurrence.unit === 'days') {
-              shouldAdd = daysDiff % recurrence.interval === 0;
-            } else if (recurrence.unit === 'weeks') {
-              shouldAdd = daysDiff % (recurrence.interval * 7) === 0;
-            } else if (recurrence.unit === 'months') {
-              const monthsDiff = 
-                (currentDate.getFullYear() - startDate.getFullYear()) * 12 +
-                (currentDate.getMonth() - startDate.getMonth());
-              shouldAdd = 
-                monthsDiff % recurrence.interval === 0 &&
-                currentDate.getDate() === startDate.getDate();
-            }
-          }
-          break;
+      // El tipo 'weekdays' es especial: comprueba si el día actual es válido *antes* de añadir.
+      if (recurrence.type === 'weekdays') {
+        if (recurrence.weekdays && recurrence.weekdays.includes(currentDate.getDay())) {
+          tasks.push({
+            ...baseTask,
+            id: Date.now() + tasks.length + Math.floor(Math.random() * 1000),
+            scheduledStart: currentDate.toISOString(),
+            parentId: baseTask.id,
+          });
+        }
+        // Para 'weekdays', siempre avanzamos un día para comprobar el siguiente.
+        currentDate.setDate(currentDate.getDate() + 1);
+        continue; // Continuar a la siguiente iteración del bucle
       }
+      
+      // Para todos los demás tipos, *añadimos primero* y luego *calculamos la siguiente fecha*.
+      tasks.push({
+        ...baseTask,
+        id: Date.now() + tasks.length + Math.floor(Math.random() * 1000),
+        scheduledStart: currentDate.toISOString(),
+        parentId: baseTask.id,
+      });
 
-      if (shouldAdd) {
-        tasks.push({
-          ...baseTask,
-          id: Date.now() + tasks.length + Math.floor(Math.random() * 1000),
-          scheduledStart: currentDate.toISOString(),
-          isRecurring: true,
-          parentId: baseTask.id,
-        });
+      // Ahora, incrementamos la fecha para el siguiente bucle
+      if (isDaily) {
+        currentDate.setDate(currentDate.getDate() + 1);
+      } else if (isWeekly) {
+        currentDate.setDate(currentDate.getDate() + 7);
+      } else if (isMonthly) {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+      } else if (isCustom && recurrence.interval && recurrence.unit) {
+        switch (recurrence.unit) {
+          case 'minutes':
+            currentDate.setMinutes(currentDate.getMinutes() + recurrence.interval);
+            break;
+          case 'hours':
+            currentDate.setHours(currentDate.getHours() + recurrence.interval);
+            break;
+          case 'days':
+            currentDate.setDate(currentDate.getDate() + recurrence.interval);
+            break;
+          case 'weeks':
+            currentDate.setDate(currentDate.getDate() + (recurrence.interval * 7));
+            break;
+          case 'months':
+            currentDate.setMonth(currentDate.getMonth() + recurrence.interval);
+            break;
+        }
+      } else {
+        // No debería ocurrir, pero como fallback, rompemos el bucle.
+        break;
       }
-
-      currentDate.setDate(currentDate.getDate() + 1);
     }
 
+    // Si no se generaron tareas (ej. fecha de inicio posterior a la de fin),
+    // devolvemos la tarea base para no confundir al usuario.
+    if (tasks.length === 0) {
+      return [baseTask];
+    }
+    
     return tasks;
   }
 
@@ -220,9 +226,6 @@ class TaskService {
     // 3. Si no está vencida, calcular el tiempo restante
     const timeUntil = dateUtils.getTimeUntil(new Date(task.scheduledStart));
     if (!timeUntil) {
-      // Esto puede ocurrir si la fecha es ahora mismo o en el pasado, 
-      // pero isTaskExpired no la marcó (p.ej. si no es 'pending')
-      // Lo tratamos como vencida por seguridad.
       return { class: 'expired', text: 'Vencida' };
     }
 
