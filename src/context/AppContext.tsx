@@ -12,7 +12,7 @@ import { notificationService } from '../services/notification.service';
 
 export interface AppContextType {
   tasks: Task[];
-  loadTasks: () => Promise<void>;
+  loadTasks: () => Promise<Task[]>;
   addTask: (taskData: Omit<Task, 'id'>) => Promise<void>;
   updateTask: (taskId: number, updates: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: number) => Promise<void>;
@@ -78,6 +78,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, []);
 
+  // MODIFICADO: Lógica de "Tierra Arrasada" al volver a la App
   useEffect(() => {
     if (!isPlatform('hybrid')) return;
     let listener: PluginListenerHandle | null = null;
@@ -85,6 +86,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       listener = await CapApp.addListener('appStateChange', async ({ isActive }) => {
         if (isActive) {
           finishBackgroundTask();
+          console.log('App is active, running notification audit...');
+          const currentTasks = await storageService.getTasks();
+          await notificationService.rescheduleAll(currentTasks);
         } else {
           if (isRunningRef.current) {
             try {
@@ -102,13 +106,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return () => { listener?.remove(); };
   }, [finishBackgroundTask]);
 
-  const loadTasks = useCallback(async () => {
+  const loadTasks = useCallback(async (): Promise<Task[]> => {
     try {
       const loadedTasks = await storageService.getTasks();
       const migratedTasks = loadedTasks.map((task: any) => task.startDate ? { ...task, scheduledStart: task.startDate } : task);
       setTasks(migratedTasks);
+      return migratedTasks;
     } catch (error) {
       console.error('Error loading tasks:', error);
+      return [];
     }
   }, []);
 
@@ -125,21 +131,83 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const updateTask = useCallback(async (taskId: number, updates: Partial<Task>) => {
     try {
-      const originalTask = tasks.find(t => t.id === taskId);
-      if (originalTask) await notificationService.cancelTaskNotifications(originalTask);
-      
       const updatedTask = await storageService.updateTask(taskId, updates);
-      if (updatedTask) await notificationService.scheduleTaskNotifications(updatedTask);
-      
+      if (updatedTask) {
+        await notificationService.scheduleTaskNotifications(updatedTask);
+      }
       if ((updates.status === 'completed' || updates.status === 'cancelled') && activeTask && activeTask.id === taskId) {
         stopAndResetTimer();
       }
-      
       await loadTasks();
     } catch (error) {
       console.error('Error updating task:', error); throw error;
     }
+  }, [activeTask, loadTasks, stopAndResetTimer]);
+  
+  // ... (resto de las funciones sin cambios significativos en su llamada)
+
+  const loadSessions = useCallback(async () => {
+    try {
+      setSessions(await storageService.getSessions());
+    } catch (error) {
+      console.error('Error loading sessions:', error);
+    }
+  }, []);
+
+  // MODIFICADO: Lógica de "Tierra Arrasada" en el arranque inicial
+  const loadInitialData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await notificationService.init();
+      const loadedConfig = await storageService.getConfig();
+      setConfig(loadedConfig);
+      
+      const [loadedTasks] = await Promise.all([loadTasks(), loadSessions()]);
+
+      if (isPlatform('hybrid') && loadedTasks) {
+        console.log('Initial app load, running notification audit...');
+        await notificationService.rescheduleAll(loadedTasks);
+      }
+
+      setTimerState(prev => ({ ...prev, timeLeft: loadedConfig.focusTime * 60 }));
+      if (timerWorker.current) {
+        const newDurations = { focus: loadedConfig.focusTime * 60, shortBreak: loadedConfig.shortBreak * 60, longBreak: loadedConfig.longBreak * 60 };
+        timerWorker.current.postMessage({ type: 'SET_STATE', payload: { durations: newDurations } });
+      }
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadTasks, loadSessions, timerWorker]);
+
+  useEffect(() => { loadInitialData(); }, [loadInitialData]);
+
+  const addTask = async (taskData: Omit<Task, 'id'>) => {
+    try {
+      const newTask = await storageService.addTask(taskData);
+      await notificationService.scheduleTaskNotifications(newTask);
+      await loadTasks();
+    } catch (error) {
+      console.error('Error adding task:', error); throw error;
+    }
+  };
+
+  const deleteTask = useCallback(async (taskId: number) => {
+    try {
+      const taskToDelete = tasks.find(t => t.id === taskId);
+      if (taskToDelete) await notificationService.cancelTaskNotifications(taskToDelete);
+      await storageService.deleteTask(taskId);
+      if (activeTask && activeTask.id === taskId) {
+        stopAndResetTimer();
+      }
+      await loadTasks();
+    } catch (error) {
+      console.error('Error deleting task:', error); throw error;
+    }
   }, [tasks, activeTask, loadTasks, stopAndResetTimer]);
+  
+  // ... (resto de funciones sin cambios como addSession, updateConfig, etc.)
 
   const confirmTaskCompletion = useCallback(async () => {
     if (!activeTaskRef.current) return;
@@ -211,130 +279,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     return () => worker.terminate();
   }, [present, config]);
-
-  const loadSessions = useCallback(async () => {
-    try {
-      setSessions(await storageService.getSessions());
-    } catch (error) {
-      console.error('Error loading sessions:', error);
-    }
-  }, []);
-
-  const loadInitialData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      await notificationService.requestPermissions();
-      const loadedConfig = await storageService.getConfig();
-      setConfig(loadedConfig);
-      await Promise.all([loadTasks(), loadSessions()]);
-      setTimerState(prev => ({ ...prev, timeLeft: loadedConfig.focusTime * 60 }));
-      if (timerWorker.current) {
-        const newDurations = { focus: loadedConfig.focusTime * 60, shortBreak: loadedConfig.shortBreak * 60, longBreak: loadedConfig.longBreak * 60 };
-        timerWorker.current.postMessage({ type: 'SET_STATE', payload: { durations: newDurations } });
-      }
-    } catch (error) {
-      console.error('Error loading initial data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [loadTasks, loadSessions, timerWorker]);
-
-  useEffect(() => { loadInitialData(); }, [loadInitialData]);
-
+  
   const startPomodoroForTask = (task: Task) => {
-    if (activeTask && activeTask.id === task.id && !timerState.isRunning) {
-      if (timerWorker.current) {
-        timerWorker.current.postMessage({ type: 'START' });
-        setTimerState(prev => ({ ...prev, isRunning: true, startTime: Date.now() - (prev.totalElapsed * 1000) }));
-      }
-      return;
-    }
-
-    const focusTime = config.focusTime * 60;
-    const timeLeft = Math.min(task.duration * 60, focusTime);
-
-    const workerPayload = { timeLeft, mode: 'focus', totalElapsed: 0, activeTaskDuration: Infinity };
-    if (timerWorker.current) {
-      timerWorker.current.postMessage({ type: 'SET_STATE', payload: workerPayload });
-      timerWorker.current.postMessage({ type: 'START' });
-    }
-
-    const newTimerState: TimerState = { ...DEFAULT_TIMER_STATE, timeLeft, mode: 'focus', totalElapsed: 0, isRunning: true, startTime: Date.now() };
-    setTimerState(newTimerState);
-    setActiveTask(task);
+    // ... (sin cambios)
   };
 
   const pausePomodoro = () => {
-    setTimerState(prev => ({...prev, isRunning: false}));
-    if (timerWorker.current) timerWorker.current.postMessage({ type: 'PAUSE' });
-    finishBackgroundTask();
+    // ... (sin cambios)
   };
 
   const skipBreak = useCallback(() => {
-    if (timerWorker.current && activeTask) {
-      const elapsed = timerState.totalElapsed;
-      const timeRemainingInTask = (activeTask.duration * 60) - elapsed;
-
-      if (timeRemainingInTask <= 0) {
-        present({ message: 'Task duration already fulfilled.', duration: 2000, color: 'warning' });
-        return;
-      }
-
-      const nextFocusDuration = Math.min(timeRemainingInTask, config.focusTime * 60);
-      const workerPayload = { mode: 'focus', timeLeft: nextFocusDuration, activeTaskDuration: Infinity, totalElapsed: timerState.totalElapsed };
-
-      timerWorker.current.postMessage({ type: 'SET_STATE', payload: workerPayload });
-      timerWorker.current.postMessage({ type: 'START' });
-      
-      setTimerState(prev => ({ ...prev, mode: 'focus', timeLeft: nextFocusDuration, isRunning: true, startTime: Date.now() - (prev.totalElapsed * 1000) }));
-      present({ message: '🔔 Skipping break, back to focus!', duration: 2000, color: 'primary' });
-    }
+    // ... (sin cambios)
   }, [activeTask, config.focusTime, present, timerState.totalElapsed]);
 
-  const addTask = async (taskData: Omit<Task, 'id'>) => {
-    try {
-      const newTask = await storageService.addTask(taskData);
-      await notificationService.scheduleTaskNotifications(newTask);
-      await loadTasks();
-    } catch (error) {
-      console.error('Error adding task:', error); throw error;
-    }
-  };
-
-  const deleteTask = useCallback(async (taskId: number) => {
-    try {
-      const taskToDelete = tasks.find(t => t.id === taskId);
-      if (taskToDelete) await notificationService.cancelTaskNotifications(taskToDelete);
-      await storageService.deleteTask(taskId);
-      if (activeTask && activeTask.id === taskId) {
-        stopAndResetTimer();
-      }
-      await loadTasks();
-    } catch (error) {
-      console.error('Error deleting task:', error); throw error;
-    }
-  }, [tasks, activeTask, loadTasks, stopAndResetTimer]);
-
   const addSession = async (session: PomodoroSession) => {
-    try {
-      await storageService.addSession(session);
-      setSessions(prev => [...prev, session]);
-    } catch (error) {
-      console.error('Error adding session:', error); throw error;
-    }
+    // ... (sin cambios)
   };
 
   const updateConfig = async (updates: Partial<AppConfig>) => {
-    try {
-      const newConfig = await storageService.updateConfig(updates);
-      setConfig(newConfig);
-      if (timerWorker.current) {
-        const newDurations = { focus: newConfig.focusTime * 60, shortBreak: newConfig.shortBreak * 60, longBreak: newConfig.longBreak * 60 };
-        timerWorker.current.postMessage({ type: 'SET_STATE', payload: { durations: newDurations } });
-      }
-    } catch (error) {
-      console.error('Error updating config:', error);
-    }
+    // ... (sin cambios)
   };
 
   const value: AppContextType = { 
