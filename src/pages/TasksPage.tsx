@@ -1,3 +1,4 @@
+
 // pages/TasksPage.tsx
 import React, { useState, useEffect } from 'react';
 import {
@@ -14,24 +15,24 @@ import { useHistory } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Task } from '../models/Task';
 import { taskService } from '../services/task.service';
+import { dateUtils } from '../utils/dateUtils'; 
 import TaskForm from '../components/TaskForm';
 import TaskList from '../components/TaskList';
-import ConflictModal from '../components/ConflictModal';
 import TaskModal from '../components/TaskModal';
 import Header from '../components/Header';
 import './TasksPage.css';
 
+
+// =================================================================================
+// COMPONENTE PRINCIPAL DE LA PÁGINA DE TAREAS
+// =================================================================================
 const TasksPage: React.FC = () => {
-  // CORREGIDO: Se vuelve a importar `selectTask` desde el contexto
   const { tasks, addTask, deleteTask, updateTask, selectTask, initialTab, setInitialTab } = useApp();
   const history = useHistory();
   const [presentAlert] = useIonAlert();
   
   const [activeTab, setActiveTab] = useState<'planning' | 'active' | 'expired' | 'completed'>('planning');
   const [searchTerm, setSearchTerm] = useState('');
-  const [showConflictModal, setShowConflictModal] = useState(false);
-  const [conflictingTasks, setConflictingTasks] = useState<Task[]>([]);
-  const [pendingTask, setPendingTask] = useState<Omit<Task, 'id'> | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTaskForModal, setSelectedTaskForModal] = useState<Task | null>(null);
   const [showToast, setShowToast] = useState(false);
@@ -71,14 +72,30 @@ const TasksPage: React.FC = () => {
     try {
       const baseTaskWithTempId: Task = { ...taskData, id: Date.now() };
       const tasksToAdd = taskService.generateRecurringTasks(baseTaskWithTempId);
-      
       const allConflicts = tasksToAdd.flatMap(t => taskService.checkConflicts(t, tasks));
 
       if (allConflicts.length > 0) {
         const uniqueConflicts = [...new Map(allConflicts.map(item => [item.id, item])).values()];
-        setConflictingTasks(uniqueConflicts);
-        setPendingTask(taskData);
-        setShowConflictModal(true);
+        
+        const conflictMessages = uniqueConflicts.map(t => {
+          const date = new Date(t.scheduledStart);
+          return `📌   ${t.title}  ${dateUtils.formatTimeES(date)}   ${t.duration} min`;
+        }).join('\n');
+        
+        presentAlert({
+          cssClass: 'conflict-alert', 
+          header: '⚠️ Conflicto de Horario',
+          subHeader: 'La nueva tarea se solapa con:',
+          message: conflictMessages,
+          buttons: [
+            { text: 'Cancelar', role: 'cancel', cssClass: 'alert-button-cancel' },
+            {
+              text: 'Crear',
+              cssClass: 'alert-button-confirm',
+              handler: () => handleConfirmWithConflicts(taskData),
+            },
+          ],
+        });
         return false;
       }
 
@@ -87,7 +104,7 @@ const TasksPage: React.FC = () => {
         await addTask(taskDataForStorage);
       }
       
-      showSuccessToast(tasksToAdd.length === 1 ? 'Tarea creada exitosamente' : `${tasksToAdd.length} tareas creadas`);
+      showSuccessToast(tasksToAdd.length === 1 ? '🎖️ Tarea creada exitosamente' : `${tasksToAdd.length} tareas creadas`);
       setActiveTab('active');
       return true;
     } catch (error) {
@@ -96,10 +113,9 @@ const TasksPage: React.FC = () => {
     }
   };
 
-  const handleConfirmWithConflicts = async () => {
-    if (!pendingTask) return;
+  const handleConfirmWithConflicts = async (taskData: Omit<Task, 'id'>) => {
     try {
-      const baseTaskWithTempId: Task = { ...pendingTask, id: Date.now() };
+      const baseTaskWithTempId: Task = { ...taskData, id: Date.now() };
       const tasksToAdd = taskService.generateRecurringTasks(baseTaskWithTempId);
       
       for (const task of tasksToAdd) {
@@ -108,9 +124,6 @@ const TasksPage: React.FC = () => {
       }
       
       showWarningToast(`${tasksToAdd.length === 1 ? 'Tarea creada' : `${tasksToAdd.length} tareas creadas`} con conflictos`);
-      setShowConflictModal(false);
-      setPendingTask(null);
-      setConflictingTasks([]);
       setActiveTab('active');
     } catch (error) {
       showErrorToast('Error al crear tarea con conflictos');
@@ -151,9 +164,8 @@ const TasksPage: React.FC = () => {
     }
   };
   
-  // CORREGIDO: La función ahora usa `selectTask` para establecer la tarea activa globalmente
   const handleSelectTask = (task: Task) => {
-    selectTask(task); // <-- ESTA ES LA LÍNEA CRÍTICA
+    selectTask(task);
     showSuccessToast(`Cargada: ${task.title}`);
     history.push('/timer');
   };
@@ -167,10 +179,11 @@ const TasksPage: React.FC = () => {
 
   return (
     <IonPage>
+      
       <Header />
       <IonContent fullscreen>
         <div className="tasks-container">
-          <div className="tabs-wrapper">
+           <div className="tabs-wrapper">
             <IonSegment value={activeTab} onIonChange={e => setActiveTab(e.detail.value as any)} scrollable className="custom-segment">
               <IonSegmentButton value="planning"><IonLabel>📌 Planificar</IonLabel></IonSegmentButton>
               <IonSegmentButton value="active"><IonLabel>⚡ Activas</IonLabel></IonSegmentButton>
@@ -203,7 +216,7 @@ const TasksPage: React.FC = () => {
                 onSelectTask={activeTab === 'active' ? handleSelectTask : undefined}
                 onDeleteTask={handleDeleteTask}
                 onCompleteTask={activeTab === 'active' ? handleCompleteTask : undefined}
-                 onViewTask={handleViewTask} // Se pasa el manejador para abrir el modal
+                 onViewTask={handleViewTask}
                 showConflicts={activeTab === 'active'}
                 allTasks={tasks}
               />
@@ -211,7 +224,6 @@ const TasksPage: React.FC = () => {
           )}
         </div>
 
-        <ConflictModal isOpen={showConflictModal} conflicts={conflictingTasks} onClose={() => { setShowConflictModal(false); setPendingTask(null); setConflictingTasks([]); }} onConfirm={handleConfirmWithConflicts} />
         <TaskModal isOpen={showTaskModal} task={selectedTaskForModal} onClose={() => { setShowTaskModal(false); setSelectedTaskForModal(null); }} onLoadTask={handleSelectTask} />
         <IonToast isOpen={showToast} onDidDismiss={() => setShowToast(false)} message={toastMessage} duration={2000} position="bottom" color={toastColor} />
       </IonContent>
