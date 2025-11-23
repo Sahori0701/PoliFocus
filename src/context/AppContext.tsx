@@ -25,6 +25,7 @@ export interface AppContextType {
   updateConfig: (updates: Partial<AppConfig>) => Promise<void>;
   timerState: TimerState;
   activeTask: Task | null;
+  setActiveTask: React.Dispatch<React.SetStateAction<Task | null>>;
   startPomodoroForTask: (task: Task) => void;
   pausePomodoro: () => void;
   resumePomodoro: () => void; // <-- AÑADIDO
@@ -39,7 +40,7 @@ export interface AppContextType {
   proceedToBreak: () => void;
 }
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
+export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const DEFAULT_TIMER_STATE: TimerState = {
   isRunning: false,
@@ -317,7 +318,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [config, activeTask]);
 
   // CORREGIDO: Se añade `resumePomodoro` al valor del contexto
-  const value: AppContextType = { tasks, loadTasks, addTask, updateTask, deleteTask, selectTask, sessions, loadSessions, addSession, config, updateConfig, timerState, activeTask, startPomodoroForTask, pausePomodoro, resumePomodoro, skipBreak, initialTab, setInitialTab, showWelcomeModal, setShowWelcomeModal, isLoading, confirmationPending, confirmTaskCompletion, proceedToBreak };
+  const value: AppContextType = { tasks, loadTasks, addTask, updateTask, deleteTask, selectTask, sessions, loadSessions, addSession, config, updateConfig, timerState, activeTask, setActiveTask, startPomodoroForTask, pausePomodoro, resumePomodoro, skipBreak, initialTab, setInitialTab, showWelcomeModal, setShowWelcomeModal, isLoading, confirmationPending, confirmTaskCompletion, proceedToBreak };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

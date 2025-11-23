@@ -66,7 +66,7 @@ const AppContent: React.FC = () => {
     const initializeAppServices = async () => {
       await notificationService.requestPermissions();
       if (isPlatform('android')) {
-        await notificationService.createNotificationChannel();
+        await notificationService.createNotificationChannels();
       }
     };
     

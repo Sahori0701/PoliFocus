@@ -94,7 +94,12 @@ export const taskUtils = {
         return 'Días específicos';
       case 'custom':
         if (rec.interval && rec.unit) {
-          const unitNames = { days: 'días', weeks: 'semanas', months: 'meses' };
+          const unitNames: Record<string, string> = { 
+            minutes: 'minutos',
+            days: 'días',
+            weeks: 'semanas',
+            months: 'meses'
+          };
           return `Cada ${rec.interval} ${unitNames[rec.unit]}`;
         }
         return 'Personalizada';
