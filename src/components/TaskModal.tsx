@@ -77,7 +77,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose }) => {
             <IonCol size="4">
               <IonItem lines="none">
                 <IonLabel className="ion-text-center">
-                  <h2>🚩 Prioridad</h2>
+                  <h2>Prioridad</h2>
                   <p><IonBadge color={getPriorityColor(task.priority)}>{getPriorityText(task.priority)}</IonBadge></p>
                 </IonLabel>
               </IonItem>
@@ -93,7 +93,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose }) => {
             <IonCol size="4">
               <IonItem lines="none">
                 <IonLabel className="ion-text-center">
-                  <h2>⏳ Duración</h2>
+                  <h2>Duración</h2>
                   <p>{task.duration ? `${task.duration} min` : 'N/A'}</p>
                 </IonLabel>
               </IonItem>
