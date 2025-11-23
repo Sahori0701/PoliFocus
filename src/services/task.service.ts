@@ -2,32 +2,79 @@
 import { Task, Efficiency } from '../models/Task';
 import { dateUtils } from '../utils/dateUtils';
 
+// Definimos el período de gracia en minutos.
+const EXPIRATION_GRACE_PERIOD_MINUTES = 5;
+
 class TaskService {
   /**
    * Verificar si una tarea está vencida.
-   * Una tarea se considera vencida si su hora de finalización (inicio + duración) ya pasó.
+   * Una tarea se considera vencida si han pasado N minutos (período de gracia)
+   * desde su hora de inicio programada y no ha sido completada.
    */
   isTaskExpired(task: Task): boolean {
-    // Una tarea completada no puede estar vencida.
+    // Las tareas completadas no pueden vencer.
     if (task.status === 'completed') {
       return false;
     }
     
-    // Solo las tareas pendientes pueden vencerse.
+    // Solo las tareas pendientes pueden vencer.
     if (task.status !== 'pending') {
       return false;
     }
 
     const now = new Date();
     const startTime = new Date(task.scheduledStart);
-    // La duración está en minutos.
-    const endTime = dateUtils.addMinutes(startTime, task.duration);
+    
+    // La tarea vence después de que el período de gracia haya pasado desde la hora de inicio.
+    const expiryTime = dateUtils.addMinutes(startTime, EXPIRATION_GRACE_PERIOD_MINUTES);
 
-    // La tarea está vencida si la hora actual es posterior a la hora de finalización.
-    return now > endTime;
+    // La tarea está vencida si la hora actual ha superado la hora de expiración.
+    return now > expiryTime;
   }
 
+  /**
+   * Obtener clase y texto de urgencia para el badge de la tarea.
+   * Contempla el nuevo "período de gracia".
+   */
+  getUrgencyBadge(task: Task): { class: 'completed' | 'urgent' | 'soon' | 'normal' | 'expired'; text: string } {
+    // 1. Prioridad máxima: Tarea completada.
+    if (task.status === 'completed') {
+      return { class: 'completed', text: 'Completada' };
+    }
 
+    // 2. Comprobar si está oficialmente vencida (después del período de gracia).
+    if (this.isTaskExpired(task)) {
+      return { class: 'expired', text: 'Vencida' };
+    }
+
+    const now = new Date();
+    const startTime = new Date(task.scheduledStart);
+
+    // 3. Comprobar si está en el período de gracia (hora de inicio pasada, pero aún no vencida).
+    if (now > startTime) {
+      return { class: 'urgent', text: '¡Inicia ya!' };
+    }
+
+    // 4. Si no, la tarea es futura. Calcular tiempo restante.
+    const timeUntil = dateUtils.getTimeUntil(startTime);
+
+    // Fallback por si el cálculo de tiempo falla.
+    if (!timeUntil) {
+      return { class: 'normal', text: 'Próximamente' };
+    }
+
+    const totalMinutes = Math.floor(timeUntil.total / (1000 * 60));
+    
+    // 5. Clasificar según el tiempo restante hasta el inicio.
+    if (totalMinutes < 30) {
+      return { class: 'urgent', text: dateUtils.formatTimeUntil(timeUntil) };
+    } else if (totalMinutes < 120) {
+      return { class: 'soon', text: dateUtils.formatTimeUntil(timeUntil) };
+    } else {
+      return { class: 'normal', text: dateUtils.formatTimeUntil(timeUntil) };
+    }
+  }
+  
   /**
    * Verificar conflictos de horarios entre tareas
    */
@@ -68,7 +115,6 @@ class TaskService {
     while (currentDate <= endDate && loopCount < 1000) {
       loopCount++;
 
-      // El tipo 'weekdays' es especial: comprueba si el día actual es válido *antes* de añadir.
       if (recurrence.type === 'weekdays') {
         if (recurrence.weekdays && recurrence.weekdays.includes(currentDate.getDay())) {
           tasks.push({
@@ -78,12 +124,10 @@ class TaskService {
             parentId: baseTask.id,
           });
         }
-        // Para 'weekdays', siempre avanzamos un día para comprobar el siguiente.
         currentDate.setDate(currentDate.getDate() + 1);
-        continue; // Continuar a la siguiente iteración del bucle
+        continue;
       }
       
-      // Para todos los demás tipos, *añadimos primero* y luego *calculamos la siguiente fecha*.
       tasks.push({
         ...baseTask,
         id: Date.now() + tasks.length + Math.floor(Math.random() * 1000),
@@ -91,7 +135,6 @@ class TaskService {
         parentId: baseTask.id,
       });
 
-      // Ahora, incrementamos la fecha para el siguiente bucle
       if (isDaily) {
         currentDate.setDate(currentDate.getDate() + 1);
       } else if (isWeekly) {
@@ -117,13 +160,10 @@ class TaskService {
             break;
         }
       } else {
-        // No debería ocurrir, pero como fallback, rompemos el bucle.
         break;
       }
     }
 
-    // Si no se generaron tareas (ej. fecha de inicio posterior a la de fin),
-    // devolvemos la tarea base para no confundir al usuario.
     if (tasks.length === 0) {
       return [baseTask];
     }
@@ -222,38 +262,6 @@ class TaskService {
       high: '#ef4444',
     };
     return colors[priority];
-  }
-
-  /**
-   * Obtener clase y texto de urgencia para el badge de la tarea.
-   */
-  getUrgencyBadge(task: Task): { class: 'completed' | 'urgent' | 'soon' | 'normal' | 'expired'; text: string } {
-    // 1. La prioridad máxima es el estado "Completada"
-    if (task.status === 'completed') {
-      return { class: 'completed', text: 'Completada' };
-    }
-
-    // 2. Si no está completada, comprobar si está vencida
-    if (this.isTaskExpired(task)) {
-      return { class: 'expired', text: 'Vencida' };
-    }
-
-    // 3. Si no está vencida, calcular el tiempo restante
-    const timeUntil = dateUtils.getTimeUntil(new Date(task.scheduledStart));
-    if (!timeUntil) {
-      return { class: 'expired', text: 'Vencida' };
-    }
-
-    const totalMinutes = Math.floor(timeUntil.total / (1000 * 60));
-    
-    // 4. Clasificar según el tiempo restante
-    if (totalMinutes < 30) {
-      return { class: 'urgent', text: dateUtils.formatTimeUntil(timeUntil) };
-    } else if (totalMinutes < 120) {
-      return { class: 'soon', text: dateUtils.formatTimeUntil(timeUntil) };
-    } else {
-      return { class: 'normal', text: dateUtils.formatTimeUntil(timeUntil) };
-    }
   }
 
   /**
