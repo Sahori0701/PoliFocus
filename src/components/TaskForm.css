@@ -18,7 +18,7 @@
   gap: 0.5rem; /* Espacio entre emoji y texto */
   
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--ion-color-primary);
   text-align: center;
   padding-left: 0;
@@ -117,7 +117,7 @@
 .submit-button {
   margin-top: 0.5rem;
   --border-radius: 8px;
-  height: 48px;
+  height: 44px; /* ALTURA AJUSTADA */
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -153,8 +153,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 600;
-  padding: 0.6rem 1rem;
-  border-radius: 20px;
+  padding: 0.4rem 1rem; /* ALTURA AJUSTADA */
+  border-radius: var(--app-radius-md); /* RADIO AJUSTADO */
   background: #374151;
   color: #9ca3af;
   border: 1px solid #4b5563;
