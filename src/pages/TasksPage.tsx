@@ -19,6 +19,7 @@ import { dateUtils } from '../utils/dateUtils';
 import TaskForm from '../components/TaskForm';
 import TaskList from '../components/TaskList';
 import TaskModal from '../components/TaskModal';
+import ConflictModal from '../components/ConflictModal'; // Importar el nuevo modal
 import Header from '../components/Header';
 import './TasksPage.css';
 
@@ -38,6 +39,12 @@ const TasksPage: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastColor, setToastColor] = useState<'success' | 'warning' | 'danger'>('success');
+
+  // Estados para el nuevo modal de conflictos
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [conflicts, setConflicts] = useState<Task[]>([]);
+  const [conflictingTaskData, setConflictingTaskData] = useState<Omit<Task, 'id'> | null>(null);
+
 
   useEffect(() => {
     if (initialTab) {
@@ -76,27 +83,10 @@ const TasksPage: React.FC = () => {
 
       if (allConflicts.length > 0) {
         const uniqueConflicts = [...new Map(allConflicts.map(item => [item.id, item])).values()];
-        
-        const conflictMessages = uniqueConflicts.map(t => {
-          const date = new Date(t.scheduledStart);
-          return `📌   ${t.title}  ${dateUtils.formatTimeES(date)}   ${t.duration} min`;
-        }).join('\n');
-        
-        presentAlert({
-          cssClass: 'conflict-alert', 
-          header: '⚠️ Conflicto de Horario',
-          subHeader: 'La nueva tarea se solapa con:',
-          message: conflictMessages,
-          buttons: [
-            { text: 'Cancelar', role: 'cancel', cssClass: 'alert-button-cancel' },
-            {
-              text: 'Crear',
-              cssClass: 'alert-button-confirm',
-              handler: () => handleConfirmWithConflicts(taskData),
-            },
-          ],
-        });
-        return false;
+        setConflicts(uniqueConflicts);
+        setConflictingTaskData(taskData); // Guardar los datos de la tarea
+        setShowConflictModal(true); // Mostrar el modal de conflictos
+        return false; // Indicar que la tarea no se creó directamente
       }
 
       for (const task of tasksToAdd) {
@@ -113,9 +103,11 @@ const TasksPage: React.FC = () => {
     }
   };
 
-  const handleConfirmWithConflicts = async (taskData: Omit<Task, 'id'>) => {
+  const handleConfirmWithConflicts = async () => {
+    if (!conflictingTaskData) return;
+
     try {
-      const baseTaskWithTempId: Task = { ...taskData, id: Date.now() };
+      const baseTaskWithTempId: Task = { ...conflictingTaskData, id: Date.now() };
       const tasksToAdd = taskService.generateRecurringTasks(baseTaskWithTempId);
       
       for (const task of tasksToAdd) {
@@ -127,8 +119,17 @@ const TasksPage: React.FC = () => {
       setActiveTab('active');
     } catch (error) {
       showErrorToast('Error al crear tarea con conflictos');
+    } finally {
+        setShowConflictModal(false);
+        setConflictingTaskData(null);
     }
   };
+
+  const handleCancelConflict = () => {
+    setShowConflictModal(false);
+    setConflictingTaskData(null);
+  };
+
 
   const handleDeleteTask = async (taskId: number) => {
     const taskToDelete = tasks.find(t => t.id === taskId);
@@ -138,7 +139,7 @@ const TasksPage: React.FC = () => {
       header: 'Confirmar Eliminación',
       message: `¿Estás seguro de que quieres eliminar la tarea "${taskToDelete.title}"? Esta acción no se puede deshacer.`,
       buttons: [
-        { text: 'Cancelar', role: 'cancel', cssClass: 'alert-button-cancel' },
+        { text: 'cancelar', role: 'cancel', cssClass: 'alert-button-cancel' },
         {
           text: 'Eliminar',
           cssClass: 'alert-button-danger',
@@ -158,7 +159,7 @@ const TasksPage: React.FC = () => {
         completedAt: new Date().toISOString(),
         actualDuration: tasks.find(t => t.id === taskId)?.duration,
       });
-      showSuccessToast('Tarea completada');
+      showSuccessToast('🎖️ Tarea completada');
     } catch (error) {
       showErrorToast('Error al completar tarea');
     }
@@ -223,6 +224,14 @@ const TasksPage: React.FC = () => {
             </div>
           )}
         </div>
+        
+        {/* Renderizar el nuevo modal de conflictos */}
+        <ConflictModal 
+            isOpen={showConflictModal}
+            conflicts={conflicts}
+            onCancel={handleCancelConflict}
+            onConfirm={handleConfirmWithConflicts}
+        />
 
         <TaskModal isOpen={showTaskModal} task={selectedTaskForModal} onClose={() => { setShowTaskModal(false); setSelectedTaskForModal(null); }} onLoadTask={handleSelectTask} />
         <IonToast isOpen={showToast} onDidDismiss={() => setShowToast(false)} message={toastMessage} duration={2000} position="bottom" color={toastColor} />
