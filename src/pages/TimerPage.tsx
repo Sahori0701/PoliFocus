@@ -34,9 +34,7 @@ const TimerPage: React.FC = () => {
   } = useApp();
 
   const history = useHistory();
-  const [present] = useIonToast(); // CORREGIDO: No se necesita `dismiss`
-
-  // CORREGIDO: Se elimina el `useEffect` que usaba IonToast para la confirmación.
+  const [present] = useIonToast();
 
   const handleToggleTimer = () => {
     if (timerState.isRunning) {
@@ -157,7 +155,7 @@ const TimerPage: React.FC = () => {
         </div>
       </IonContent>
 
-      {/* CORREGIDO: Notificación personalizada para fin de ciclo */}
+      {/* Notificación de fin de ciclo con estilos actualizados */}
       {confirmationPending && (
         <div className="focus-complete-toast">
           <div className="toast-content">
@@ -166,22 +164,24 @@ const TimerPage: React.FC = () => {
           </div>
           <div className="toast-actions">
             <IonButton
-              fill="clear"
-              className="toast-button toast-button-cancel"
+              fill="outline"
+              color="medium"
+              className="toast-button"
               onClick={() => proceedToBreak()}
             >
-              😴 no, a descansar
+              No, a descansar
             </IonButton>
             <IonButton
-              fill="clear"
-              className="toast-button toast-button-confirm"
+              fill="solid"
+              color="success"
+              className="toast-button"
               onClick={async () => {
                 await confirmTaskCompletion();
                 setInitialTab('completed');
                 history.push('/tasks');
               }}
             >
-              ✅ sí, terminada
+              Sí, terminada
             </IonButton>
           </div>
         </div>
