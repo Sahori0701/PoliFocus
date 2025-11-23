@@ -1,9 +1,7 @@
-
 /* pages/TasksPage.css */
 
 .tasks-container {
-  /* Se aumenta el padding inferior para dar espacio al botón */
-  padding: 0.5rem 1rem 0.5rem; /* Aumentado de 1rem a 6rem */
+  padding: 0.5rem 1rem 0.5rem;
   max-width: 100%;
   margin: 0 auto;
 }
@@ -11,7 +9,6 @@
 .page-title {
   display: flex;
   align-items: center;
-  /*font-family: 'Dosis', sans-serif;*/
   font-weight: 800;
 }
 
@@ -94,11 +91,97 @@
   color: var(--ion-text-color) !important;
 }
 
+
+/* ============================================
+   ESTILOS PARA ALERTAS PERSONALIZADAS
+   ============================================ */
+
+/* --- Alerta de Eliminación --- */
+.delete-alert .alert-wrapper {
+  max-width: 400px; /* Ancho reducido */
+  background-color: #1e293b; /* Fondo oscuro */
+  border-radius: 12px; 
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+}
+
+.delete-alert .alert-head {
+  padding: 0.5rem;
+}
+
+.delete-alert .alert-title {
+  color: #e2e8f0; /* Texto claro */
+  font-size: 1.2em; /* Tamaño de fuente ajustado */
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem; 
+}
+
+.delete-alert .alert-message {
+  color: #94a3b8; /* Texto secundario */
+  font-size: 0.9rem;
+  padding: 0 0.5rem 1rem;
+  text-align: center; /* Centrar mensaje */
+}
+
+.delete-alert .alert-button-group {
+  padding: 0.5rem;
+  display: flex;
+  gap: 0.75rem; /* Espacio entre botones */
+}
+
+.delete-alert .alert-button {
+  flex: 1;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  font-weight: 700;
+  text-transform: none;
+  height: 38px; /* Altura final ajustada */
+  font-size: 0.9rem; /* Tamaño de fuente ajustado */
+  transition: all 0.2s ease-in-out;
+}
+
+.delete-alert .alert-button .alert-button-inner {
+  justify-content: center; /* Asegura el centrado */
+}
+
+
+.delete-alert .alert-button:active {
+  transform: scale(0.97);
+}
+
+/* Botón de Cancelar (Outline) */
+.delete-alert .alert-button-cancel {
+  background-color: transparent !important;
+  border: 1px solid #475569;
+  color: #e2e8f0 !important;
+}
+
+.delete-alert .alert-button-cancel:hover {
+  background-color: rgba(71, 85, 105, 0.5) !important;
+}
+
+
+/* Botón de Eliminar (Solid) */
+.delete-alert .alert-button-danger {
+  background-color: #ef4444 !important; /* Rojo */
+  color: white !important;
+  border: none;
+}
+
+.delete-alert .alert-button-danger:hover {
+  background-color: #dc2626 !important; /* Rojo más oscuro */
+}
+
+
+
 /* Responsive */
 @media (min-width: 768px) {
   .tasks-container {
     max-width: 768px;
-    padding: 1rem 1.5rem 0.5rem; /* Mantenemos el padding inferior */
+    padding: 1rem 1.5rem 0.5rem;
   }
 
   .section-title {
@@ -113,7 +196,7 @@
 @media (min-width: 1024px) {
   .tasks-container {
     max-width: 1024px;
-    padding: 1.5rem 2rem 0.5rem; /* Mantenemos el padding inferior */
+    padding: 1.5rem 2rem 0.5rem;
   }
 }
 
@@ -125,89 +208,4 @@
 .tabs-wrapper {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-
-/* ============================================
-   ESTILOS PERSONALIZADOS PARA ALERTA DE CONFLICTO
-   ============================================ */
-
-.conflict-alert .alert-wrapper {
-  background-color: var(--app-bg-card);
-  border-radius: var(--app-radius-xl);
-  border: 1px solid var(--app-border);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-}
-
-.conflict-alert .alert-title {
-  color: var(--ion-text-color);
-  font-weight: 700;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-.conflict-alert .alert-sub-title {
-  color: var(--app-text-secondary);
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.conflict-alert .alert-message {
-  /*background-color: var(--ion-background-color);*/
-  /*border: 1px solid var(--app-border);*/
-  /*border-radius: var(--app-radius-md);*/
-  padding: var(--app-spacing-md);
-  margin-top: var(--app-spacing-sm);
-  color: #cbd5e1;
-  font-size: 0.85rem;
-  white-space: pre-wrap;
-  line-height: 2;
-}
-
-.conflict-alert .alert-button-group {
-  padding: var(--app-spacing-sm) var(--app-spacing-md) var(--app-spacing-md);
-  display: flex;
-  gap: var(--app-spacing-sm);
-  justify-content: center;
-  align-items: center;
-}
-
-.conflict-alert .alert-button {
-  flex: 1;
-  height: 30px;
-  font-size: 0.9rem;
-  border-radius: var(--app-radius-md) !important;
-  font-weight: 600;
-  box-shadow: none;
-  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.conflict-alert .alert-button:active {
-  transform: scale(0.9);
-}
-
-.conflict-alert .alert-button-cancel {
-  background-color: transparent;
-  border: 1px solid var(--app-border);
-  color: var(--app-text-secondary);
-  text-transform: lowercase;
-}
-
-.conflict-alert .alert-button-cancel:hover {
-  background-color: rgba(148, 163, 184, 0.1);
-}
-
-.conflict-alert .alert-button-confirm {
-  background-color: var(--ion-color-primary);
-  border: 1px solid var(--ion-color-primary);
-  color: var(--ion-color-primary-contrast);
-  font-weight: 700;
-  text-transform: none;
-}
-
-.conflict-alert .alert-button-confirm:hover {
-  background-color: var(--ion-color-primary-shade);
-  border-color: var(--ion-color-primary-shade);
 }
