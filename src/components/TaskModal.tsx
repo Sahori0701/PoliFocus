@@ -1,44 +1,56 @@
-// components/TaskModal.tsx
+
 import React from 'react';
 import {
-  IonModal,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonButton,
-  IonButtons,
-  IonIcon,
+  IonModal, IonContent, IonButton, IonIcon, IonHeader, IonToolbar, IonTitle, IonButtons,
+  IonGrid, IonRow, IonCol, IonBadge, IonItem, IonLabel
 } from '@ionic/react';
-import { closeOutline, playOutline } from 'ionicons/icons';
-import { Task } from '../models/Task';
-import { dateUtils } from '../utils/dateUtils';
-import { taskUtils } from '../utils/taskUtils';
-import { taskService } from '../services/task.service';
+import { close } from 'ionicons/icons';
+import { Task, TaskStatus } from '../models/Task';
+import { useApp } from '../context/AppContext';
+import { getPriorityText, getStatusText, getRecurrenceSummary } from '../utils/taskUtils';
 import './TaskModal.css';
 
 interface TaskModalProps {
-  isOpen: boolean;
   task: Task | null;
+  isOpen: boolean;
   onClose: () => void;
-  onLoadTask?: (task: Task) => void;
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({
-  isOpen,
-  task,
-  onClose,
-  onLoadTask,
-}) => {
+const isTaskOverdue = (task: Task): boolean => {
+  const now = new Date();
+  const endDate = new Date(new Date(task.scheduledStart).getTime() + task.duration * 60000);
+  return task.status !== 'completed' && now > endDate;
+};
+
+const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose }) => {
+  const { tasks } = useApp();
+
   if (!task) return null;
 
-  const date = new Date(task.scheduledStart);
-  const canLoadTask = task.status === 'pending' && !taskService.isTaskExpired(task);
+  const parentId = task.parentId ?? task.id;
+  const recurrenceSummary = (task.isRecurring || task.parentId)
+    ? getRecurrenceSummary(tasks, parentId)
+    : null;
 
-  const handleLoadTask = () => {
-    if (onLoadTask && canLoadTask) {
-      onLoadTask(task);
-      onClose();
+  const displayStatus = isTaskOverdue(task) ? 'overdue' : task.status;
+
+  const getStatusColor = (status: TaskStatus | 'overdue') => {
+    switch (status) {
+      case 'pending': return 'light';
+      case 'in_progress': return 'primary';
+      case 'completed': return 'success';
+      case 'cancelled': return 'medium';
+      case 'overdue': return 'danger';
+      default: return 'medium';
+    }
+  };
+
+  const getPriorityColor = (priority: 'low' | 'medium' | 'high') => {
+    switch (priority) {
+      case 'low': return 'success';
+      case 'medium': return 'warning';
+      case 'high': return 'danger';
+      default: return 'medium';
     }
   };
 
@@ -46,109 +58,89 @@ const TaskModal: React.FC<TaskModalProps> = ({
     <IonModal isOpen={isOpen} onDidDismiss={onClose} className="task-modal">
       <IonHeader>
         <IonToolbar>
-          <IonTitle>
-            <div className="modal-title">Detalles de Tarea</div>
-          </IonTitle>
+          <IonTitle className="ion-text-center">📖 Detalle de la tarea</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={onClose}>
-              <IonIcon icon={closeOutline} />
-            </IonButton>
+            <IonButton onClick={onClose}><IonIcon icon={close} /></IonButton>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
+      <IonContent>
+        <IonGrid className="modal-grid">
+          <IonRow>
+            <IonCol>
+              <h1 className="task-main-title">📌 {task.title}</h1>
+              {task.description && <div className="task-description">{task.description}</div>}
+            </IonCol>
+          </IonRow>
 
-      <IonContent className="ion-padding">
-        <div className="task-details-content">
-          <h2 className="task-details-title">{task.title}</h2>
+          <IonRow>
+            <IonCol size="4">
+              <IonItem lines="none">
+                <IonLabel className="ion-text-center">
+                  <h2>🚩 Prioridad</h2>
+                  <p><IonBadge color={getPriorityColor(task.priority)}>{getPriorityText(task.priority)}</IonBadge></p>
+                </IonLabel>
+              </IonItem>
+            </IonCol>
+            <IonCol size="4">
+              <IonItem lines="none">
+                <IonLabel className="ion-text-center">
+                  <h2>✨ Estado</h2>
+                  <p><IonBadge color={getStatusColor(displayStatus)}>{getStatusText(displayStatus)}</IonBadge></p>
+                </IonLabel>
+              </IonItem>
+            </IonCol>
+            <IonCol size="4">
+              <IonItem lines="none">
+                <IonLabel className="ion-text-center">
+                  <h2>⏳ Duración</h2>
+                  <p>{task.duration ? `${task.duration} min` : 'N/A'}</p>
+                </IonLabel>
+              </IonItem>
+            </IonCol>
+          </IonRow>
 
-          <div className="task-details-list">
-            <div className="detail-item">
-              <span className="detail-icon">📅</span>
-              <div className="detail-content">
-                <p className="detail-label">Fecha</p>
-                <p className="detail-value">{dateUtils.formatDateES(date)}</p>
-              </div>
+          <IonRow>
+            <IonCol size="6">
+              <IonItem lines="none">
+                <IonLabel className="ion-text-center">
+                  <h2>📅 Fecha de inicio</h2>
+                  <p>{new Date(task.scheduledStart).toLocaleDateString()}</p>
+                </IonLabel>
+              </IonItem>
+            </IonCol>
+            <IonCol size="6">
+              <IonItem lines="none">
+                <IonLabel className="ion-text-center">
+                  <h2>⏰ Hora de inicio</h2>
+                  <p>{new Date(task.scheduledStart).toLocaleTimeString()}</p>
+                </IonLabel>
+              </IonItem>
+            </IonCol>
+          </IonRow>
+
+          {recurrenceSummary && (
+            <div className="recurrence-section">
+              <IonItem lines="none">
+                <IonLabel className="ion-text-center"><h2>🔁 Resumen de Recurrencia</h2></IonLabel>
+              </IonItem>
+              <IonRow>
+                <IonCol size="4" className="ion-text-center">
+                  <IonLabel><h3>Activas</h3></IonLabel>
+                  <p><IonBadge color="primary">{`${recurrenceSummary.active} de ${recurrenceSummary.total}`}</IonBadge></p>
+                </IonCol>
+                <IonCol size="4" className="ion-text-center">
+                  <IonLabel><h3>Vencidas</h3></IonLabel>
+                  <p><IonBadge color="danger">{`${recurrenceSummary.overdue} de ${recurrenceSummary.total}`}</IonBadge></p>
+                </IonCol>
+                <IonCol size="4" className="ion-text-center">
+                  <IonLabel><h3>Finalizadas</h3></IonLabel>
+                  <p><IonBadge color="success">{`${recurrenceSummary.completed} de ${recurrenceSummary.total}`}</IonBadge></p>
+                </IonCol>
+              </IonRow>
             </div>
-
-            <div className="detail-item">
-              <span className="detail-icon">🕐</span>
-              <div className="detail-content">
-                <p className="detail-label">Hora</p>
-                <p className="detail-value">{dateUtils.formatTimeES(date)}</p>
-              </div>
-            </div>
-
-            <div className="detail-item">
-              <span className="detail-icon">⏱</span>
-              <div className="detail-content">
-                <p className="detail-label">Duración</p>
-                <p className="detail-value">{dateUtils.formatDuration(task.duration)}</p>
-              </div>
-            </div>
-
-            <div className="detail-item">
-              <span className="detail-icon">{taskUtils.getPriorityEmoji(task.priority)}</span>
-              <div className="detail-content">
-                <p className="detail-label">Prioridad</p>
-                <p className="detail-value">{taskUtils.getPriorityLabel(task.priority)}</p>
-              </div>
-            </div>
-
-            {task.isRecurring && (
-              <div className="detail-item">
-                <span className="detail-icon">🔄</span>
-                <div className="detail-content">
-                  <p className="detail-label">Recurrencia</p>
-                  <p className="detail-value">{taskUtils.getRecurrenceDescription(task)}</p>
-                </div>
-              </div>
-            )}
-
-            {task.status === 'pending' && (
-              <div className="detail-item">
-                <span className="detail-icon">⏰</span>
-                <div className="detail-content">
-                  <p className="detail-label">Tiempo Restante</p>
-                  <p className="detail-value">{taskService.getUrgencyBadge(task).text}</p>
-                </div>
-              </div>
-            )}
-
-            {task.status === 'completed' && task.actualDuration && (
-              <div className="detail-item">
-                <span className="detail-icon">✅</span>
-                <div className="detail-content">
-                  <p className="detail-label">Completada</p>
-                  <p className="detail-value">Duración real: {task.actualDuration} minutos</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="modal-actions">
-          <IonButton
-            expand="block"
-            fill="outline"
-            color="medium"
-            onClick={onClose}
-            className="modal-button"
-          >
-            Cerrar
-          </IonButton>
-          
-          {canLoadTask && onLoadTask && (
-            <IonButton
-              expand="block"
-              color="primary"
-              onClick={handleLoadTask}
-              className="modal-button"
-            >
-              <IonIcon icon={playOutline} slot="start" />
-              Cargar Tarea
-            </IonButton>
           )}
-        </div>
+        </IonGrid>
       </IonContent>
     </IonModal>
   );

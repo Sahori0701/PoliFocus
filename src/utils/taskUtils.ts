@@ -1,153 +1,110 @@
-// utils/taskUtils.ts
-import { Task, Priority, TaskStatus } from '../models/Task';
 
-export const taskUtils = {
-  /**
-   * Obtener nombre legible de prioridad
-   */
-  getPriorityLabel(priority: Priority): string {
-    const labels = { low: 'Baja', medium: 'Media', high: 'Alta' };
-    return labels[priority];
-  },
+import { Task, TaskStatus } from '../models/Task';
 
-  /**
-   * Obtener nombre legible de estado
-   */
-  getStatusLabel(status: TaskStatus): string {
-    const labels = {
-      pending: 'Pendiente',
-      in_progress: 'En Progreso',
-      completed: 'Completada',
-      cancelled: 'Cancelada',
-    };
-    return labels[status];
-  },
+/**
+ * Obtiene el texto descriptivo para una prioridad de tarea.
+ */
+export const getPriorityText = (priority: 'low' | 'medium' | 'high'): string => {
+  const labels = { low: 'Baja', medium: 'Media', high: 'Alta' };
+  return labels[priority];
+};
 
-  /**
-   * Obtener emoji de prioridad
-   */
-  getPriorityEmoji(priority: Priority): string {
-    const emojis = { low: '🔵', medium: '🟡', high: '🔴' };
-    return emojis[priority];
-  },
+/**
+ * Obtiene el texto descriptivo para un estado de tarea.
+ */
+export const getStatusText = (status: TaskStatus | 'overdue'): string => {
+  const labels = {
+    pending: 'Pendiente',
+    in_progress: 'En Progreso',
+    completed: 'Completada',
+    cancelled: 'Cancelada',
+    overdue: 'Vencida',
+  };
+  return labels[status];
+};
 
-  /**
-   * Obtener emoji de estado
-   */
-  getStatusEmoji(status: TaskStatus): string {
-    const emojis = {
-      pending: '⏳',
-      in_progress: '▶️',
-      completed: '✅',
-      cancelled: '❌',
-    };
-    return emojis[status];
-  },
+/**
+ * Determina si una tarea está vencida.
+ */
+const isTaskOverdue = (task: Task): boolean => {
+  const now = new Date();
+  const endDate = new Date(new Date(task.scheduledStart).getTime() + task.duration * 60000);
+  return task.status !== 'completed' && now > endDate;
+};
 
-  /**
-   * Crear ID único para tarea
-   */
-  generateTaskId(): number {
-    return Date.now() + Math.floor(Math.random() * 1000);
-  },
+/**
+ * Calcula el número total de ocurrencias para una tarea recurrente.
+ */
+const calculateTotalOccurrences = (task: Task): number => {
+  if (!task.isRecurring || !task.recurrence) return 1;
 
-  /**
-   * Formatear resumen de tarea
-   */
-  getTaskSummary(task: Task): string {
-    const date = new Date(task.scheduledStart);
-    const dateStr = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-    const timeStr = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    return `${task.title} - ${dateStr} ${timeStr} (${task.duration} min)`;
-  },
+  const { type, startDate, endDate } = task.recurrence;
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
 
-  /**
-   * Obtener días de la semana en español
-   */
-  getWeekdayName(dayIndex: number): string {
-    const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    return days[dayIndex];
-  },
+  if (start > end) return 0;
 
-  /**
-   * Obtener descripción de recurrencia
-   */
-  getRecurrenceDescription(task: Task): string {
-    if (!task.recurrence || task.recurrence.type === 'none') {
-      return 'Sin repetición';
-    }
+  let total = 0;
+  let currentDate = new Date(start);
 
-    const rec = task.recurrence;
-    
-    switch (rec.type) {
-      case 'daily':
-        return 'Diaria';
-      case 'weekly':
-        return 'Semanal';
-      case 'monthly':
-        return 'Mensual';
-      case 'weekdays':
-        if (rec.weekdays && rec.weekdays.length > 0) {
-          const days = rec.weekdays.map(d => this.getWeekdayName(d)).join(', ');
-          return `Días: ${days}`;
-        }
-        return 'Días específicos';
-      case 'custom':
-        if (rec.interval && rec.unit) {
-          const unitNames: Record<string, string> = { 
-            minutes: 'minutos',
-            days: 'días',
-            weeks: 'semanas',
-            months: 'meses'
-          };
-          return `Cada ${rec.interval} ${unitNames[rec.unit]}`;
-        }
-        return 'Personalizada';
-      default:
-        return 'Sin repetición';
-    }
-  },
-
-  /**
-   * Agrupar tareas por fecha
-   */
-  groupTasksByDate(tasks: Task[]): Record<string, Task[]> {
-    const grouped: Record<string, Task[]> = {};
-
-    tasks.forEach(task => {
-      const date = new Date(task.scheduledStart);
-      const dateKey = date.toISOString().split('T')[0];
-
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = [];
+  switch (type) {
+    case 'daily':
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      total = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      break;
+    case 'weekly':
+      while (currentDate <= end) {
+        total++;
+        currentDate.setDate(currentDate.getDate() + 7);
       }
+      break;
+    case 'monthly':
+      while (currentDate <= end) {
+        total++;
+        currentDate.setMonth(currentDate.getMonth() + 1);
+      }
+      break;
+    case 'weekdays':
+      while (currentDate <= end) {
+        const dayOfWeek = currentDate.getDay();
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) total++; // Lunes a Viernes
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      break;
+    default:
+      total = 1;
+      break;
+  }
+  return total > 0 ? total : 1;
+};
 
-      grouped[dateKey].push(task);
-    });
+/**
+ * Calcula el resumen de estado de las tareas recurrentes.
+ */
+export const getRecurrenceSummary = (tasks: Task[], parentId: number): { active: number; overdue: number; completed: number; total: number } => {
+  const parentTask = tasks.find(t => t.id === parentId);
+  const relatedTasks = tasks.filter(t => t.id === parentId || t.parentId === parentId);
 
-    return grouped;
-  },
+  const total = parentTask ? calculateTotalOccurrences(parentTask) : relatedTasks.length;
 
-  /**
-   * Obtener estadísticas de tareas
-   */
-  getTaskStatistics(tasks: Task[]): {
-    total: number;
-    pending: number;
-    completed: number;
-    cancelled: number;
-    expired: number;
-  } {
-    return {
-      total: tasks.length,
-      pending: tasks.filter(t => t.status === 'pending').length,
-      completed: tasks.filter(t => t.status === 'completed').length,
-      cancelled: tasks.filter(t => t.status === 'cancelled').length,
-      expired: tasks.filter(t => {
-        if (t.status !== 'pending') return false;
-        const end = new Date(new Date(t.scheduledStart).getTime() + t.duration * 60000);
-        return new Date() > end;
-      }).length,
-    };
-  },
+  const summary = relatedTasks.reduce(
+    (acc, task) => {
+      if (task.status === 'completed') acc.completed++;
+      else if (isTaskOverdue(task)) acc.overdue++;
+      else if (task.status === 'pending' || task.status === 'in_progress') acc.active++;
+      return acc;
+    },
+    { active: 0, overdue: 0, completed: 0 }
+  );
+
+  return { ...summary, total };
+};
+
+/**
+ * Genera un ID único para una nueva tarea.
+ */
+export const generateTaskId = (): number => {
+  return Date.now();
 };

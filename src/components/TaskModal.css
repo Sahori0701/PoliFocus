@@ -1,78 +1,130 @@
-/* components/TaskModal.css */
 
-.task-modal {
-  --border-radius: 1rem 1rem 0 0;
-  --height: auto;
-  --max-height: 90vh;
+/* Base Styles (for larger screens) */
+.modal-grid {
+  padding: 0 16px 16px 16px;
 }
 
-.task-details-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+.ion-text-center {
+  text-align: center;
+  font-size: 1.1rem;
 }
 
-.task-details-title {
-  font-family: 'Dosis', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
+
+.task-modal .ion-title {
+  font-size: 1rem;
+}
+
+.task-modal .task-main-title {
+  font-size: 1em;
+  font-weight: bold;
+  text-align: center;
   margin: 0;
-  color: var(--ion-color-primary);
-  line-height: 1.3;
+  padding: 24px 0 12px 0;
 }
 
-.task-details-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.task-modal .task-description {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium-shade);
+  margin-bottom: 24px;
+  white-space: pre-wrap;
+  text-align: center;
 }
 
-.detail-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: var(--ion-color-light);
-  border-radius: 0.5rem;
-}
-
-.detail-icon {
-  font-size: 1.5rem;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.detail-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.detail-label {
-  margin: 0 0 0.25rem 0;
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: var(--ion-text-color);
-  line-height: 1.2;
-}
-
-.detail-value {
-  margin: 0;
-  font-size: 0.875rem;
+.task-modal h2 {
+  font-size: 0.9em;
+  font-weight: bold;
   color: var(--ion-color-medium);
-  line-height: 1.4;
+  margin-top: 0;
+  margin-bottom: 4px;
+  text-transform: capitalize;
 }
 
-/* Responsive */
-@media (max-width: 576px) {
-  .task-details-title {
-    font-size: 1.25rem;
+.task-modal .ion-item {
+  --inner-padding-end: 0;
+  --padding-start: 0;
+  --background: transparent;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  --min-height: unset;
+}
+
+.task-modal .ion-item p {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.task-modal .ion-icon {
+  font-size: 0.9rem;
+  margin-right: 12px;
+}
+
+.task-modal .recurrence-section {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+  border-radius: 12px;
+}
+
+.task-modal .recurrence-section h2 {
+  color: #fff;
+}
+
+.task-modal .recurrence-section h3 {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--ion-color-medium-shade);
+  margin-bottom: 4px;
+}
+
+.task-modal .recurrence-section .ion-badge {
+  font-size: 1rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+/* Responsive Styles (for smaller screens) */
+@media (max-width: 768px) {
+  .modal-grid {
+    padding: 0 12px 12px 12px;
   }
 
-  .detail-icon {
-    font-size: 1.25rem;
+  .task-modal .ion-title {
+    font-size: 0.8rem;
   }
 
-  .detail-item {
-    padding: 0.625rem;
+  .task-modal .task-main-title {
+    font-size: 1.2em;
+    padding: 16px 0 8px 0;
+  }
+
+  .task-modal .task-description {
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+  }
+
+  .modal-grid ion-row > ion-col {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .modal-grid ion-row > ion-col:not(:last-child) {
+    margin-bottom: 8px;
+  }
+
+  .task-modal h2 {
+    font-size: 0.9em;
+  }
+
+  .task-modal .ion-item p,
+  .task-modal .recurrence-section .ion-badge {
+    font-size: 0.9rem;
+  }
+
+  .task-modal .ion-item {
+    --padding-top: 4px;
+    --padding-bottom: 4px;
   }
 }

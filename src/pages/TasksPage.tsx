@@ -1,3 +1,4 @@
+
 // pages/TasksPage.tsx
 import React, { useState, useEffect } from 'react';
 import {
@@ -265,7 +266,7 @@ const TasksPage: React.FC = () => {
             onConfirm={handleConfirmWithConflicts}
         />
 
-        <TaskModal isOpen={showTaskModal} task={selectedTaskForModal} onClose={() => { setShowTaskModal(false); setSelectedTaskForModal(null); }} onLoadTask={handleSelectTask} />
+        <TaskModal isOpen={showTaskModal} task={selectedTaskForModal} onClose={() => { setShowTaskModal(false); setSelectedTaskForModal(null); }} />
         <IonToast isOpen={showToast} onDidDismiss={() => setShowToast(false)} message={toastMessage} duration={2000} position="bottom" color={toastColor} />
       </IonContent>
     </IonPage>
