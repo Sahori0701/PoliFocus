@@ -1,4 +1,3 @@
-
 // pages/TasksPage.tsx
 import React, { useState, useEffect } from 'react';
 import {
@@ -156,16 +155,25 @@ const TasksPage: React.FC = () => {
     const taskToDelete = tasks.find(t => t.id === taskId);
     if (!taskToDelete) return;
     presentAlert({
-      header: 'Confirmar Eliminación',
+      cssClass: 'delete-alert',
+      header: '🗑️ Confirmar Eliminación',
       message: `¿Estás seguro de que quieres eliminar la tarea "${taskToDelete.title}"? Esta acción no se puede deshacer.`,
       buttons: [
-        { text: 'cancelar', role: 'cancel', cssClass: 'alert-button-cancel' },
+        { 
+          text: 'Cancelar', 
+          role: 'cancel', 
+          cssClass: 'alert-button-cancel' 
+        },
         {
           text: 'Eliminar',
           cssClass: 'alert-button-danger',
           handler: async () => {
-            try { await deleteTask(taskId); showSuccessToast('Tarea eliminada'); } 
-            catch (error) { showErrorToast('Error al eliminar tarea'); }
+            try { 
+              await deleteTask(taskId); 
+              showSuccessToast('Tarea eliminada'); 
+            } catch (error) { 
+              showErrorToast('Error al eliminar tarea'); 
+            }
           },
         },
       ],
