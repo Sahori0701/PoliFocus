@@ -11,6 +11,7 @@ interface TaskItemProps {
   onDelete?: (taskId: number) => void;
   onComplete?: (taskId: number) => void;
   onViewTask?: (task: Task) => void;
+  onReschedule?: (task: Task) => void; // Prop for rescheduling
   hasConflict?: boolean;
 }
 
@@ -20,6 +21,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
   onDelete,
   onComplete,
   onViewTask,
+  onReschedule, // Get reschedule handler
   hasConflict = false,
 }) => {
   const isCompleted = task.status === 'completed';
@@ -99,6 +101,13 @@ const TaskItem: React.FC<TaskItemProps> = ({
               <span className="badge-icon">{efficiency.icon}</span>
               <span>{efficiency.difference > 0 ? `+${efficiency.difference}` : efficiency.difference} min</span>
             </div>
+            <div className="task-actions">
+              {onDelete && (
+                <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}>
+                  <span>🗑️</span>
+                </IonButton>
+              )}
+            </div>
           </div>
         ) : (
           <div className="task-footer">
@@ -107,22 +116,43 @@ const TaskItem: React.FC<TaskItemProps> = ({
                  <span className="badge-text">{urgencyBadge.text}</span>
               </div>
             )}
-            {/* CORREGIDO: Se usan emojis en botones transparentes */}
             <div className="task-actions">
-              {onSelect && (
-                <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onSelect(task); }}>
-                  <span>▶️</span>
-                </IonButton>
-              )}
-              {onComplete && (
-                <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onComplete(task.id); }}>
-                  <span>✅</span>
-                </IonButton>
-              )}
-              {onDelete && (
-                <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}>
-                  <span>🗑️</span>
-                </IonButton>
+              {urgencyBadge?.class === 'expired' ? (
+                <>
+                  {onReschedule && (
+                    <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onReschedule(task); }}>
+                      <span>🔄</span>
+                    </IonButton>
+                  )}
+                  {onDelete && (
+                    <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}>
+                      <span>🗑️</span>
+                    </IonButton>
+                  )}
+                </>
+              ) : (
+                <>
+                  {onSelect && (
+                    <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onSelect(task); }}>
+                      <span>▶️</span>
+                    </IonButton>
+                  )}
+                  {onComplete && (
+                    <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onComplete(task.id); }}>
+                      <span>✅</span>
+                    </IonButton>
+                  )}
+                  {onReschedule && (
+                    <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onReschedule(task); }}>
+                      <span>🔄</span>
+                    </IonButton>
+                  )}
+                  {onDelete && (
+                    <IonButton className="action-button-emoji" fill="clear" onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}>
+                      <span>🗑️</span>
+                    </IonButton>
+                  )}
+                </>
               )}
             </div>
           </div>
