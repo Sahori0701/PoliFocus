@@ -5,7 +5,6 @@ import { Task } from '../models/Task';
 import { taskService } from '../services/task.service';
 import TaskItem from './TaskItem';
 
-// CORREGIDO: Se añade `onViewTask` a las propiedades
 interface TaskListProps {
   tasks: Task[];
   emptyMessage?: string;
@@ -13,7 +12,8 @@ interface TaskListProps {
   onSelectTask?: (task: Task) => void;
   onDeleteTask?: (taskId: number) => void;
   onCompleteTask?: (taskId: number) => void;
-  onViewTask?: (task: Task) => void; // <-- AÑADIDO
+  onViewTask?: (task: Task) => void;
+  onRescheduleTask?: (task: Task) => void; // Add reschedule handler
   showConflicts?: boolean;
   allTasks?: Task[];
 }
@@ -25,11 +25,11 @@ const TaskList: React.FC<TaskListProps> = ({
   onSelectTask,
   onDeleteTask,
   onCompleteTask,
-  onViewTask, // <-- AÑADIDO
+  onViewTask,
+  onRescheduleTask, // Add reschedule handler
   showConflicts = false,
   allTasks = [],
 }) => {
-  // Estado vacío
   if (tasks.length === 0) {
     return (
       <IonCard className="empty-state-card">
@@ -41,7 +41,6 @@ const TaskList: React.FC<TaskListProps> = ({
     );
   }
 
-  // Renderizar lista de tareas
   return (
     <div className="task-list-container">
       {tasks.map(task => {
@@ -56,7 +55,8 @@ const TaskList: React.FC<TaskListProps> = ({
             onSelect={onSelectTask}
             onDelete={onDeleteTask}
             onComplete={onCompleteTask}
-            onViewTask={onViewTask} // <-- AÑADIDO y pasado al item
+            onViewTask={onViewTask}
+            onReschedule={onRescheduleTask} // Pass handler to TaskItem
             hasConflict={hasConflict}
           />
         );

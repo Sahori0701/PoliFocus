@@ -191,14 +191,9 @@
   border-radius: 8px;
 }
 
-/* Estilos de botones eliminados para usar las propiedades de IonButton */
-.toast-button-cancel {
-  /* Los estilos ahora se controlan con fill="outline" color="medium" */
-}
 
-.toast-button-confirm {
-  /* Los estilos ahora se controlan con fill="solid" color="success" */
-}
+
+
 
 
 /* Media Query para móviles */

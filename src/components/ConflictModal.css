@@ -1,0 +1,118 @@
+/* =================================================================== */
+/* =================== ESTILOS DEL MODAL DE CONFLICTO ================== */
+/* =================================================================== */
+
+.conflict-modal {
+  --width: 90%;
+  --max-width: 400px;
+  --height: auto;
+  --max-height: 80vh;
+  --border-radius: var(--app-radius-xl);
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --backdrop-opacity: 0.5;
+  --background: var(--app-bg-card); /* Corrige el fondo del modal */
+}
+
+.conflict-modal .modal-wrapper {
+  /* Se elimina la regla de background incorrecta de aquí */
+  border: none;
+}
+
+.conflict-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* HEADER STYLES */
+.conflict-header {
+  text-align: center;
+  padding: 1.25rem 1.5rem 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--app-border);
+}
+.conflict-title {
+  color: var(--ion-text-color);
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0;
+}
+.conflict-subtitle {
+  color: var(--app-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+/* CONTENT STYLES */
+.conflict-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 1.5rem;
+}
+
+/* CONTENT LIST STYLES */
+.conflict-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.conflict-item-time {
+  font-weight: 500;
+  padding-right: 1rem;
+}
+.conflict-item-title {
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* FOOTER STYLES */
+.conflict-footer {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.conflict-button-cancel,
+.conflict-button-confirm {
+  flex: 1;
+  height: 38px;
+  font-size: 0.85rem;
+  border-radius: var(--app-radius-md);
+  font-weight: 600;
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.conflict-button-cancel:hover {
+  background-color: var(--app-bg-elevated);
+}
+
+.conflict-button-confirm:hover {
+  background-color: var(--ion-color-primary-shade);
+}
+
+.conflict-button-cancel:active,
+.conflict-button-confirm:active {
+  transform: scale(0.97);
+}
+
+.conflict-button-cancel {
+  background-color: var(--app-bg-card);
+  border: 1px solid var(--app-border);
+  color: var(--app-text-secondary);
+}
+
+.conflict-button-confirm {
+  background-color: var(--ion-color-primary);
+  border: 1px solid var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  font-weight: 700;
+}
