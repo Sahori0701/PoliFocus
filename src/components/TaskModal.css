@@ -4,14 +4,19 @@
   padding: 0 16px 16px 16px;
 }
 
+.ion-text-header {
+  text-align: center;
+  font-size: 1.0rem;
+}
+
 .ion-text-center {
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 0.7rem;
 }
 
 
 .task-modal .ion-title {
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .task-modal .task-main-title {
@@ -31,7 +36,7 @@
 }
 
 .task-modal h2 {
-  font-size: 0.9em;
+  font-size: 0.8em; /* Reduced size */
   font-weight: bold;
   color: var(--ion-color-medium);
   margin-top: 0;
@@ -49,7 +54,7 @@
 }
 
 .task-modal .ion-item p {
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Reduced size */
   font-weight: 500;
   margin: 0;
 }
@@ -115,12 +120,12 @@
   }
 
   .task-modal h2 {
-    font-size: 0.9em;
+    font-size: 0.8em; /* Reduced size */
   }
 
   .task-modal .ion-item p,
   .task-modal .recurrence-section .ion-badge {
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* Reduced size */
   }
 
   .task-modal .ion-item {

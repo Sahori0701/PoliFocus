@@ -58,7 +58,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose }) => {
     <IonModal isOpen={isOpen} onDidDismiss={onClose} className="task-modal">
       <IonHeader>
         <IonToolbar>
-          <IonTitle className="ion-text-center">📖 Detalle de la tarea</IonTitle>
+          <IonTitle className="ion-text-header">📖 Detalle de la tarea</IonTitle>
           <IonButtons slot="end">
             <IonButton onClick={onClose}><IonIcon icon={close} /></IonButton>
           </IonButtons>
