@@ -15,18 +15,13 @@ import { useHistory } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Task } from '../models/Task';
 import { taskService } from '../services/task.service';
-import { dateUtils } from '../utils/dateUtils'; 
 import TaskForm from '../components/TaskForm';
 import TaskList from '../components/TaskList';
 import TaskModal from '../components/TaskModal';
-import ConflictModal from '../components/ConflictModal'; // Importar el nuevo modal
+import ConflictModal from '../components/ConflictModal';
 import Header from '../components/Header';
 import './TasksPage.css';
 
-
-// =================================================================================
-// COMPONENTE PRINCIPAL DE LA PÁGINA DE TAREAS
-// =================================================================================
 const TasksPage: React.FC = () => {
   const { tasks, addTask, deleteTask, updateTask, selectTask, initialTab, setInitialTab } = useApp();
   const history = useHistory();
@@ -34,17 +29,18 @@ const TasksPage: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState<'planning' | 'active' | 'expired' | 'completed'>('planning');
   const [searchTerm, setSearchTerm] = useState('');
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null); 
+  const [taskTemplate, setTaskTemplate] = useState<Partial<Task> | null>(null);
+
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTaskForModal, setSelectedTaskForModal] = useState<Task | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastColor, setToastColor] = useState<'success' | 'warning' | 'danger'>('success');
 
-  // Estados para el nuevo modal de conflictos
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [conflicts, setConflicts] = useState<Task[]>([]);
   const [conflictingTaskData, setConflictingTaskData] = useState<Omit<Task, 'id'> | null>(null);
-
 
   useEffect(() => {
     if (initialTab) {
@@ -55,6 +51,14 @@ const TasksPage: React.FC = () => {
       setInitialTab(null);
     }
   }, [initialTab, setInitialTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'planning') {
+      if (taskToEdit) setTaskToEdit(null);
+      if (taskTemplate) setTaskTemplate(null);
+    }
+  }, [activeTab, taskToEdit, taskTemplate]);
+
 
   const getFilteredTasks = () => {
     let filtered: Task[] = [];
@@ -84,9 +88,9 @@ const TasksPage: React.FC = () => {
       if (allConflicts.length > 0) {
         const uniqueConflicts = [...new Map(allConflicts.map(item => [item.id, item])).values()];
         setConflicts(uniqueConflicts);
-        setConflictingTaskData(taskData); // Guardar los datos de la tarea
-        setShowConflictModal(true); // Mostrar el modal de conflictos
-        return false; // Indicar que la tarea no se creó directamente
+        setConflictingTaskData(taskData);
+        setShowConflictModal(true);
+        return false;
       }
 
       for (const task of tasksToAdd) {
@@ -95,6 +99,7 @@ const TasksPage: React.FC = () => {
       }
       
       showSuccessToast(tasksToAdd.length === 1 ? '🎖️ Tarea creada exitosamente' : `${tasksToAdd.length} tareas creadas`);
+      setTaskTemplate(null); // Clear template on successful creation
       setActiveTab('active');
       return true;
     } catch (error) {
@@ -103,25 +108,42 @@ const TasksPage: React.FC = () => {
     }
   };
 
+  const handleUpdateTask = async (taskData: Omit<Task, 'id'>): Promise<boolean> => {
+    if (!taskToEdit) return false;
+    try {
+      await updateTask(taskToEdit.id, { ...taskData, status: 'pending' });
+      showSuccessToast('👍 Tarea reprogramada exitosamente');
+      setTaskToEdit(null);
+      setActiveTab('active');
+      return true;
+    } catch (error) {
+      showErrorToast('Error al reprogramar la tarea');
+      return false;
+    }
+  };
+
+  const handleRescheduleTask = (task: Task) => {
+    setTaskToEdit(null); // Ensure we are not in edit mode
+    setTaskTemplate({ title: task.title }); // Create a template with the title
+    setActiveTab('planning');
+  };
+
   const handleConfirmWithConflicts = async () => {
     if (!conflictingTaskData) return;
-
     try {
       const baseTaskWithTempId: Task = { ...conflictingTaskData, id: Date.now() };
       const tasksToAdd = taskService.generateRecurringTasks(baseTaskWithTempId);
-      
       for (const task of tasksToAdd) {
         const { id, ...taskDataForStorage } = task;
         await addTask(taskDataForStorage);
       }
-      
       showWarningToast(`${tasksToAdd.length === 1 ? 'Tarea creada' : `${tasksToAdd.length} tareas creadas`} con conflictos`);
       setActiveTab('active');
     } catch (error) {
       showErrorToast('Error al crear tarea con conflictos');
     } finally {
-        setShowConflictModal(false);
-        setConflictingTaskData(null);
+      setShowConflictModal(false);
+      setConflictingTaskData(null);
     }
   };
 
@@ -130,11 +152,9 @@ const TasksPage: React.FC = () => {
     setConflictingTaskData(null);
   };
 
-
   const handleDeleteTask = async (taskId: number) => {
     const taskToDelete = tasks.find(t => t.id === taskId);
     if (!taskToDelete) return;
-
     presentAlert({
       header: 'Confirmar Eliminación',
       message: `¿Estás seguro de que quieres eliminar la tarea "${taskToDelete.title}"? Esta acción no se puede deshacer.`,
@@ -180,7 +200,6 @@ const TasksPage: React.FC = () => {
 
   return (
     <IonPage>
-      
       <Header />
       <IonContent fullscreen>
         <div className="tasks-container">
@@ -195,7 +214,12 @@ const TasksPage: React.FC = () => {
 
           {activeTab === 'planning' && (
             <div className="tab-content">
-              <TaskForm onSubmit={handleCreateTask} />
+              <TaskForm 
+                onSubmit={taskToEdit ? handleUpdateTask : handleCreateTask}
+                initialTask={taskToEdit || taskTemplate}
+                isEditing={!!taskToEdit}
+                key={taskToEdit ? taskToEdit.id : (taskTemplate ? 'template-form' : 'new-form')}
+              />
             </div>
           )}
 
@@ -217,7 +241,8 @@ const TasksPage: React.FC = () => {
                 onSelectTask={activeTab === 'active' ? handleSelectTask : undefined}
                 onDeleteTask={handleDeleteTask}
                 onCompleteTask={activeTab === 'active' ? handleCompleteTask : undefined}
-                 onViewTask={handleViewTask}
+                onViewTask={handleViewTask}
+                onRescheduleTask={handleRescheduleTask}
                 showConflicts={activeTab === 'active'}
                 allTasks={tasks}
               />
@@ -225,7 +250,6 @@ const TasksPage: React.FC = () => {
           )}
         </div>
         
-        {/* Renderizar el nuevo modal de conflictos */}
         <ConflictModal 
             isOpen={showConflictModal}
             conflicts={conflicts}

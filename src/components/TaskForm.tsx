@@ -17,14 +17,14 @@ import './TaskForm.css';
 
 interface TaskFormProps {
   onSubmit: (task: Omit<Task, 'id'>) => Promise<boolean>;
+  initialTask?: Partial<Task> | null;
+  isEditing?: boolean;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
-  const today = new Date();
-  
+const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, initialTask, isEditing = false }) => {
   const [title, setTitle] = useState('');
-  const [date, setDate] = useState(dateUtils.toDateInputValue(today));
-  const [time, setTime] = useState(dateUtils.toTimeInputValue(today));
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
   const [duration, setDuration] = useState(60);
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>('none');
@@ -33,12 +33,41 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
   const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([]);
   const [customInterval, setCustomInterval] = useState(1);
   const [customUnit, setCustomUnit] = useState<TimeUnit>('days');
-  const [recurrenceStart, setRecurrenceStart] = useState(dateUtils.toDateInputValue(today));
-  const [recurrenceEnd, setRecurrenceEnd] = useState(() => {
-    const endDate = new Date(today);
-    endDate.setMonth(endDate.getMonth() + 1);
-    return dateUtils.toDateInputValue(endDate);
-  });
+  const [recurrenceStart, setRecurrenceStart] = useState('');
+  const [recurrenceEnd, setRecurrenceEnd] = useState('');
+
+  useEffect(() => {
+    const today = new Date();
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    if (initialTask) {
+      setTitle(initialTask.title || (initialTask as any).description || '');
+      
+      if (initialTask.scheduledStart) {
+        const d = new Date(initialTask.scheduledStart);
+        setDate(dateUtils.toDateInputValue(d));
+        setTime(dateUtils.toTimeInputValue(d));
+      } else {
+        setDate(dateUtils.toDateInputValue(today));
+        setTime(dateUtils.toTimeInputValue(today));
+      }
+
+      setDuration(initialTask.duration || 60);
+      setPriority(initialTask.priority || 'medium');
+      
+      const rec = initialTask.recurrence;
+      setRecurrenceType(rec?.type || 'none');
+      setSelectedWeekdays(rec?.weekdays || []);
+      setCustomInterval(rec?.interval || 1);
+      setCustomUnit(rec?.unit || 'days');
+      setRecurrenceStart(rec?.startDate ? dateUtils.toDateInputValue(new Date(rec.startDate)) : dateUtils.toDateInputValue(today));
+      setRecurrenceEnd(rec?.endDate ? dateUtils.toDateInputValue(new Date(rec.endDate)) : dateUtils.toDateInputValue(nextMonth));
+
+    } else {
+      resetForm();
+    }
+  }, [initialTask]);
 
   useEffect(() => {
     setShowRecurrence(recurrenceType !== 'none');
@@ -49,8 +78,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
   };
 
   const resetForm = () => {
-    setTitle('');
     const now = new Date();
+    const nextMonth = new Date(now);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    setTitle('');
     setDate(dateUtils.toDateInputValue(now));
     setTime(dateUtils.toTimeInputValue(now));
     setDuration(60);
@@ -60,25 +92,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
     setCustomInterval(1);
     setCustomUnit('days');
     setRecurrenceStart(dateUtils.toDateInputValue(now));
-    const nextMonth = new Date(now);
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
     setRecurrenceEnd(dateUtils.toDateInputValue(nextMonth));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      alert('El título es obligatorio');
-      return;
-    }
-    if (duration < 5) {
-      alert('La duración debe ser de al menos 5 minutos.');
-      return;
-    }
-    if (recurrenceType === 'weekdays' && selectedWeekdays.length === 0) {
-      alert('Selecciona al menos un día de la semana');
-      return;
-    }
+    if (!title.trim()) { alert('El título es obligatorio'); return; }
+    if (duration < 5) { alert('La duración debe ser de al menos 5 minutos.'); return; }
+    if (recurrenceType === 'weekdays' && selectedWeekdays.length === 0) { alert('Selecciona al menos un día de la semana'); return; }
 
     const scheduledStart = dateUtils.combineDateAndTime(date, time);
     const baseTask: Omit<Task, 'id'> = {
@@ -87,9 +108,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
       duration,
       priority,
       status: 'pending',
-      createdAt: new Date().toISOString(),
+      createdAt: initialTask?.createdAt || new Date().toISOString(),
       isRecurring: recurrenceType !== 'none',
     };
+
     if (recurrenceType !== 'none') {
       baseTask.recurrence = {
         type: recurrenceType,
@@ -104,7 +126,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
     }
 
     const success = await onSubmit(baseTask);
-    if (success) {
+    if (success && !isEditing) {
       resetForm();
     }
   };
@@ -117,7 +139,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
   return (
     <IonCard className="task-form-card">
       <IonCardHeader>
-        <IonCardTitle className="form-card-title">Programa tu tarea</IonCardTitle>
+        <IonCardTitle className="form-card-title">{isEditing ? 'Editar Tarea' : 'Programa tu tarea'}</IonCardTitle>
       </IonCardHeader>
       <IonCardContent>
         <form onSubmit={handleSubmit} className="task-form">
@@ -154,7 +176,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
             <div className="recurrence-section">
               {recurrenceType === 'weekdays' && (
                 <div className="weekdays-section">
-                  <IonLabel className="section-label">Selecciona los días</IonLabel>
+                  <IonLabel className="section-label">📋 Selecciona los días</IonLabel>
                   <div className="weekdays-chips">
                     {weekdays.map(day => (
                       <div key={day.value} className={`weekday-chip ${selectedWeekdays.includes(day.value) ? 'selected' : ''}`} onClick={() => handleWeekdayToggle(day.value)}>
@@ -192,8 +214,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
           )}
 
           <IonButton expand="block" type="submit" color="primary" className="submit-button">
-            <span style={{ marginRight: '0.5rem' }}>✍️</span>
-            Crear tarea
+            <span style={{ marginRight: '0.5rem' }}>{isEditing ? '💾' : '✍️'}</span>
+            {isEditing ? 'Guardar Cambios' : 'Crear tarea'}
           </IonButton>
         </form>
       </IonCardContent>
