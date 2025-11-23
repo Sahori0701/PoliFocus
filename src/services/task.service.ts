@@ -4,14 +4,29 @@ import { dateUtils } from '../utils/dateUtils';
 
 class TaskService {
   /**
-   * Verificar si una tarea está vencida
+   * Verificar si una tarea está vencida.
+   * Una tarea se considera vencida si su hora de finalización (inicio + duración) ya pasó.
    */
   isTaskExpired(task: Task): boolean {
     // Una tarea completada no puede estar vencida.
-    if (task.status === 'completed') return false;
+    if (task.status === 'completed') {
+      return false;
+    }
+    
     // Solo las tareas pendientes pueden vencerse.
-    return task.status === 'pending' && dateUtils.isExpired(task.scheduledStart, task.duration);
+    if (task.status !== 'pending') {
+      return false;
+    }
+
+    const now = new Date();
+    const startTime = new Date(task.scheduledStart);
+    // La duración está en minutos.
+    const endTime = dateUtils.addMinutes(startTime, task.duration);
+
+    // La tarea está vencida si la hora actual es posterior a la hora de finalización.
+    return now > endTime;
   }
+
 
   /**
    * Verificar conflictos de horarios entre tareas
