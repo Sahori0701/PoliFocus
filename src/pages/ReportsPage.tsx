@@ -18,7 +18,7 @@ const ReportsPage: React.FC = () => {
   const priorityChartInstance = useRef<Chart | null>(null);
   const durationChartInstance = useRef<Chart | null>(null);
 
-  const completedTasks = useMemo(() => 
+  const completedTasks = useMemo(() =>
     taskService.sortTasks(taskService.filterTasksByStatus(tasks, 'completed'), 'date', 'desc'),
     [tasks]
   );
@@ -56,26 +56,26 @@ const ReportsPage: React.FC = () => {
     const textColor = style.getPropertyValue('--app-text-secondary').trim();
     const cardBgColor = style.getPropertyValue('--app-bg-card').trim();
 
-    const commonFont = { size: 13, weight: '500' };
+    const commonFont = { size: 13, weight: '700' };
 
     if (statusChartInstance.current) statusChartInstance.current.destroy();
     if (priorityChartInstance.current) priorityChartInstance.current.destroy();
     if (durationChartInstance.current) durationChartInstance.current.destroy();
 
-    const legendLabelOptions = { 
-      color: textColor, 
-      boxWidth: 10,
+    const legendLabelOptions = {
+      color: textColor,
+      boxWidth: 30,
       padding: 15,
       font: commonFont
     };
 
     const commonDoughnutOptions = {
-      responsive: true, 
-      maintainAspectRatio: false, 
+      responsive: true,
+      maintainAspectRatio: false,
       cutout: '65%',
-      plugins: { 
-        legend: { 
-          position: 'bottom' as const, 
+      plugins: {
+        legend: {
+          position: 'bottom' as const,
           labels: legendLabelOptions
         }
       }
@@ -104,56 +104,56 @@ const ReportsPage: React.FC = () => {
     }
 
     if (durationChartRef.current && completedTasks.length > 0) {
-        const lastTasks = completedTasks.slice(0, 7).reverse();
-        const ctx = durationChartRef.current.getContext('2d');
-        if (ctx) {
-            durationChartInstance.current = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: lastTasks.map(t => new Date(t.completedAt || 0).toLocaleDateString('es-ES', {day: '2-digit', month: 'short'})),
-                    datasets: [
-                        {
-                            label: 'Tiempo Planificado',
-                            data: lastTasks.map(t => t.duration),
-                            backgroundColor: successColor,
-                            borderRadius: 4,
-                        },
-                        {
-                            label: 'Tiempo Real',
-                            data: lastTasks.map(t => t.actualDuration || 0),
-                            backgroundColor: dangerColor,
-                            borderRadius: 4,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: legendLabelOptions
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: textColor, padding: 10, font: commonFont },
-                            grid: { display: false },
-                            title: { display: true, text: 'Minutos', color: textColor, font: { ...commonFont, size: 12 } }
-                        },
-                        x: {
-                            ticks: { color: textColor, font: commonFont },
-                            grid: { display: false }
-                        }
-                    }
-                }
-            } as ChartConfiguration);
-        }
+      const lastTasks = completedTasks.slice(0, 7).reverse();
+      const ctx = durationChartRef.current.getContext('2d');
+      if (ctx) {
+        durationChartInstance.current = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: lastTasks.map(t => new Date(t.completedAt || 0).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })),
+            datasets: [
+              {
+                label: 'Tiempo Planificado',
+                data: lastTasks.map(t => t.duration),
+                backgroundColor: successColor,
+                borderRadius: 4,
+              },
+              {
+                label: 'Tiempo Real',
+                data: lastTasks.map(t => t.actualDuration || 0),
+                backgroundColor: dangerColor,
+                borderRadius: 4,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: legendLabelOptions
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: textColor, padding: 10, font: commonFont },
+                grid: { display: false },
+                title: { display: true, text: 'Minutos', color: textColor, font: { ...commonFont, size: 12 } }
+              },
+              x: {
+                ticks: { color: textColor, font: commonFont },
+                grid: { display: false }
+              }
+            }
+          }
+        } as ChartConfiguration);
+      }
     }
 
   }, [reportMetrics, completedTasks]);
-  
+
   return (
     <IonPage>
       <Header />
@@ -163,7 +163,7 @@ const ReportsPage: React.FC = () => {
             <IonCol>
 
               <div className="stats-grid">
-                 <div className="stat-card">
+                <div className="stat-card">
                   <div className="stat-card-header">
                     <span className="stat-card-title">📌 Total</span>
                   </div>
@@ -200,7 +200,7 @@ const ReportsPage: React.FC = () => {
                   <div className="stat-card-value">{reportMetrics.overallEfficiency}%</div>
                 </div>
               </div>
-              
+
               {tasks.length > 0 ? (
                 <>
                   <div className="doughnut-charts-grid">
@@ -229,12 +229,12 @@ const ReportsPage: React.FC = () => {
                           <table className="task-table">
                             <thead>
                               <tr>
-                                <th>Tarea</th>
-                                <th>Prioridad</th>
-                                <th>Fecha</th>
-                                <th>Planificado</th>
-                                <th>Real</th>
-                                <th>Eficiencia</th>
+                                <th>📋 Tarea</th>
+                                <th>🔥 Prioridad</th>
+                                <th>📅 Fecha</th>
+                                <th>⏱️ Planificado</th>
+                                <th>✅ Real</th>
+                                <th>📊 Eficiencia</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -244,7 +244,7 @@ const ReportsPage: React.FC = () => {
                                   <tr key={task.id}>
                                     <td data-label="Tarea">{task.title}</td>
                                     <td data-label="Prioridad" className={`priority-${task.priority}`}>{task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</td>
-                                    <td data-label="Fecha">{new Date(task.completedAt || 0).toLocaleDateString('es-ES', { day: '2-digit', month: 'short'})}</td>
+                                    <td data-label="Fecha">{new Date(task.completedAt || 0).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</td>
                                     <td data-label="Planificado">{task.duration} min</td>
                                     <td data-label="Real">{task.actualDuration || 0} min</td>
                                     <td data-label="Eficiencia" className="efficiency-cell">{efficiency.icon} {Number(efficiency.percentage).toFixed(0)}%</td>
@@ -260,7 +260,7 @@ const ReportsPage: React.FC = () => {
                 </>
               ) : (
                 <div className="no-data-message">
-                  <p>Aún no hay datos para mostrar. ¡Completa algunas tareas para ver tus estadísticas!</p>
+                  <p>📊 Aún no hay datos para mostrar. ¡Completa algunas tareas para ver tus estadísticas! 🚀</p>
                 </div>
               )}
 
