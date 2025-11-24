@@ -2,264 +2,179 @@
 // src/services/storage.service.ts
 import { Preferences } from '@capacitor/preferences';
 import { Task } from '../models/Task';
+import { Project } from '../models/Project';
 import { PomodoroSession } from '../models/Pomodoro';
 import { AppConfig, DEFAULT_CONFIG } from '../models/Config';
 
 const STORAGE_KEYS = {
   TASKS: 'polifocus_tasks',
+  PROJECTS: 'polifocus_projects', // <-- AÑADIDO
   SESSIONS: 'polifocus_sessions',
   CONFIG: 'polifocus_config',
   STATISTICS: 'polifocus_statistics',
-  LAST_ID: 'polifocus_last_id', // <-- NUEVA CLAVE PARA EL CONTADOR
+  LAST_ID: 'polifocus_last_id',
 };
 
 class StorageService {
-  // ============================================
+  // ===========================================
   // HELPERS
-  // ============================================
-
-  /**
-   * Obtiene el siguiente ID disponible para un nuevo elemento.
-   * Es atómico para prevenir condiciones de carrera.
-   */
+  // ===========================================
   private async getNextId(): Promise<number> {
+    const { value } = await Preferences.get({ key: STORAGE_KEYS.LAST_ID });
+    const lastId = value ? parseInt(value, 10) : 0;
+    const nextId = lastId + 1;
+    await Preferences.set({ key: STORAGE_KEYS.LAST_ID, value: nextId.toString() });
+    return nextId;
+  }
+
+  // ===========================================
+  // UNIVERSAL GETTER/SETTER
+  // ===========================================
+  private async getItems<T>(key: string): Promise<T[]> {
     try {
-      const { value } = await Preferences.get({ key: STORAGE_KEYS.LAST_ID });
-      const lastId = value ? parseInt(value, 10) : 0;
-      const nextId = lastId + 1;
-      await Preferences.set({
-        key: STORAGE_KEYS.LAST_ID,
-        value: nextId.toString(),
-      });
-      return nextId;
+      const { value } = await Preferences.get({ key });
+      return value ? JSON.parse(value) : [];
     } catch (error) {
-      console.error('Error getting next ID:', error);
-      // Fallback a un ID basado en tiempo si todo lo demás falla, aunque es improbable.
-      return Date.now();
+      console.error(`Error getting items from ${key}:`, error);
+      return [];
     }
   }
 
-  // ============================================
+  private async saveItems<T>(key: string, items: T[]): Promise<void> {
+    await Preferences.set({ key, value: JSON.stringify(items) });
+  }
+  
+  // ===========================================
   // TASKS
-  // ============================================
+  // ===========================================
   async getTasks(): Promise<Task[]> {
-    try {
-      const { value } = await Preferences.get({ key: STORAGE_KEYS.TASKS });
-      return value ? JSON.parse(value) : [];
-    } catch (error) {
-      console.error('Error getting tasks:', error);
-      return [];
-    }
+    return this.getItems<Task>(STORAGE_KEYS.TASKS);
   }
 
-  async saveTasks(tasks: Task[]): Promise<void> {
-    try {
-      await Preferences.set({
-        key: STORAGE_KEYS.TASKS,
-        value: JSON.stringify(tasks),
-      });
-    } catch (error) {
-      console.error('Error saving tasks:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Añade una nueva tarea, asignándole un ID secuencial único.
-   * La `taskData` de entrada no debe contener un `id`.
-   */
   async addTask(taskData: Omit<Task, 'id'>): Promise<Task> {
-    try {
-      const tasks = await this.getTasks();
-      const newId = await this.getNextId();
-      
-      const newTask: Task = {
-        ...taskData,
-        id: newId, // Asignamos el nuevo ID secuencial
-      };
-
-      tasks.push(newTask);
-      await this.saveTasks(tasks);
-      return newTask;
-    } catch (error) {
-      console.error('Error adding task:', error);
-      throw error;
-    }
+    const tasks = await this.getTasks();
+    const newTask: Task = { ...taskData, id: await this.getNextId() };
+    tasks.push(newTask);
+    await this.saveItems(STORAGE_KEYS.TASKS, tasks);
+    return newTask;
   }
-
+  
   async updateTask(taskId: number, updates: Partial<Task>): Promise<Task | null> {
-    try {
-      const tasks = await this.getTasks();
-      const index = tasks.findIndex(t => t.id === taskId);
-      
-      if (index === -1) return null;
-      
-      tasks[index] = { ...tasks[index], ...updates };
-      await this.saveTasks(tasks);
-      return tasks[index];
-    } catch (error) {
-      console.error('Error updating task:', error);
-      throw error;
-    }
+    const tasks = await this.getTasks();
+    const index = tasks.findIndex(t => t.id === taskId);
+    if (index === -1) return null;
+    tasks[index] = { ...tasks[index], ...updates };
+    await this.saveItems(STORAGE_KEYS.TASKS, tasks);
+    return tasks[index];
   }
 
-  async deleteTask(taskId: number): Promise<boolean> {
-    try {
-      const tasks = await this.getTasks();
-      const filtered = tasks.filter(t => t.id !== taskId);
-      await this.saveTasks(filtered);
-      return true;
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      return false;
-    }
+  async deleteTask(taskId: number): Promise<void> {
+    const tasks = await this.getTasks();
+    const filtered = tasks.filter(t => t.id !== taskId);
+    await this.saveItems(STORAGE_KEYS.TASKS, filtered);
   }
 
-  async getTaskById(taskId: number): Promise<Task | null> {
-    try {
-      const tasks = await this.getTasks();
-      return tasks.find(t => t.id === taskId) || null;
-    } catch (error) {
-      console.error('Error getting task by id:', error);
-      return null;
-    }
+  // ===========================================
+  // PROJECTS (¡NUEVO!)
+  // ===========================================
+  async getProjects(): Promise<Project[]> {
+    return this.getItems<Project>(STORAGE_KEYS.PROJECTS);
+  }
+  
+  async addProject(projectData: Omit<Project, 'id'>): Promise<Project> {
+    const projects = await this.getProjects();
+    const newProject: Project = { ...projectData, id: await this.getNextId() };
+    projects.push(newProject);
+    await this.saveItems(STORAGE_KEYS.PROJECTS, projects);
+    return newProject;
+  }
+  
+  async updateProject(projectId: number, updates: Partial<Project>): Promise<Project | null> {
+    const projects = await this.getProjects();
+    const index = projects.findIndex(p => p.id === projectId);
+    if (index === -1) return null;
+    projects[index] = { ...projects[index], ...updates };
+    await this.saveItems(STORAGE_KEYS.PROJECTS, projects);
+    return projects[index];
+  }
+  
+  async deleteProject(projectId: number): Promise<void> {
+    const projects = await this.getProjects();
+    const filtered = projects.filter(p => p.id !== projectId);
+    await this.saveItems(STORAGE_KEYS.PROJECTS, filtered);
   }
 
-  // ============================================
-  // POMODORO SESSIONS (sin cambios)
-  // ============================================
+  // ===========================================
+  // SESSIONS
+  // ===========================================
   async getSessions(): Promise<PomodoroSession[]> {
-    try {
-      const { value } = await Preferences.get({ key: STORAGE_KEYS.SESSIONS });
-      return value ? JSON.parse(value) : [];
-    } catch (error) {
-      console.error('Error getting sessions:', error);
-      return [];
-    }
-  }
-
-  async saveSessions(sessions: PomodoroSession[]): Promise<void> {
-    try {
-      await Preferences.set({
-        key: STORAGE_KEYS.SESSIONS,
-        value: JSON.stringify(sessions),
-      });
-    } catch (error) {
-      console.error('Error saving sessions:', error);
-      throw error;
-    }
+    return this.getItems<PomodoroSession>(STORAGE_KEYS.SESSIONS);
   }
 
   async addSession(session: PomodoroSession): Promise<PomodoroSession> {
-    try {
-      const sessions = await this.getSessions();
-      // Asumiendo que las sesiones también podrían beneficiarse de IDs únicos en el futuro
-      // pero por ahora mantenemos la estructura que traen.
-      sessions.push(session);
-      await this.saveSessions(sessions);
-      return session;
-    } catch (error) {
-      console.error('Error adding session:', error);
-      throw error;
-    }
+    const sessions = await this.getSessions();
+    sessions.push(session);
+    await this.saveItems(STORAGE_KEYS.SESSIONS, sessions);
+    return session;
   }
 
-  // ============================================
-  // CONFIGURATION (sin cambios)
-  // ============================================
+  // ===========================================
+  // CONFIG
+  // ===========================================
   async getConfig(): Promise<AppConfig> {
-    try {
-      const { value } = await Preferences.get({ key: STORAGE_KEYS.CONFIG });
-      return value ? JSON.parse(value) : DEFAULT_CONFIG;
-    } catch (error) {
-      console.error('Error getting config:', error);
-      return DEFAULT_CONFIG;
-    }
+    const { value } = await Preferences.get({ key: STORAGE_KEYS.CONFIG });
+    return value ? { ...DEFAULT_CONFIG, ...JSON.parse(value) } : DEFAULT_CONFIG;
   }
-
+  
   async saveConfig(config: AppConfig): Promise<void> {
-    try {
-      await Preferences.set({
-        key: STORAGE_KEYS.CONFIG,
-        value: JSON.stringify(config),
-      });
-    } catch (error) {
-      console.error('Error saving config:', error);
-      throw error;
-    }
+    await Preferences.set({ key: STORAGE_KEYS.CONFIG, value: JSON.stringify(config) });
   }
 
-  async updateConfig(updates: Partial<AppConfig>): Promise<AppConfig> {
+  // ===========================================
+  // DATA MANAGEMENT (¡CORREGIDO!)
+  // ===========================================
+  /**
+   * Borra TODOS los datos de la aplicación, excepto el contador de IDs.
+   */
+  async clearAllData(): Promise<void> {
     try {
-      const config = await this.getConfig();
-      const updated = { ...config, ...updates };
-      await this.saveConfig(updated);
-      return updated;
-    } catch (error) {
-      console.error('Error updating config:', error);
-      throw error;
-    }
-  }
-
-  // ============================================
-  // UTILITIES
-  // ============================================
-  async clearAll(): Promise<void> {
-    try {
-      // No borramos LAST_ID para que la secuencia continúe
       await Preferences.remove({ key: STORAGE_KEYS.TASKS });
+      await Preferences.remove({ key: STORAGE_KEYS.PROJECTS });
       await Preferences.remove({ key: STORAGE_KEYS.SESSIONS });
+      await Preferences.remove({ key: STORAGE_KEYS.CONFIG });
       await Preferences.remove({ key: STORAGE_KEYS.STATISTICS });
-      console.log('App data cleared (ID counter preserved)');
+      console.log('Todos los datos de la aplicación han sido borrados.');
     } catch (error) {
-      console.error('Error clearing data:', error);
+      console.error('Error al borrar todos los datos:', error);
       throw error;
     }
   }
 
   async exportData(): Promise<string> {
-    try {
-      const tasks = await this.getTasks();
-      const sessions = await this.getSessions();
-      const config = await this.getConfig();
-      
-      const data = {
-        tasks,
-        sessions,
-        config,
-        exportDate: new Date().toISOString(),
-        version: '1.1.0', // Versión con IDs secuenciales
-      };
-      
-      return JSON.stringify(data, null, 2);
-    } catch (error) {
-      console.error('Error exporting data:', error);
-      throw error;
-    }
+    const data = {
+      tasks: await this.getTasks(),
+      projects: await this.getProjects(),
+      sessions: await this.getSessions(),
+      config: await this.getConfig(),
+      exportDate: new Date().toISOString(),
+      version: '1.2.0',
+    };
+    return JSON.stringify(data, null, 2);
   }
 
-  async importData(jsonData: string): Promise<boolean> {
-    try {
-      const data = JSON.parse(jsonData);
-      
-      // Al importar, podríamos necesitar re-evaluar los IDs para evitar colisiones.
-      // Por ahora, confiamos en los datos importados.
-      if (data.tasks) {
-        await this.saveTasks(data.tasks);
-        // Opcional: Actualizar el contador LAST_ID al ID más alto de las tareas importadas
-        const maxId = data.tasks.reduce((max: number, t: Task) => t.id > max ? t.id : max, 0);
-        await Preferences.set({ key: STORAGE_KEYS.LAST_ID, value: maxId.toString() });
-      }
-      if (data.sessions) await this.saveSessions(data.sessions);
-      if (data.config) await this.saveConfig(data.config);
-      
-      return true;
-    } catch (error) {
-      console.error('Error importing data:', error);
-      return false;
-    }
+  async importData(jsonData: string): Promise<void> {
+    const data = JSON.parse(jsonData);
+    if (data.tasks) await this.saveItems(STORAGE_KEYS.TASKS, data.tasks);
+    if (data.projects) await this.saveItems(STORAGE_KEYS.PROJECTS, data.projects);
+    if (data.sessions) await this.saveItems(STORAGE_KEYS.SESSIONS, data.sessions);
+    if (data.config) await this.saveConfig(data.config);
+
+    // Actualizar el contador de ID para evitar colisiones
+    const maxTaskId = data.tasks?.reduce((max: number, t: Task) => t.id > max ? t.id : max, 0) || 0;
+    const maxProjectId = data.projects?.reduce((max: number, p: Project) => p.id > max ? p.id : max, 0) || 0;
+    const maxId = Math.max(maxTaskId, maxProjectId);
+    await Preferences.set({ key: STORAGE_KEYS.LAST_ID, value: maxId.toString() });
   }
 }
 
-// Exportar instancia singleton
 export const storageService = new StorageService();
