@@ -128,7 +128,7 @@ const TimerPage: React.FC = () => {
       <IonContent fullscreen>
         <div className="timer-container">
           <div className="active-task-display">
-            <p className="task-name">{activeTask ? `📌 ${activeTask.title}` : 'Ninguna tarea seleccionada'}</p>
+            <p className="task-name">{activeTask ? `🔖  ${activeTask.title}` : 'Ninguna tarea seleccionada'}</p>
           </div>
 
           {activeTask && (

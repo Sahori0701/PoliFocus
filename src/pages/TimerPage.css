@@ -60,8 +60,8 @@
 }
 
 .task-detail-item ion-label h2 {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: var(--ion-color-medium-tint);
   margin-bottom: 4px;
   text-transform: capitalize;
@@ -69,15 +69,18 @@
 }
 
 .task-detail-item ion-label p {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
   margin: 0;
-  color: var(--ion-color-light-tint);
+  color: var(--ion-color-medium-tint);
+  opacity: 0.5;
 }
 
 .task-detail-item ion-label p ion-badge {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 700;
+  
+  
 }
 
 /* Contenedor del Aro y Texto (sin márgenes extra) */
