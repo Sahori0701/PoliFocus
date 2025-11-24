@@ -1,18 +1,26 @@
 /* src/pages/TimerPage.css */
 
-/* Contenedor principal para centrar */
+/* Contenedor principal con alineación superior forzada */
 .timer-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Organiza los elementos en una columna */
   align-items: center;
-  justify-content: center;
-  height: 100%;
+  height: 100%; /* Ocupa toda la altura para que el spacer funcione */
   text-align: center;
+  gap: 0.8rem; /* Espacio vertical consistente entre los elementos */
+  padding: 5px;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+
+/* El 'empujador' que ocupa el espacio sobrante */
+.spacer {
+  flex-grow: 1; /* CLAVE: Empuja todo el contenido hacia arriba */
 }
 
 /* Tipografía Principal */
 .page-title {
-  font-family: 'Dosis', sans-serif;
+  
   font-weight: 700;
   font-size: 1.5rem;
   display: flex;
@@ -24,10 +32,9 @@
   font-size: 1.5rem;
 }
 
-/* Tarea Activa */
+/* Tarea Activa (sin márgenes extra) */
 .active-task-display {
-  margin-top: 0.5rem;
-  margin-bottom: 2rem;
+  margin: 0;
 }
 
 .task-name {
@@ -36,12 +43,49 @@
   margin: 0;
 }
 
-/* Contenedor del Aro y Texto */
+/* --- Task Details Grid (sin márgenes extra) --- */
+.task-details-grid {
+  width: 100%;
+  max-width: 480px;
+  margin: 0;
+}
+
+.task-detail-item {
+  --background: #1e293b;
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  --inner-padding-start: 0;
+  border-radius: 10px;
+}
+
+.task-detail-item ion-label h2 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ion-color-medium-tint);
+  margin-bottom: 4px;
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+}
+
+.task-detail-item ion-label p {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--ion-color-light-tint);
+}
+
+.task-detail-item ion-label p ion-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* Contenedor del Aro y Texto (sin márgenes extra) */
 .timer-display-wrapper {
   position: relative;
   width: 280px;
   height: 280px;
-  margin-bottom: 2.5rem;
+  margin: 0;
 }
 
 /* Contenedor del texto, centrado */
@@ -55,14 +99,14 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem; /* Consistent spacing */
+  gap: 0.5rem;
 }
 
 /* Aro de Progreso SVG */
 .progress-ring {
   width: 100%;
   height: 100%;
-  transform: rotate(-90deg); 
+  transform: rotate(-90deg);
   transform-origin: 50% 50%;
 }
 
@@ -79,31 +123,30 @@
 }
 
 /* ESTILOS DEL TEXTO DENTRO DEL ARO (AJUSTADOS) */
-
 .time-text {
   font-family: 'Dosis', sans-serif;
-  font-size: 4.5rem; 
+  font-size: 4.5rem;
   font-weight: 400;
   margin: 0;
   line-height: 1;
 }
 
 .time-status {
-  font-size: 1.1rem; 
+  font-size: 1.1rem;
   font-weight: 600;
-  margin: 0; /* Use gap in parent */
+  margin: 0;
   color: var(--ion-color-primary);
 }
 
 .time-percentage {
-  font-size: 1.75rem; /* Reduced size */
+  font-size: 1.75rem;
   font-weight: 700;
   line-height: 1;
-  margin: 0; /* Use gap in parent */
+  margin: 0;
 }
 
 .time-percentage-label {
-  font-size: 0.8rem; 
+  font-size: 0.8rem;
   color: var(--ion-color-medium-tint);
 }
 
@@ -134,7 +177,6 @@
 }
 
 /* --- ESTILOS PARA LA NOTIFICACIÓN DE CICLO COMPLETADO --- */
-
 .focus-complete-toast {
   position: fixed;
   bottom: 20px;
@@ -146,21 +188,20 @@
   padding: 16px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  /* Ancho reducido */
-  max-width: 450px; 
+  gap: 16px;
+  max-width: 450px;
   margin: 0 auto;
   z-index: 1001;
+  text-align: center;
 }
 
 .toast-content {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  flex-grow: 1;
 }
 
 .toast-icon {
@@ -175,10 +216,10 @@
 
 .toast-actions {
   display: flex;
+  justify-content: center;
   align-items: center;
-  /* Espacio aumentado entre botones */
-  gap: 16px; 
-  flex-shrink: 0;
+  gap: 16px;
+  width: 100%;
 }
 
 .toast-button {
@@ -191,25 +232,9 @@
   border-radius: 8px;
 }
 
-
-
-
-
-
-/* Media Query para móviles */
+/* Media Query para móviles (simplificada) */
 @media (max-width: 500px) {
-  .focus-complete-toast {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-  }
-
-  .toast-content {
-    justify-content: center;
-  }
-
   .toast-actions {
     justify-content: space-around;
-    width: 100%;
   }
 }

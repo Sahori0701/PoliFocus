@@ -7,6 +7,12 @@ import {
   IonIcon,
   IonSpinner,
   useIonToast,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonBadge,
+  IonItem,
+  IonLabel,
 } from '@ionic/react';
 import { play, pause, checkmark, playSkipForwardOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
@@ -14,9 +20,19 @@ import { useApp } from '../context/AppContext';
 import Header from '../components/Header';
 import './TimerPage.css';
 import { taskService } from '../services/task.service';
+import { getPriorityText } from '../utils/taskUtils'; // Asegúrate de que la ruta sea correcta
 
 const RADIUS = 130;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+const getPriorityColor = (priority: 'low' | 'medium' | 'high') => {
+  switch (priority) {
+    case 'low': return 'success';
+    case 'medium': return 'warning';
+    case 'high': return 'danger';
+    default: return 'medium';
+  }
+};
 
 const TimerPage: React.FC = () => {
   const {
@@ -101,7 +117,7 @@ const TimerPage: React.FC = () => {
     return (
       <IonPage>
         <Header />
-        <IonContent fullscreen className="ion-padding"><div className="timer-container"><IonSpinner name="lines-sharp" color="success" /></div></IonContent>
+        <IonContent fullscreen><div className="timer-container"><IonSpinner name="lines-sharp" color="success" /></div></IonContent>
       </IonPage>
     );
   }
@@ -109,9 +125,51 @@ const TimerPage: React.FC = () => {
   return (
     <IonPage>
       <Header />
-      <IonContent fullscreen className="ion-padding">
+      <IonContent fullscreen>
         <div className="timer-container">
-          <div className="active-task-display"><p className="task-name">{activeTask?.title || 'Ninguna tarea seleccionada'}</p></div>
+          <div className="active-task-display">
+            <p className="task-name">{activeTask ? `📌 ${activeTask.title}` : 'Ninguna tarea seleccionada'}</p>
+          </div>
+
+          {activeTask && (
+            <IonGrid className="task-details-grid">
+              <IonRow className="ion-justify-content-center">
+                <IonCol size="6" size-md="3">
+                  <IonItem lines="none" className="task-detail-item">
+                    <IonLabel className="ion-text-center">
+                      <h2>📌 Prioridad</h2>
+                      <p><IonBadge color={getPriorityColor(activeTask.priority)}>{getPriorityText(activeTask.priority)}</IonBadge></p>
+                    </IonLabel>
+                  </IonItem>
+                </IonCol>
+                <IonCol size="6" size-md="3">
+                  <IonItem lines="none" className="task-detail-item">
+                    <IonLabel className="ion-text-center">
+                      <h2>⏱️ Duración</h2>
+                      <p>{activeTask.duration ? `${activeTask.duration} min` : 'N/A'}</p>
+                    </IonLabel>
+                  </IonItem>
+                </IonCol>
+                <IonCol size="6" size-md="3">
+                  <IonItem lines="none" className="task-detail-item">
+                    <IonLabel className="ion-text-center">
+                      <h2>🗓️ Fecha</h2>
+                      <p>{new Date(activeTask.scheduledStart).toLocaleDateString()}</p>
+                    </IonLabel>
+                  </IonItem>
+                </IonCol>
+                <IonCol size="6" size-md="3">
+                  <IonItem lines="none" className="task-detail-item">
+                    <IonLabel className="ion-text-center">
+                      <h2>⏰ Hora</h2>
+                      <p>{new Date(activeTask.scheduledStart).toLocaleTimeString()}</p>
+                    </IonLabel>
+                  </IonItem>
+                </IonCol>
+              </IonRow>
+            </IonGrid>
+          )}
+
           <div className="timer-display-wrapper">
             <svg className="progress-ring" width="280" height="280">
               <circle className="progress-ring__background" cx="140" cy="140" r={RADIUS} fill="transparent" strokeWidth="16" />
@@ -152,10 +210,13 @@ const TimerPage: React.FC = () => {
               </IonButton>
             )}
           </div>
+
+          {/* Este es el empujador invisible */}
+          <div className="spacer"></div>
+
         </div>
       </IonContent>
 
-      {/* Notificación de fin de ciclo con estilos actualizados */}
       {confirmationPending && (
         <div className="focus-complete-toast">
           <div className="toast-content">
