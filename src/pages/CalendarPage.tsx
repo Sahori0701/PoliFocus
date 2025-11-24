@@ -44,7 +44,7 @@ const CalendarHeader: React.FC<{
       <button onClick={() => changeDate(-1)} className="nav-button">
         <IonIcon icon={chevronBackOutline} />
       </button>
-      <h2 className="calendar-title">{title}</h2>
+      <h2 className="calendar-title">🗓️ {title}</h2>
       <button onClick={() => changeDate(1)} className="nav-button">
         <IonIcon icon={chevronForwardOutline} />
       </button>
@@ -57,9 +57,9 @@ const ViewSelector: React.FC<{
   onSelectView: (view: View) => void;
 }> = ({ selectedView, onSelectView }) => (
   <div className="view-selector">
-    <IonButton className={selectedView === 'month' ? 'active' : ''} onClick={() => onSelectView('month')}>📅 Mes</IonButton>
-    <IonButton className={selectedView === 'week' ? 'active' : ''} onClick={() => onSelectView('week')}>📆 Semana</IonButton>
-    <IonButton className={selectedView === 'day' ? 'active' : ''} onClick={() => onSelectView('day')}>⏰ Día</IonButton>
+    <IonButton className={selectedView === 'month' ? 'active' : ''} onClick={() => onSelectView('month')}>🗓️ Mes</IonButton>
+    <IonButton className={selectedView === 'week' ? 'active' : ''} onClick={() => onSelectView('week')}>📅 Semana</IonButton>
+    <IonButton className={selectedView === 'day' ? 'active' : ''} onClick={() => onSelectView('day')}>☀️ Día</IonButton>
   </div>
 );
 
