@@ -1,0 +1,105 @@
+/* src/pages/SettingsPage.css */
+
+/* Fondo del contenido de la página */
+.settings-container {
+  padding: 16px;
+  background-color: var(--ion-background-color, #121212);
+}
+
+/* --- Estilos de las Tarjetas --- */
+.settings-container IonCard {
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  box-shadow: none;
+  background: #1A202C; /* Fondo de tarjeta oscuro */
+}
+
+.settings-container IonCardHeader {
+  padding-bottom: 8px;
+}
+
+/* --- CORRECCIÓN DE COLOR DEL TEXTO (ALTA PRIORIDAD) --- */
+
+/* Título de la tarjeta (Ej: "Configurar Foco") */
+.settings-container IonCardTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #f1f5f9 !important; /* ¡Forzar color blanco! */
+}
+
+/* Etiqueta de los sliders (Ej: "Tiempo de Concentración") */
+.settings-container IonLabel[position="stacked"] {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #9CA3AF !important; /* ¡Forzar color gris claro! */
+}
+
+/* Texto de los items en las listas (Ej: "Ionic Framework") */
+.settings-container IonItem IonLabel {
+    color: #e2e8f0 !important; /* ¡Forzar color blanco suave! */
+}
+
+/* Texto de párrafo en la tarjeta del desarrollador */
+.settings-container IonCardContent p {
+    color: #cbd5e1 !important; /* ¡Forzar color gris suave! */
+}
+
+/* --- Iconos --- */
+.settings-container IonCardTitle ion-icon {
+  font-size: 1.6rem;
+  color: var(--ion-color-primary);
+}
+
+.settings-container IonList IonItem ion-icon {
+  margin-right: 16px;
+  font-size: 1.8rem;
+}
+
+/* --- Sliders de Rango (IonRange) --- */
+.range-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.range-container IonRange {
+  flex: 1;
+  --bar-background: #475569;
+  --bar-background-active: var(--ion-color-primary-tint, #a3e9d3);
+  --knob-background: var(--ion-color-primary, #10b981);
+  padding: 0;
+}
+
+.range-value {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ion-color-primary);
+  min-width: 50px;
+  text-align: right;
+}
+
+/* --- Listas y Items --- */
+.settings-container IonList {
+  background: transparent;
+  padding: 0;
+}
+
+.settings-container IonItem {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+}
+
+/* --- Botón --- */
+.settings-container IonCardContent IonButton {
+  margin-top: 10px;
+  font-weight: 600;
+  --border-radius: 12px;
+}
