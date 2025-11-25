@@ -1,120 +1,158 @@
 /* 
   src/pages/SettingsPage.css 
-  CSS completamente reescrito para un diseño perfecto en modo oscuro.
+  Diseño compacto con paleta de colores personalizada - Ajuste Fino
 */
 
-/* --- CONTENEDOR PRINCIPAL ---
-  Añadimos el espaciado lateral que faltaba (padding horizontal).
-*/
+/* --- PALETA DE COLORES Y VARIABLES --- */
+:root {
+  --custom-bg-dark: #1F2229;
+  --custom-card-bg: #2C2F36;
+  --custom-input-bg: #383B42;
+  --custom-primary-green: #32D79B;
+  --custom-text-light: #F1F3F6;
+  --custom-text-muted: #8A8E97;
+  --custom-border-color: #4A4D55;
+}
+
+/* --- CONTENEDOR Y LAYOUT GENERAL --- */
 .settings-container {
-  padding: 16px 20px; /* 16px arriba/abajo, 20px a los lados */
+  padding: 20px;
+  max-width: 1100px;
+  max-height: 400px;
+  margin: 0 auto;
 }
 
-/* --- ESTILO GENERAL DE TARJETAS ---
-  Mantenemos un diseño plano y moderno. 
-*/
-.settings-container IonCard {
-  margin-left: 0;
-  margin-right: 0;
-  margin-bottom: 24px;
-  border-radius: 16px;
-  box-shadow: none;
-  background: #1c1c1e; /* Un fondo de tarjeta ligeramente distinto al de la página */
-}
-
-.settings-container IonCardHeader {
-  padding-bottom: 8px;
-}
-
-/* --- CORRECCIÓN DE COLORES DE TEXTO ---
-  Aquí forzamos los colores para que se vean bien en modo oscuro. ¡La clave!
-*/
-
-/* Títulos de las tarjetas (ahora con emojis) */
-.settings-container IonCardTitle {
-  font-size: 1.3rem; /* Un poco más grande */
-  font-weight: 700;
+.cards-row {
   display: flex;
-  align-items: center;
-  gap: 12px; /* Espacio entre el emoji y el texto */
-  color: #ffffff !important; /* ¡Forzar color blanco brillante! */
-}
-
-/* Etiquetas de los sliders (Ej: "Tiempo de Concentración") */
-.settings-container IonLabel[position="stacked"] {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: #8d8d93 !important; /* ¡Forzar color gris claro! */
-}
-
-/* Texto de los items en listas (Ej: "Ionic Framework") */
-.settings-container IonItem IonLabel {
-  color: #f2f2f7 !important; /* ¡Forzar color blanco suave! */
-}
-
-/* Texto genérico dentro de las tarjetas */
-.settings-container IonCardContent p {
-  color: #e5e5ea !important; 
-}
-
-/* --- SLIDERS DE RANGO (IonRange) --- */
-.range-container {
-  display: flex;
-  align-items: center;
   gap: 16px;
+  align-items: stretch;
+}
+
+.cards-row > ion-card {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+/* --- ESTILO GENERAL DE TARJETAS (MÁS COMPACTAS) --- */
+.settings-container ion-card {
+  background: var(--custom-card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--custom-border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.settings-container ion-card-header {
+  padding: 10px 16px; /* Reducido */
+  border-bottom: 1px solid var(--custom-border-color);
+}
+
+.settings-container ion-card-content {
+  padding: 12px 16px; /* Reducido */
+}
+
+/* --- TÍTULOS (CENTRADOS Y BLANCOS) --- */
+.settings-container ion-card-title {
+  color: var(--custom-text-light) !important; /* Color blanco */
+  font-size: 0.9rem !important; /* Ligeramente reducido */
+  font-weight: 700 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centrado */
+  gap: 10px;
   width: 100%;
 }
 
-.range-container IonRange {
-  flex: 1;
-  padding: 0;
+/* Eliminar el color verde que habíamos puesto antes */
+.custom-card-title {
+  color: var(--custom-text-light) !important;
 }
 
-.range-value {
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--ion-color-primary);
-  min-width: 50px;
-  text-align: right;
+.custom-card-title ion-icon {
+  color: var(--custom-primary-green);
 }
 
-/* --- LISTAS Y OTROS ELEMENTOS --- */
-.settings-container IonList {
-  background: transparent;
-  padding: 0;
-}
-
-.settings-container IonItem {
-  --padding-start: 0;
-  --inner-padding-end: 0;
+/* --- TARJETA DE TIEMPOS (TIPOGRAFÍA REDUCIDA) --- */
+.input-item {
   --background: transparent;
+  --min-height: 44px; /* Altura reducida */
+  --padding-start: 0;
+  align-items: center;
+  margin-bottom: 6px; /* Espacio reducido */
 }
 
-.settings-container IonItem ion-icon {
-  margin-right: 18px;
-  font-size: 1.9rem;
+.input-item:last-child {
+  margin-bottom: 0;
 }
 
-
-/* --- ¡NUEVO! ESTILOS PARA LA ZONA DE PELIGRO --- */
-.settings-container .danger-zone {
-  /* Borde rojo para destacar la importancia */
-  border: 1px solid var(--ion-color-danger-tint);
+.input-item ion-label {
+  color: var(--custom-text-light);
+  font-size: 0.85em; /* Reducido */
+  font-weight: 500;
+  gap: 10px;
 }
 
-.settings-container .danger-zone IonCardTitle {
-  /* Título también en rojo */
-  color: var(--ion-color-danger) !important;
+.time-input {
+  background: var(--custom-input-bg);
+  border: 1px solid var(--custom-border-color);
+  border-radius: 8px;
+  width: 60px;   /* Reducido */
+  height: 34px;  /* Reducido */
+  font-size: 0.9em; /* Reducido */
+  font-weight: 600;
+  color: var(--custom-text-light);
+  margin: 0 10px 0 auto;
 }
 
-.settings-container .danger-text {
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: #e57373 !important; /* Texto de advertencia en un rojo suave */
-  margin-bottom: 16px;
+.input-unit {
+  color: var(--custom-text-muted);
+  font-size: 0.85rem; /* Reducido */
+  width: 30px;
+  text-align: left;
 }
 
-.settings-container .danger-zone IonButton {
-  margin-top: 10px;
+/* --- TARJETA DE STACK TECNOLÓGICO (MÁS COMPACTA) --- */
+.tech-stack-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px 8px; /* Gap reducido */
+  padding: 0;
+}
+
+.tech-item {
+  --background: transparent;
+  --padding-start: 8px;
+  --min-height: 42px; /* Altura reducida */
+  align-items: center;
+}
+
+.tech-item ion-icon {
+  color: var(--custom-primary-green);
+  font-size: 1.4rem; /* Reducido */
+  margin-right: 10px;
+}
+
+.tech-item ion-label {
+  color: var(--custom-text-light);
+  font-size: 0.88rem; /* Reducido */
+  font-weight: 500;
+}
+
+/* --- RESTO DE ESTILOS (sin cambios) --- */
+/* ... (developer-card, danger-zone, etc. se mantienen igual) ... */
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 768px) {
+  .settings-container {
+    padding: 14px;
+  }
+
+  .cards-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .tech-stack-grid {
+    grid-template-columns: 1fr;
+  }
 }
