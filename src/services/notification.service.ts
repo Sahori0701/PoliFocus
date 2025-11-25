@@ -5,6 +5,7 @@ import { Task } from '../models/Task';
 
 class NotificationService {
   private isNative = isPlatform('hybrid');
+  private TIMER_NOTIFICATION_ID = 999999;
 
   async init() {
     if (!this.isNative) return;
@@ -33,29 +34,39 @@ class NotificationService {
           id: 'task_alerts',
           name: 'Alertas de Tareas',
           description: 'Notificaciones para tareas programadas.',
-          importance: 5, // Máxima importancia
-          visibility: 1, // Público
+          importance: 5,
+          visibility: 1,
           sound: 'default',
           vibration: true,
+        },
+        {
+          id: 'pomodoro_timer',
+          name: 'Temporizador Pomodoro',
+          description: 'Notificaciones persistentes del temporizador.',
+          importance: 4,
+          visibility: 1,
+          sound: 'default',
+          vibration: false,
         },
         {
           id: 'pomodoro_progress',
           name: 'Progreso del Pomodoro',
           description: 'Notificaciones durante los ciclos de Pomodoro.',
-          importance: 3, // Alta
-          visibility: 1, // Público
+          importance: 3,
+          visibility: 1,
           sound: 'default',
           vibration: false,
         },
       ];
-      await LocalNotifications.createChannel(channels[0]);
-      await LocalNotifications.createChannel(channels[1]);
+      
+      for (const channel of channels) {
+        await LocalNotifications.createChannel(channel);
+      }
     } catch (error) {
       console.error('Error creating notification channels:', error);
     }
   }
 
-  // NUEVO: Método para cancelar TODAS las notificaciones pendientes
   async cancelAll() {
     if (!this.isNative) return;
     try {
@@ -74,35 +85,56 @@ class NotificationService {
     const startTime = new Date(task.scheduledStart).getTime();
     const notifications = [];
 
+    // Notificación 15 minutos antes
     const fifteenMinBefore = startTime - 15 * 60 * 1000;
     if (fifteenMinBefore > now) {
       notifications.push({
         id: task.id * 10 + 1,
-        title: `¡Tu tarea va a empezar! (${task.title})`,
+        title: `📌 Tarea próxima: ${task.title}`,
         body: `Faltan 15 minutos para que comience tu tarea. ¡Prepárate!`,
         schedule: { at: new Date(fifteenMinBefore), allowWhileIdle: true },
         channelId: 'task_alerts',
         sound: 'default',
+        smallIcon: 'ic_stat_name',
+        ongoing: false,
       });
     }
 
+    // Notificación 5 minutos antes
     const fiveMinBefore = startTime - 5 * 60 * 1000;
     if (fiveMinBefore > now) {
       notifications.push({
         id: task.id * 10 + 2,
-        title: `¡Tu tarea casi empieza! (${task.title})`,
-        body: `¡Solo 5 minutos para que comience tu tarea!`,
+        title: `⏰ ¡Tu tarea casi empieza!`,
+        body: `${task.title} - Solo 5 minutos para comenzar`,
         schedule: { at: new Date(fiveMinBefore), allowWhileIdle: true },
         channelId: 'task_alerts',
         sound: 'default',
+        smallIcon: 'ic_stat_name',
+        ongoing: false,
+      });
+    }
+
+    // Notificación al inicio
+    if (startTime > now) {
+      notifications.push({
+        id: task.id * 10 + 3,
+        title: `🚀 ¡Es hora de comenzar!`,
+        body: `${task.title} - Comienza ahora`,
+        schedule: { at: new Date(startTime), allowWhileIdle: true },
+        channelId: 'task_alerts',
+        sound: 'default',
+        smallIcon: 'ic_stat_name',
+        ongoing: false,
       });
     }
 
     if (notifications.length > 0) {
       try {
         await LocalNotifications.schedule({ notifications });
+        console.log(`Scheduled ${notifications.length} notifications for task: ${task.title}`);
       } catch (error) {
-        console.error(`Error scheduling internal notifications for task ${task.id}:`, error);
+        console.error(`Error scheduling notifications for task ${task.id}:`, error);
       }
     }
   }
@@ -111,23 +143,21 @@ class NotificationService {
     if (!this.isNative || task.status !== 'pending' || !task.scheduledStart) return;
 
     const hasPermission = await this.requestPermissions();
-    if (!hasPermission) return;
+    if (!hasPermission) {
+      console.warn('Notification permissions not granted');
+      return;
+    }
 
-    // Primero, cancelamos cualquier notificación antigua para esta tarea específica
     await this.cancelTaskNotifications(task, true);
-    // Luego, agendamos las nuevas
     await this.scheduleNotificationsForTask_INTERNAL(task);
   }
 
-  // MODIFICADO: Lógica de "Tierra Arrasada"
   async rescheduleAll(tasks: Task[]) {
     if (!this.isNative) return;
     console.log('AUDIT: Starting notification reschedule process...');
     
-    // 1. Limpieza Total
     await this.cancelAll();
 
-    // 2. Reconstrucción
     console.log(`AUDIT: Re-scheduling notifications for ${tasks.length} tasks.`);
     for (const task of tasks) {
       if (task.status === 'pending') {
@@ -142,7 +172,8 @@ class NotificationService {
     try {
       const notificationIdsToCancel = [
         task.id * 10 + 1, 
-        task.id * 10 + 2, 
+        task.id * 10 + 2,
+        task.id * 10 + 3,
       ];
       const pending = await LocalNotifications.getPending();
       const notificationsToCancel = pending.notifications.filter(notif => 
@@ -158,11 +189,112 @@ class NotificationService {
     }
   }
   
-  async showProgressNotification(message: string, taskTitle: string) { 
-    // ... (código sin cambios)
+  /**
+   * Muestra una notificación persistente del temporizador (ongoing notification)
+   * Esta notificación permanece mientras el temporizador está activo
+   */
+  async showTimerNotification(taskTitle: string, timeLeft: string, mode: 'focus' | 'shortBreak' | 'longBreak') {
+    if (!this.isNative || !isPlatform('android')) return;
+
+    try {
+      const modeText = mode === 'focus' ? '🎯 Concentración' : '☕ Descanso';
+      const modeEmoji = mode === 'focus' ? '⏱️' : '☕';
+      
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: this.TIMER_NOTIFICATION_ID,
+            title: `${modeEmoji} ${taskTitle}`,
+            body: `${modeText} - ${timeLeft} restante`,
+            channelId: 'pomodoro_timer',
+            ongoing: true, // Notificación persistente que no se puede deslizar
+            autoCancel: false,
+            smallIcon: 'ic_stat_name',
+            sound: undefined, // Sin sonido para actualizaciones
+          }
+        ]
+      });
+    } catch (error) {
+      console.error('Error showing timer notification:', error);
+    }
   }
-  async scheduleTestNotification() { 
-    // ... (código sin cambios)
+
+  /**
+   * Actualiza la notificación del temporizador con el nuevo tiempo
+   */
+  async updateTimerNotification(taskTitle: string, timeLeft: string, mode: 'focus' | 'shortBreak' | 'longBreak') {
+    await this.showTimerNotification(taskTitle, timeLeft, mode);
+  }
+
+  /**
+   * Cancela la notificación persistente del temporizador
+   */
+  async cancelTimerNotification() {
+    if (!this.isNative) return;
+    try {
+      await LocalNotifications.cancel({
+        notifications: [{ id: this.TIMER_NOTIFICATION_ID }]
+      });
+    } catch (error) {
+      console.error('Error cancelling timer notification:', error);
+    }
+  }
+
+  /**
+   * Muestra una notificación de progreso (temporal)
+   */
+  async showProgressNotification(message: string, taskTitle: string) {
+    if (!this.isNative) return;
+    
+    try {
+      const notificationId = Date.now();
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: notificationId,
+            title: taskTitle,
+            body: message,
+            schedule: { at: new Date(Date.now() + 100) },
+            channelId: 'pomodoro_progress',
+            sound: 'default',
+            smallIcon: 'ic_stat_name',
+            ongoing: false,
+            autoCancel: true,
+          }
+        ]
+      });
+    } catch (error) {
+      console.error('Error showing progress notification:', error);
+    }
+  }
+
+  async scheduleTestNotification() {
+    if (!this.isNative) return;
+    
+    const hasPermission = await this.requestPermissions();
+    if (!hasPermission) {
+      console.warn('Cannot schedule test notification: permissions not granted');
+      return;
+    }
+
+    try {
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: 99999,
+            title: '🧪 Notificación de Prueba',
+            body: 'Si ves esto, las notificaciones funcionan correctamente',
+            schedule: { at: new Date(Date.now() + 5000) },
+            channelId: 'task_alerts',
+            sound: 'default',
+            smallIcon: 'ic_stat_name',
+          }
+        ]
+      });
+      console.log('Test notification scheduled for 5 seconds from now');
+    } catch (error) {
+      console.error('Error scheduling test notification:', error);
+    }
   }
 }
 

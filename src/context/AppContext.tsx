@@ -1,4 +1,4 @@
-
+// src/context/AppContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from 'react';
 import { useIonToast, isPlatform } from '@ionic/react';
 import { App as CapApp } from '@capacitor/app';
@@ -231,6 +231,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
     setConfirmationPending(false);
     setNextModeInfo(null);
+    // Cancelar notificación persistente al completar
+    if (isPlatform('hybrid')) {
+      notificationService.cancelTimerNotification();
+    }
     stopAndResetTimer();
     present({ message: `✅ ¡Buen trabajo! Tarea completada.`, duration: 3000, color: 'success' });
   }, [timerState.totalElapsed, updateTask, present, stopAndResetTimer]);
@@ -279,6 +283,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
           } 
           break;
+        case 'UPDATE_TIMER_NOTIFICATION':
+          // Actualizar notificación persistente del temporizador
+          if (isPlatform('hybrid') && isRunningRef.current && activeTaskRef.current) {
+            const mins = Math.floor(payload.timeLeft / 60);
+            const secs = payload.timeLeft % 60;
+            const timeString = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            notificationService.updateTimerNotification(
+              activeTaskRef.current.title,
+              timeString,
+              payload.mode
+            );
+          }
+          break;
         case 'MODE_CHANGE':
           notificationService.showProgressNotification(payload.message, activeTaskRef.current?.title || 'Pomodoro');
           if (modeRef.current === 'focus' && payload.timeLeft === 0) {
@@ -286,6 +303,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             setTimerState(prev => ({ ...prev, isRunning: false }));
             setConfirmationPending(true);
             setNextModeInfo(payload);
+            // Cancelar notificación persistente
+            notificationService.cancelTimerNotification();
           } else {
             // Cambio automático de modo (fin de descanso o siguiente fase)
             present({ message: payload.message, duration: 2000, color: 'primary' });
@@ -367,9 +386,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const resumePomodoro = useCallback(() => {
     if (!timerState.isRunning && activeTask) {
       setTimerState(prev => ({ ...prev, isRunning: true, startTime: Date.now() }));
-      if (timerWorker.current) { timerWorker.current.postMessage({ type: 'START' }); }
+      if (timerWorker.current) { 
+        timerWorker.current.postMessage({ type: 'START' }); 
+      }
+      // Mostrar notificación persistente del temporizador
+      if (isPlatform('hybrid')) {
+        const mins = Math.floor(timerState.timeLeft / 60);
+        const secs = timerState.timeLeft % 60;
+        const timeString = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        notificationService.showTimerNotification(
+          activeTask.title,
+          timeString,
+          timerState.mode
+        );
+      }
     }
-  }, [timerState.isRunning, activeTask]);
+  }, [timerState.isRunning, timerState.timeLeft, timerState.mode, activeTask]);
 
   const startPomodoroForTask = (task: Task) => {
     selectTask(task);
@@ -383,6 +415,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (timerState.isRunning) {
       setTimerState(prev => ({ ...prev, isRunning: false }));
       if (timerWorker.current) { timerWorker.current.postMessage({ type: 'PAUSE' }); }
+      // Cancelar notificación persistente al pausar
+      if (isPlatform('hybrid')) {
+        notificationService.cancelTimerNotification();
+      }
       finishBackgroundTask();
     }
   };
