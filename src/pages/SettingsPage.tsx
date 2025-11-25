@@ -5,7 +5,6 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  IonRange,
   IonCard,
   IonCardHeader,
   IonCardTitle,
@@ -15,14 +14,22 @@ import {
   useIonToast,
   IonButton,
   useIonAlert,
+  IonRange,
 } from '@ionic/react';
-import { trashOutline, logoIonic, logoReact, logoCapacitor } from 'ionicons/icons';
+import { 
+  trashOutline, 
+  logoIonic, 
+  logoReact, 
+  logoCapacitor, 
+  logoFirebase, 
+  buildOutline, 
+  codeWorkingOutline 
+} from 'ionicons/icons';
 import { useApp } from '../context/AppContext';
 import Header from '../components/Header';
 import './SettingsPage.css';
 
 const SettingsPage: React.FC = () => {
-  // CORRECCIÓN FINAL: Usamos la nueva función centralizada `clearAllData`
   const { config, updateConfig, clearAllData } = useApp();
   const [presentToast] = useIonToast();
   const [presentAlert] = useIonAlert();
@@ -37,18 +44,23 @@ const SettingsPage: React.FC = () => {
     setLongBreak(config.longBreak);
   }, [config]);
 
-  const handleConfigChange = async (type: 'focusTime' | 'shortBreak' | 'longBreak', value: number) => {
+  const handleRangeChange = async (
+    type: 'focusTime' | 'shortBreak' | 'longBreak', 
+    value: number
+  ) => {
+    if (isNaN(value) || value < 1) return;
+
     try {
       await updateConfig({ [type]: value });
       presentToast({
-        message: 'Configuración guardada.',
-        duration: 2000,
+        message: '✓ Configuración guardada',
+        duration: 1500,
         color: 'success',
         position: 'top',
       });
     } catch (error) {
       presentToast({
-        message: 'Error al guardar.',
+        message: '✗ Error al guardar',
         duration: 2000,
         color: 'danger',
         position: 'top',
@@ -56,20 +68,23 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  // --- LÓGICA DE BORRADO SIMPLIFICADA ---
   const handleClearAllData = () => {
     presentAlert({
-      header: 'Confirmación Final',
-      message: '¿Estás absolutamente seguro de que quieres borrar TODOS los datos de la aplicación? Esta acción es irreversible.',
+      header: '⚠️ Confirmación Final',
+      message: '¿Estás absolutamente seguro de que quieres borrar TODOS los datos? Esta acción es irreversible y eliminará todo tu progreso.',
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         {
           text: 'Borrar Todo',
           role: 'destructive',
           handler: () => {
-            // ¡CORREGIDO! Llamamos a la única función que lo hace todo.
             clearAllData();
-            // El feedback al usuario (toast) ya se gestiona desde el AppContext.
+            presentToast({
+              message: 'Todos los datos han sido eliminados',
+              duration: 2000,
+              color: 'medium',
+              position: 'top',
+            });
           },
         },
       ],
@@ -82,77 +97,125 @@ const SettingsPage: React.FC = () => {
       <IonContent fullscreen={true}>
         <div className="settings-container">
           
-          <IonCard>
-            <IonCardHeader>
-              <IonCardTitle>🧘 Configurar Foco</IonCardTitle>
-            </IonCardHeader>
-            <IonCardContent>
-              <IonList>
-                <IonItem lines="none">
-                  <IonLabel position="stacked">Tiempo de Concentración</IonLabel>
-                  <div className="range-container">
-                    <IonRange min={5} max={25} step={5} value={focusTime} onIonChange={e => setFocusTime(e.detail.value as number)} onIonKnobMoveEnd={e => handleConfigChange('focusTime', e.detail.value as number)} />
-                    <IonText className="range-value">{focusTime} min</IonText>
+          <div className="cards-row">
+            <IonCard>
+              <IonCardHeader>
+                <IonCardTitle className="custom-card-title">
+                  🎯 Configuración de Tiempos
+                </IonCardTitle>
+              </IonCardHeader>
+              <IonCardContent>
+                {/* Contenedor para los rangos, sin IonList */}
+                <div className="time-ranges-container">
+                  
+                  <div className="range-item">
+                    <div className="range-label-container">
+                      <IonLabel>🧠 Concentración</IonLabel>
+                      <IonText className="range-value">{focusTime} min</IonText>
+                    </div>
+                    <IonRange
+                      min={5} max={90} value={focusTime}
+                      onIonChange={e => setFocusTime(e.detail.value as number)}
+                      onIonKnobMoveEnd={e => handleRangeChange('focusTime', e.detail.value as number)}
+                    />
                   </div>
-                </IonItem>
-                <IonItem lines="none">
-                  <IonLabel position="stacked">Descanso Corto</IonLabel>
-                  <div className="range-container">
-                    <IonRange min={5} max={15} step={1} value={shortBreak} onIonChange={e => setShortBreak(e.detail.value as number)} onIonKnobMoveEnd={e => handleConfigChange('shortBreak', e.detail.value as number)} />
-                    <IonText className="range-value">{shortBreak} min</IonText>
+                  
+                  <div className="range-item">
+                    <div className="range-label-container">
+                      <IonLabel>☕ Descanso Corto</IonLabel>
+                      <IonText className="range-value">{shortBreak} min</IonText>
+                    </div>
+                    <IonRange
+                      min={1} max={30} value={shortBreak}
+                      onIonChange={e => setShortBreak(e.detail.value as number)}
+                      onIonKnobMoveEnd={e => handleRangeChange('shortBreak', e.detail.value as number)}
+                    />
                   </div>
-                </IonItem>
-                <IonItem lines="none">
-                  <IonLabel position="stacked">Descanso Largo</IonLabel>
-                  <div className="range-container">
-                    <IonRange min={5} max={60} step={5} value={longBreak} onIonChange={e => setLongBreak(e.detail.value as number)} onIonKnobMoveEnd={e => handleConfigChange('longBreak', e.detail.value as number)} />
-                    <IonText className="range-value">{longBreak} min</IonText>
+                  
+                  <div className="range-item">
+                    <div className="range-label-container">
+                      <IonLabel>🛋️ Descanso Largo</IonLabel>
+                      <IonText className="range-value">{longBreak} min</IonText>
+                    </div>
+                    <IonRange
+                      min={5} max={45} value={longBreak}
+                      onIonChange={e => setLongBreak(e.detail.value as number)}
+                      onIonKnobMoveEnd={e => handleRangeChange('longBreak', e.detail.value as number)}
+                    />
                   </div>
-                </IonItem>
-              </IonList>
-            </IonCardContent>
-          </IonCard>
 
-          <IonCard>
-            <IonCardHeader>
-              <IonCardTitle>💻 Stack Tecnológico</IonCardTitle>
-            </IonCardHeader>
-            <IonCardContent>
-              <IonList>
-                <IonItem lines="inset">
-                  <IonIcon icon={logoIonic} slot="start" color="primary" />
-                  <IonLabel>Ionic Framework</IonLabel>
-                </IonItem>
-                <IonItem lines="inset">
-                  <IonIcon icon={logoReact} slot="start" color="secondary" />
-                  <IonLabel>React</IonLabel>
-                </IonItem>
-                <IonItem lines="none">
-                  <IonIcon icon={logoCapacitor} slot="start" color="tertiary" />
-                  <IonLabel>Capacitor</IonLabel>
-                </IonItem>
-              </IonList>
-            </IonCardContent>
-          </IonCard>
+                </div>
+              </IonCardContent>
+            </IonCard>
 
-          <IonCard>
+            {/* TARJETA DE STACK TECNOLÓGICO CON GRID */}
+            <IonCard>
+              <IonCardHeader>
+                <IonCardTitle className="custom-card-title">💻 Stack Tecnológico</IonCardTitle>
+              </IonCardHeader>
+              <IonCardContent>
+                <IonList className="tech-stack-grid" lines="none">
+                  <IonItem className="tech-item">
+                    <IonIcon icon={logoIonic} slot="start" />
+                    <IonLabel>Ionic</IonLabel>
+                  </IonItem>
+                  <IonItem className="tech-item">
+                    <IonIcon icon={logoReact} slot="start" />
+                    <IonLabel>React</IonLabel>
+                  </IonItem>
+                  <IonItem className="tech-item">
+                    <IonIcon icon={logoCapacitor} slot="start" />
+                    <IonLabel>Capacitor</IonLabel>
+                  </IonItem>
+                  <IonItem className="tech-item">
+                    <IonIcon icon={logoFirebase} slot="start" />
+                    <IonLabel>Firebase</IonLabel>
+                  </IonItem>
+                  <IonItem className="tech-item">
+                    <IonIcon icon={buildOutline} slot="start" />
+                    <IonLabel>Vite</IonLabel>
+                  </IonItem>
+                  <IonItem className="tech-item">
+                    <IonIcon icon={codeWorkingOutline} slot="start" />
+                    <IonLabel>TypeScript</IonLabel>
+                  </IonItem>
+                </IonList>
+              </IonCardContent>
+            </IonCard>
+          </div>
+
+          {/* TARJETA DE DESARROLLADOR */}
+          <IonCard className="developer-card">
             <IonCardHeader>
-              <IonCardTitle>👨‍💻 Desarrollador</IonCardTitle>
+              <IonCardTitle>👨‍💻 Acerca del Desarrollador</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
-              <IonText><p>Hecho con ❤️ por Gemini</p></IonText>
-              <a href="https://deepmind.google/technologies/gemini/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                <IonButton expand="block" fill="clear">Conoce más sobre mí</IonButton>
+              <IonText>
+                <p>Creado por grupo del Politecnico Grancolombiano</p>
+              </IonText>
+              <a 
+                href="https://deepmind.google/technologies/gemini/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{ textDecoration: 'none' }}
+              >
+                <IonButton expand="block">
+                  Conoce más sobre Gemini AI
+                </IonButton>
               </a>
             </IonCardContent>
           </IonCard>
 
+          {/* ZONA DE PELIGRO */}
           <IonCard className="danger-zone">
             <IonCardHeader>
               <IonCardTitle>☢️ Zona de Peligro</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
-              <p className="danger-text">Esta acción es permanente y no se puede deshacer. Úsala con precaución.</p>
+              <p className="danger-text">
+                Esta acción eliminará permanentemente todos tus datos, configuraciones y progreso. 
+                No hay forma de recuperar esta información una vez eliminada.
+              </p>
               <IonButton expand="block" color="danger" onClick={handleClearAllData}>
                 <IonIcon slot="start" icon={trashOutline} />
                 Borrar Todos los Datos

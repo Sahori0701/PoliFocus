@@ -1,13 +1,15 @@
 /* 
   src/pages/SettingsPage.css 
-  Diseño compacto con paleta de colores personalizada - Ajuste Fino
+  Diseño compacto con paleta de colores personalizada - CORRECCIÓN
 */
+
+
 
 /* --- PALETA DE COLORES Y VARIABLES --- */
 :root {
   --custom-bg-dark: #1F2229;
-  --custom-card-bg: #2C2F36;
-  --custom-input-bg: #383B42;
+  --custom-card-bg: #111827; /* Fondo de tarjeta oscuro */
+  --custom-input-bg: #0F172A;
   --custom-primary-green: #32D79B;
   --custom-text-light: #F1F3F6;
   --custom-text-muted: #8A8E97;
@@ -17,8 +19,7 @@
 /* --- CONTENEDOR Y LAYOUT GENERAL --- */
 .settings-container {
   padding: 20px;
-  max-width: 1100px;
-  max-height: 400px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -34,112 +35,107 @@
   margin: 0;
 }
 
-/* --- ESTILO GENERAL DE TARJETAS (MÁS COMPACTAS) --- */
+/* --- ESTILO GENERAL DE TARJETAS --- */
 .settings-container ion-card {
-  background: var(--custom-card-bg);
+  background: 1f2937; /* Fondo oscuro para todas las tarjetas */
   border-radius: 12px;
-  border: 1px solid var(--custom-border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid transparent;
 }
 
 .settings-container ion-card-header {
-  padding: 10px 16px; /* Reducido */
-  border-bottom: 1px solid var(--custom-border-color);
+  padding: 10px 16px;
+  
 }
 
 .settings-container ion-card-content {
-  padding: 12px 16px; /* Reducido */
+  padding: 12px 16px;
 }
 
-/* --- TÍTULOS (CENTRADOS Y BLANCOS) --- */
+/* --- TÍTULOS DE TARJETA (CENTRADOS) --- */
 .settings-container ion-card-title {
-  color: var(--custom-text-light) !important; /* Color blanco */
-  font-size: 0.9rem !important; /* Ligeramente reducido */
+  color: var(--custom-text-light) !important;
+  font-size: 0.9rem !important;
   font-weight: 700 !important;
   display: flex;
   align-items: center;
-  justify-content: center; /* Centrado */
+  justify-content: center; /* Título centrado */
   gap: 10px;
   width: 100%;
 }
 
-/* Eliminar el color verde que habíamos puesto antes */
-.custom-card-title {
-  color: var(--custom-text-light) !important;
+/* --- ESTILOS PARA LA TARJETA DE TIEMPOS --- */
+.time-ranges-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Espacio entre cada barra de rango */
 }
 
-.custom-card-title ion-icon {
-  color: var(--custom-primary-green);
+.range-item {
+  display: flex;
+  flex-direction: column;
 }
 
-/* --- TARJETA DE TIEMPOS (TIPOGRAFÍA REDUCIDA) --- */
-.input-item {
-  --background: transparent;
-  --min-height: 44px; /* Altura reducida */
-  --padding-start: 0;
+.range-label-container {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px; /* Espacio reducido */
+  width: 100%;
+  margin-bottom: 6px; /* Espacio entre el texto y la barra */
 }
 
-.input-item:last-child {
-  margin-bottom: 0;
-}
-
-.input-item ion-label {
+.range-item ion-label {
   color: var(--custom-text-light);
-  font-size: 0.85em; /* Reducido */
+  font-size: 0.9rem;
   font-weight: 500;
-  gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.time-input {
-  background: var(--custom-input-bg);
-  border: 1px solid var(--custom-border-color);
-  border-radius: 8px;
-  width: 60px;   /* Reducido */
-  height: 34px;  /* Reducido */
-  font-size: 0.9em; /* Reducido */
-  font-weight: 600;
-  color: var(--custom-text-light);
-  margin: 0 10px 0 auto;
-}
-
-.input-unit {
+.range-value {
   color: var(--custom-text-muted);
-  font-size: 0.85rem; /* Reducido */
-  width: 30px;
-  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
-/* --- TARJETA DE STACK TECNOLÓGICO (MÁS COMPACTA) --- */
+.range-item ion-range {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  --bar-background: var(--custom-input-bg);
+  --bar-background-active: var(--custom-primary-green);
+  --knob-background: var(--custom-primary-green);
+  --pin-background: var(--custom-primary-green);
+  --pin-color: var(--custom-bg-dark);
+  height: 20px; /* Asegura que la barra tenga altura */
+}
+
+
+/* --- TARJETA DE STACK TECNOLÓGICO (SIN CAMBIOS) --- */
 .tech-stack-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 4px 8px; /* Gap reducido */
+  gap: 0px 8px;
   padding: 0;
 }
 
 .tech-item {
   --background: transparent;
-  --padding-start: 8px;
-  --min-height: 42px; /* Altura reducida */
+  --padding-start: 2px;
   align-items: center;
 }
 
 .tech-item ion-icon {
   color: var(--custom-primary-green);
-  font-size: 1.4rem; /* Reducido */
-  margin-right: 10px;
+  font-size: 0.9rem;
+  margin-right: 5px;
 }
 
 .tech-item ion-label {
-  color: var(--custom-text-light);
-  font-size: 0.88rem; /* Reducido */
+  color: var(--custom-primary-green);
+  font-size: 0.9rem;
   font-weight: 500;
 }
-
-/* --- RESTO DE ESTILOS (sin cambios) --- */
-/* ... (developer-card, danger-zone, etc. se mantienen igual) ... */
 
 /* --- RESPONSIVE DESIGN --- */
 @media (max-width: 768px) {
