@@ -1,109 +1,140 @@
+// public/timer.worker.js
+let timerInterval = null;
 let state = {
+  isRunning: false,
   timeLeft: 0,
-  mode: 'focus', // 'focus', 'shortBreak', 'longBreak'
+  totalElapsed: 0,
+  mode: 'focus',
+  startTime: null,
   durations: {
     focus: 25 * 60,
     shortBreak: 5 * 60,
-    longBreak: 15 * 60,
+    longBreak: 15 * 60
   },
-  intervalId: null,
-  pomodorosInCycle: 0,
-  pomodorosUntilLongBreak: 4,
-  totalElapsed: 0,
-  activeTaskDuration: 0, // in seconds
-  notificationTimestamps: {
-    '15': false,
-    '5': false,
-    '2': false,
-  },
+  cycleCount: 0,
+  taskDuration: 0, // Duración total de la tarea en segundos
+  taskTimeRemaining: 0 // Tiempo restante de la tarea
 };
 
 function tick() {
-  state.timeLeft--;
-  state.totalElapsed++;
+  if (!state.isRunning) return;
 
-  // Send progress notifications during focus mode
-  if (state.mode === 'focus') {
-    const remainingMinutes = Math.floor(state.timeLeft / 60);
-    const remainingSecondsInMinute = state.timeLeft % 60;
-
-    if (remainingMinutes === 15 && remainingSecondsInMinute === 0 && !state.notificationTimestamps['15']) {
-      self.postMessage({ type: 'PROGRESS_NOTIFICATION', payload: { message: '⏳ ¡Solo quedan 15 minutos!' } });
-      state.notificationTimestamps['15'] = true;
-    }
-    if (remainingMinutes === 5 && remainingSecondsInMinute === 0 && !state.notificationTimestamps['5']) {
-      self.postMessage({ type: 'PROGRESS_NOTIFICATION', payload: { message: '⏳ ¡Últimos 5 minutos, vamos!' } });
-      state.notificationTimestamps['5'] = true;
-    }
-    if (remainingMinutes === 2 && remainingSecondsInMinute === 0 && !state.notificationTimestamps['2']) {
-      self.postMessage({ type: 'PROGRESS_NOTIFICATION', payload: { message: '⏳ ¡Recta final! Quedan 2 minutos.' } });
-      state.notificationTimestamps['2'] = true;
-    }
-  }
+  const now = Date.now();
+  const elapsed = Math.floor((now - state.startTime) / 1000);
   
-  const taskTimeIsUp = state.activeTaskDuration > 0 && state.totalElapsed >= state.activeTaskDuration;
-
-  if (taskTimeIsUp) {
-    self.postMessage({ type: 'TASK_FINISHED', payload: { message: '¡Tiempo de la tarea agotado!', timeLeft: 0 } });
-    if (state.intervalId) clearInterval(state.intervalId);
-    state.intervalId = null;
-    return;
+  state.timeLeft = Math.max(0, state.timeLeft - 1);
+  
+  if (state.mode === 'focus') {
+    state.totalElapsed += 1;
+    state.taskTimeRemaining = Math.max(0, state.taskTimeRemaining - 1);
   }
 
-  if (state.timeLeft <= 0) {
-    if (state.intervalId) clearInterval(state.intervalId);
-    state.intervalId = null;
-
-    let message = '';
-    let nextMode = '';
-
-    if (state.mode === 'focus') {
-      state.pomodorosInCycle++;
-      if (state.pomodorosInCycle % state.pomodorosUntilLongBreak === 0) {
-        nextMode = 'longBreak';
-        message = '☕️ ¡Hora de un descanso largo!';
-      } else {
-        nextMode = 'shortBreak';
-        message = '🧘 ¡Hora de un descanso corto!';
-      }
-    } else {
-      nextMode = 'focus';
-      message = '🔔 ¡A trabajar!';
-    }
-    
-    state.mode = nextMode;
-    state.timeLeft = state.durations[nextMode];
-    self.postMessage({ type: 'MODE_CHANGE', payload: { mode: nextMode, timeLeft: state.timeLeft, message } });
-    start(); // Automatically start the next phase
-  } else {
-    self.postMessage({ type: 'TICK', payload: { timeLeft: state.timeLeft, totalElapsed: state.totalElapsed } });
-  }
-}
-
-function start() {
-  if (!state.intervalId) {
-    state.intervalId = setInterval(tick, 1000);
-  }
-}
-
-function reset() {
-  if (state.intervalId) {
-    clearInterval(state.intervalId);
-    state.intervalId = null;
-  }
-  state.timeLeft = state.durations.focus;
-  state.mode = 'focus';
-  state.totalElapsed = 0;
-  state.activeTaskDuration = 0;
-  state.notificationTimestamps = { '15': false, '5': false, '2': false }; // Reset flags
   self.postMessage({
-    type: 'STATE_UPDATE',
+    type: 'TICK',
     payload: {
       timeLeft: state.timeLeft,
-      mode: state.mode,
       totalElapsed: state.totalElapsed,
-      isRunning: false,
-    },
+      taskTimeRemaining: state.taskTimeRemaining
+    }
+  });
+
+  // Notificación de progreso cada 5 minutos en modo focus
+  if (state.mode === 'focus' && state.totalElapsed % 300 === 0 && state.totalElapsed > 0) {
+    self.postMessage({
+      type: 'PROGRESS_NOTIFICATION',
+      payload: { message: `Llevas ${Math.floor(state.totalElapsed / 60)} minutos concentrado` }
+    });
+  }
+
+  // Cuando el temporizador llega a cero
+  if (state.timeLeft <= 0) {
+    handleModeCompletion();
+  }
+}
+
+function handleModeCompletion() {
+  if (state.mode === 'focus') {
+    state.cycleCount++;
+    
+    // Verificar si la tarea está completa
+    if (state.taskTimeRemaining <= 0) {
+      // Tarea completada
+      self.postMessage({
+        type: 'MODE_CHANGE',
+        payload: {
+          mode: 'focus',
+          timeLeft: 0,
+          message: '🎉 ¡Ciclo de concentración completado!'
+        }
+      });
+      state.isRunning = false;
+    } else {
+      // Determinar tipo de descanso
+      const isLongBreak = state.cycleCount % 4 === 0;
+      const breakDuration = isLongBreak ? state.durations.longBreak : state.durations.shortBreak;
+      const breakMode = isLongBreak ? 'longBreak' : 'shortBreak';
+      const breakMessage = isLongBreak 
+        ? '☕ Descanso largo - ¡Te lo mereces!' 
+        : '⏸️ Descanso corto - Relájate un momento';
+
+      self.postMessage({
+        type: 'MODE_CHANGE',
+        payload: {
+          mode: breakMode,
+          timeLeft: breakDuration,
+          message: breakMessage
+        }
+      });
+    }
+  } else {
+    // Fin del descanso - volver al modo focus con el tiempo restante de la tarea
+    const nextFocusDuration = Math.min(state.taskTimeRemaining, state.durations.focus);
+    
+    self.postMessage({
+      type: 'MODE_CHANGE',
+      payload: {
+        mode: 'focus',
+        timeLeft: nextFocusDuration,
+        message: '🎯 ¡De vuelta al trabajo!'
+      }
+    });
+  }
+}
+
+function startTimer() {
+  if (timerInterval) return;
+  
+  state.isRunning = true;
+  state.startTime = Date.now();
+  
+  timerInterval = setInterval(tick, 1000);
+}
+
+function pauseTimer() {
+  state.isRunning = false;
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function resetTimer() {
+  pauseTimer();
+  state = {
+    isRunning: false,
+    timeLeft: state.durations.focus,
+    totalElapsed: 0,
+    mode: 'focus',
+    startTime: null,
+    durations: state.durations,
+    cycleCount: 0,
+    taskDuration: 0,
+    taskTimeRemaining: 0
+  };
+  
+  self.postMessage({
+    type: 'STATE_UPDATE',
+    payload: state
   });
 }
 
@@ -112,26 +143,46 @@ self.onmessage = (e) => {
 
   switch (type) {
     case 'START':
-      start();
+      startTimer();
       break;
+      
     case 'PAUSE':
-      if (state.intervalId) {
-        clearInterval(state.intervalId);
-        state.intervalId = null;
-      }
+      pauseTimer();
       break;
-    case 'SET_STATE':
-      // When a new focus session starts, reset notification flags
-      if (payload.totalElapsed === 0 && payload.mode === 'focus') {
-        state.notificationTimestamps = { '15': false, '5': false, '2': false };
-      }
-      state = { ...state, ...payload };
-      if (payload.durations && !state.intervalId) {
-        reset();
-      }
-      break;
+      
     case 'RESET':
-      reset();
+      resetTimer();
       break;
+      
+    case 'SET_STATE':
+      if (payload.durations) {
+        state.durations = payload.durations;
+      }
+      if (payload.timeLeft !== undefined) {
+        state.timeLeft = payload.timeLeft;
+      }
+      if (payload.mode !== undefined) {
+        state.mode = payload.mode;
+      }
+      if (payload.totalElapsed !== undefined) {
+        state.totalElapsed = payload.totalElapsed;
+      }
+      if (payload.isRunning !== undefined) {
+        state.isRunning = payload.isRunning;
+      }
+      if (payload.taskDuration !== undefined) {
+        state.taskDuration = payload.taskDuration;
+        state.taskTimeRemaining = payload.taskDuration;
+      }
+      if (payload.taskTimeRemaining !== undefined) {
+        state.taskTimeRemaining = payload.taskTimeRemaining;
+      }
+      if (payload.cycleCount !== undefined) {
+        state.cycleCount = payload.cycleCount;
+      }
+      break;
+      
+    default:
+      console.warn('Unknown worker message type:', type);
   }
 };

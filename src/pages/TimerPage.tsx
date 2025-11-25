@@ -1,4 +1,3 @@
-// pages/TimerPage.tsx
 import React, { useMemo } from 'react';
 import {
   IonContent,
@@ -20,7 +19,7 @@ import { useApp } from '../context/AppContext';
 import Header from '../components/Header';
 import './TimerPage.css';
 import { taskService } from '../services/task.service';
-import { getPriorityText } from '../utils/taskUtils'; // Asegúrate de que la ruta sea correcta
+import { getPriorityText } from '../utils/taskUtils';
 
 const RADIUS = 130;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -47,6 +46,7 @@ const TimerPage: React.FC = () => {
     confirmationPending,
     confirmTaskCompletion,
     proceedToBreak,
+    taskTimeRemaining,
   } = useApp();
 
   const history = useHistory();
@@ -94,13 +94,14 @@ const TimerPage: React.FC = () => {
     return `${mins}:${secs}`;
   };
 
-  const totalDurationInSeconds = timerState.mode === 'focus' && activeTask
-    ? activeTask.duration * 60
-    : (timerState.mode === 'shortBreak' ? timerState.timeLeft : timerState.timeLeft);
+  // Calcular el progreso basado en el tiempo total de la tarea
+  const totalDurationInSeconds = activeTask ? activeTask.duration * 60 : timerState.timeLeft;
 
-  const percentageElapsed = totalDurationInSeconds > 0
-    ? ((totalDurationInSeconds - timerState.timeLeft) / totalDurationInSeconds) * 100
-    : 0;
+  const percentageElapsed = activeTask && timerState.mode === 'focus'
+    ? ((activeTask.duration * 60 - taskTimeRemaining) / (activeTask.duration * 60)) * 100
+    : totalDurationInSeconds > 0
+      ? ((totalDurationInSeconds - timerState.timeLeft) / totalDurationInSeconds) * 100
+      : 0;
     
   const strokeDashoffset = CIRCUMFERENCE - (Math.max(0, Math.min(100, percentageElapsed)) / 100) * CIRCUMFERENCE;
 
@@ -185,7 +186,12 @@ const TimerPage: React.FC = () => {
               <h1 className="time-text">{formatTime(timerState.timeLeft)}</h1>
               <p className="time-status">{statusText}</p>
               {activeTask && timerState.mode === 'focus' && (
-                <p className="time-percentage">{`${Math.floor(percentageElapsed)}%`}</p>
+                <>
+                  <p className="time-percentage">{`${Math.floor(percentageElapsed)}%`}</p>
+                  <p className="time-percentage-label">
+                    {Math.floor(taskTimeRemaining / 60)} min restantes
+                  </p>
+                </>
               )}
             </div>
           </div>

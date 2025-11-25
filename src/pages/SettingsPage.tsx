@@ -91,21 +91,21 @@ const SettingsPage: React.FC = () => {
                 <IonItem lines="none">
                   <IonLabel position="stacked">Tiempo de Concentración</IonLabel>
                   <div className="range-container">
-                    <IonRange min={15} max={60} step={5} value={focusTime} onIonChange={e => setFocusTime(e.detail.value as number)} onIonKnobMoveEnd={e => handleConfigChange('focusTime', e.detail.value as number)} />
+                    <IonRange min={5} max={25} step={5} value={focusTime} onIonChange={e => setFocusTime(e.detail.value as number)} onIonKnobMoveEnd={e => handleConfigChange('focusTime', e.detail.value as number)} />
                     <IonText className="range-value">{focusTime} min</IonText>
                   </div>
                 </IonItem>
                 <IonItem lines="none">
                   <IonLabel position="stacked">Descanso Corto</IonLabel>
                   <div className="range-container">
-                    <IonRange min={3} max={15} step={1} value={shortBreak} onIonChange={e => setShortBreak(e.detail.value as number)} onIonKnobMoveEnd={e => handleConfigChange('shortBreak', e.detail.value as number)} />
+                    <IonRange min={5} max={15} step={1} value={shortBreak} onIonChange={e => setShortBreak(e.detail.value as number)} onIonKnobMoveEnd={e => handleConfigChange('shortBreak', e.detail.value as number)} />
                     <IonText className="range-value">{shortBreak} min</IonText>
                   </div>
                 </IonItem>
                 <IonItem lines="none">
                   <IonLabel position="stacked">Descanso Largo</IonLabel>
                   <div className="range-container">
-                    <IonRange min={15} max={45} step={5} value={longBreak} onIonChange={e => setLongBreak(e.detail.value as number)} onIonKnobMoveEnd={e => handleConfigChange('longBreak', e.detail.value as number)} />
+                    <IonRange min={5} max={60} step={5} value={longBreak} onIonChange={e => setLongBreak(e.detail.value as number)} onIonKnobMoveEnd={e => handleConfigChange('longBreak', e.detail.value as number)} />
                     <IonText className="range-value">{longBreak} min</IonText>
                   </div>
                 </IonItem>

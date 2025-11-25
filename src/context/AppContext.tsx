@@ -1,5 +1,4 @@
 
-// src/context/AppContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from 'react';
 import { useIonToast, isPlatform } from '@ionic/react';
 import { App as CapApp } from '@capacitor/app';
@@ -12,7 +11,6 @@ import { AppConfig, DEFAULT_CONFIG } from '../models/Config';
 import { storageService } from '../services/storage.service';
 import { notificationService } from '../services/notification.service';
 
-// --- INTERFAZ COMPLETA DEL CONTEXTO ---
 export interface AppContextType {
   tasks: Task[];
   loadTasks: () => Promise<Task[]>;
@@ -46,11 +44,11 @@ export interface AppContextType {
   confirmationPending: boolean;
   confirmTaskCompletion: () => Promise<void>;
   proceedToBreak: () => void;
+  taskTimeRemaining: number;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// --- ESTADO INICIAL DEL TEMPORIZADOR ---
 const DEFAULT_TIMER_STATE: TimerState = {
   isRunning: false,
   timeLeft: DEFAULT_CONFIG.focusTime * 60,
@@ -59,7 +57,6 @@ const DEFAULT_TIMER_STATE: TimerState = {
   startTime: null,
 };
 
-// --- PROVIDER COMPLETO Y CORREGIDO ---
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -72,6 +69,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [confirmationPending, setConfirmationPending] = useState<boolean>(false);
   const [nextModeInfo, setNextModeInfo] = useState<any>(null);
+  const [taskTimeRemaining, setTaskTimeRemaining] = useState<number>(0);
 
   const timerWorker = useRef<Worker | null>(null);
   const backgroundTaskId = useRef<string | null>(null);
@@ -159,6 +157,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
     setTimerState({ ...DEFAULT_TIMER_STATE, timeLeft: config.focusTime * 60 });
     setActiveTask(null);
+    setTaskTimeRemaining(0);
     finishBackgroundTask();
   }, [config, finishBackgroundTask]);
 
@@ -222,7 +221,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [loadInitialData, present]);
 
-  // --- LÓGICA DEL WORKER Y FLUJO DEL POMODORO (¡CORRECCIÓN DEFINITIVA!) ---
   const confirmTaskCompletion = useCallback(async () => {
     if (!activeTaskRef.current) return;
     const actualDuration = timerState.totalElapsed > 0 ? Math.ceil(timerState.totalElapsed / 60) : 1;
@@ -233,14 +231,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
     setConfirmationPending(false);
     setNextModeInfo(null);
+    stopAndResetTimer();
     present({ message: `✅ ¡Buen trabajo! Tarea completada.`, duration: 3000, color: 'success' });
-  }, [timerState.totalElapsed, updateTask, present]);
+  }, [timerState.totalElapsed, updateTask, present, stopAndResetTimer]);
 
   const proceedToBreak = useCallback(() => {
     if (!nextModeInfo) return;
     present({ message: nextModeInfo.message, duration: 2000, color: 'primary' });
-    setTimerState(prev => ({ ...prev, mode: nextModeInfo.mode, timeLeft: nextModeInfo.timeLeft, isRunning: true, startTime: Date.now() }));
-    if (timerWorker.current) { timerWorker.current.postMessage({ type: 'START' }); }
+    setTimerState(prev => ({ 
+      ...prev, 
+      mode: nextModeInfo.mode, 
+      timeLeft: nextModeInfo.timeLeft, 
+      isRunning: true, 
+      startTime: Date.now() 
+    }));
+    if (timerWorker.current) { 
+      timerWorker.current.postMessage({ 
+        type: 'SET_STATE', 
+        payload: { 
+          mode: nextModeInfo.mode, 
+          timeLeft: nextModeInfo.timeLeft, 
+          isRunning: true 
+        } 
+      });
+      timerWorker.current.postMessage({ type: 'START' }); 
+    }
     setConfirmationPending(false);
     setNextModeInfo(null);
   }, [nextModeInfo, present]);
@@ -248,42 +263,106 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     const worker = new Worker('/timer.worker.js');
     timerWorker.current = worker;
+    
     worker.onmessage = (e) => {
       const { type, payload } = e.data;
       switch (type) {
-        case 'TICK': if (isRunningRef.current) { setTimerState(prev => ({ ...prev, timeLeft: payload.timeLeft, totalElapsed: payload.totalElapsed })); } break;
+        case 'TICK': 
+          if (isRunningRef.current) { 
+            setTimerState(prev => ({ 
+              ...prev, 
+              timeLeft: payload.timeLeft, 
+              totalElapsed: payload.totalElapsed 
+            }));
+            if (payload.taskTimeRemaining !== undefined) {
+              setTaskTimeRemaining(payload.taskTimeRemaining);
+            }
+          } 
+          break;
         case 'MODE_CHANGE':
           notificationService.showProgressNotification(payload.message, activeTaskRef.current?.title || 'Pomodoro');
-          if (modeRef.current === 'focus') {
+          if (modeRef.current === 'focus' && payload.timeLeft === 0) {
+            // Ciclo de concentración completado
             setTimerState(prev => ({ ...prev, isRunning: false }));
             setConfirmationPending(true);
             setNextModeInfo(payload);
           } else {
+            // Cambio automático de modo (fin de descanso o siguiente fase)
             present({ message: payload.message, duration: 2000, color: 'primary' });
-            setTimerState(prev => ({ ...prev, mode: payload.mode, timeLeft: payload.timeLeft, isRunning: true }));
-            if (timerWorker.current) timerWorker.current.postMessage({ type: 'START' });
+            setTimerState(prev => ({ 
+              ...prev, 
+              mode: payload.mode, 
+              timeLeft: payload.timeLeft, 
+              isRunning: true 
+            }));
+            if (timerWorker.current) {
+              timerWorker.current.postMessage({ 
+                type: 'SET_STATE', 
+                payload: { 
+                  mode: payload.mode, 
+                  timeLeft: payload.timeLeft, 
+                  isRunning: true 
+                } 
+              });
+              timerWorker.current.postMessage({ type: 'START' });
+            }
           }
           break;
-        case 'PROGRESS_NOTIFICATION': if (isPlatform('hybrid')) { notificationService.showProgressNotification(payload.message, activeTaskRef.current?.title || 'Pomodoro'); } break;
-        case 'STATE_UPDATE': setTimerState(prev => ({ ...prev, ...payload })); break;
+        case 'PROGRESS_NOTIFICATION': 
+          if (isPlatform('hybrid')) { 
+            notificationService.showProgressNotification(payload.message, activeTaskRef.current?.title || 'Pomodoro'); 
+          } 
+          break;
+        case 'STATE_UPDATE': 
+          setTimerState(prev => ({ ...prev, ...payload })); 
+          break;
       }
     };
-    const initialDurations = { focus: config.focusTime * 60, shortBreak: config.shortBreak * 60, longBreak: config.longBreak * 60 };
+    
+    const initialDurations = { 
+      focus: config.focusTime * 60, 
+      shortBreak: config.shortBreak * 60, 
+      longBreak: config.longBreak * 60 
+    };
     worker.postMessage({ type: 'SET_STATE', payload: { durations: initialDurations } });
+    
     return () => worker.terminate();
   }, [present, config]);
   
   const selectTask = useCallback((task: Task) => {
     stopAndResetTimer();
     setActiveTask(task);
-    const newTimeLeft = task.duration * 60;
-    const newState: TimerState = { isRunning: false, mode: 'focus', timeLeft: newTimeLeft, totalElapsed: 0, startTime: null };
+    const taskDurationSeconds = task.duration * 60;
+    const initialFocusTime = Math.min(taskDurationSeconds, config.focusTime * 60);
+    
+    setTaskTimeRemaining(taskDurationSeconds);
+    
+    const newState: TimerState = { 
+      isRunning: false, 
+      mode: 'focus', 
+      timeLeft: initialFocusTime, 
+      totalElapsed: 0, 
+      startTime: null 
+    };
     setTimerState(newState);
+    
     if (timerWorker.current) {
-      const newDurations = { focus: task.duration * 60, shortBreak: config.shortBreak * 60, longBreak: config.longBreak * 60 };
-      timerWorker.current.postMessage({ type: 'SET_STATE', payload: { ...newState, durations: newDurations }});
+      const newDurations = { 
+        focus: config.focusTime * 60, 
+        shortBreak: config.shortBreak * 60, 
+        longBreak: config.longBreak * 60 
+      };
+      timerWorker.current.postMessage({ 
+        type: 'SET_STATE', 
+        payload: { 
+          ...newState, 
+          durations: newDurations,
+          taskDuration: taskDurationSeconds,
+          taskTimeRemaining: taskDurationSeconds
+        }
+      });
     }
-  }, [config.shortBreak, config.longBreak, stopAndResetTimer]);
+  }, [config.focusTime, config.shortBreak, config.longBreak, stopAndResetTimer]);
 
   const resumePomodoro = useCallback(() => {
     if (!timerState.isRunning && activeTask) {
@@ -309,13 +388,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const skipBreak = useCallback(() => {
-    if (timerState.mode !== 'focus') {
-      if (activeTask) {
-        present({ message: 'Saltando al siguiente bloque de concentración...', duration: 2000, color: 'secondary' });
-        startPomodoroForTask(activeTask);
-      } else { stopAndResetTimer(); }
+    if (timerState.mode !== 'focus' && activeTask) {
+      const remainingTaskTime = taskTimeRemaining;
+      const nextFocusDuration = Math.min(remainingTaskTime, config.focusTime * 60);
+      
+      present({ message: 'Saltando al siguiente bloque de concentración...', duration: 2000, color: 'secondary' });
+      
+      setTimerState(prev => ({ 
+        ...prev, 
+        mode: 'focus', 
+        timeLeft: nextFocusDuration, 
+        isRunning: true,
+        startTime: Date.now()
+      }));
+      
+      if (timerWorker.current) {
+        timerWorker.current.postMessage({ 
+          type: 'SET_STATE', 
+          payload: { 
+            mode: 'focus', 
+            timeLeft: nextFocusDuration, 
+            isRunning: true,
+            taskTimeRemaining: remainingTaskTime
+          } 
+        });
+        timerWorker.current.postMessage({ type: 'START' });
+      }
     }
-  }, [activeTask, present, startPomodoroForTask, stopAndResetTimer, timerState.mode]);
+  }, [activeTask, present, timerState.mode, taskTimeRemaining, config.focusTime]);
 
   const value: AppContextType = {
     tasks, loadTasks, addTask, updateTask, deleteTask, selectTask,
@@ -324,7 +424,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     config, updateConfig, clearAllData,
     timerState, activeTask, setActiveTask, startPomodoroForTask, pausePomodoro, resumePomodoro, skipBreak,
     initialTab, setInitialTab, showWelcomeModal, setShowWelcomeModal, isLoading,
-    confirmationPending, confirmTaskCompletion, proceedToBreak
+    confirmationPending, confirmTaskCompletion, proceedToBreak,
+    taskTimeRemaining
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

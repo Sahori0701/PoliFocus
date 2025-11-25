@@ -12,7 +12,7 @@ export interface AppConfig {
 }
 
 export const DEFAULT_CONFIG: AppConfig = {
-  focusTime: 25,
+  focusTime: 15,
   shortBreak: 5,
   longBreak: 15,
   alertTimes: [15, 5],
