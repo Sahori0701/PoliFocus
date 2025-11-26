@@ -6,7 +6,7 @@
 /* --- PALETA DE COLORES Y VARIABLES --- */
 :root {
   --custom-bg-dark: #1F2229;
-  --custom-card-bg: #1F2937; /* Corregido y unificado */
+  --custom-card-bg: #1F2937;
   --custom-input-bg: #374151;
   --custom-primary-green: #32D79B;
   --custom-danger-red: #EF4444;
@@ -16,15 +16,15 @@
   --custom-border-color: #4A4D55;
 }
 
-/* --- CONTENEDOR Y LAYOUT GENERAL --- */
+/* --- LAYOUT GENERAL --- */
 .settings-container {
   padding: 10px;
-  max-width: 900px;
-  max-height: 600px;
+  padding-top: 15px;
+  max-width: 1000px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Espacio uniforme entre todas las tarjetas */
+  gap: 7px;
 }
 
 .cards-row {
@@ -43,20 +43,21 @@
 .settings-container ion-card {
   background: var(--custom-card-bg);
   border-radius: 12px;
-  border: 1px solid transparent;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid transparent; /* Borde transparente por defecto */
 }
 
 .settings-container ion-card-header {
   padding: 12px 16px;
-
+  border-bottom: 1px solid transparent; /* Borde inferior transparente por defecto */
 }
 
 .settings-container ion-card-content {
-  padding: 16px;
+  padding: 12px 16px;
 }
 
-/* --- TÍTULOS DE TARJETA --- */
 .settings-container ion-card-title {
   color: var(--custom-text-light) !important;
   font-size: 0.9rem !important;
@@ -64,55 +65,76 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  width: 100%;
-}
-
-/* --- TARJETA DE TIEMPOS --- */
-.time-ranges-container, .settings-container ion-list {
-  background: transparent; 
-  padding: 0;
-  max-height: 210px;
-}
-
-.range-item {
-  --background: transparent; --padding-start: 0; --inner-padding-end: 0; --inner-border-width: 0;
-  padding: 0 !important; 
-  margin-bottom:5px;
-}
-
-.range-header {
-  display: flex; justify-content: space-between; align-items: center;
-  width: 100%; margin-bottom: 4px;
-}
-
-.range-item ion-label {
-  color: var(--custom-text-light); 
-  font-size: 0.9rem; 
-  font-weight: 500;
-  display: flex; 
-  align-items: center; 
   gap: 5px;
 }
 
+/* --- TARJETA DE TIEMPOS (COMPACTA) --- */
+.time-ranges-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0;
+}
+
+.range-item {
+  padding: 0 !important;
+}
+
+.range-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.range-item ion-label {
+  color: var(--custom-text-light);
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .range-value {
-  color: var(--custom-text-muted); 
-  font-size: 0.9rem; 
+  color: var(--custom-text-muted);
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
 .range-item ion-range {
-  width: 100%; padding: 0; margin: 0;
   --bar-background: var(--custom-input-bg);
   --bar-background-active: var(--custom-primary-green);
   --knob-background: var(--custom-primary-green);
+  --knob-size: 20px;
+  padding: 0;
+  height: 22px;
 }
 
-/* --- TARJETA DE STACK TECNOLÓGICO --- */
-.tech-stack-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 8px; }
-.tech-item { --background: transparent; --padding-start: 2px; align-items: center; }
-.tech-item ion-icon { color: var(--custom-primary-green); font-size: 0.9rem; margin-right: 5px; }
-.tech-item ion-label { color: var(--custom-text-light); font-size: 0.9rem; font-weight: 500; }
+/* --- TARJETA DE STACK TECNOLÓGICO (COMPACTA) --- */
+.tech-stack-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0px 8px;
+  background: transparent;
+  padding: 0;
+}
+
+.tech-item {
+  --background: transparent;
+  --padding-start: 2px;
+  --inner-padding-top: 4px;
+  --inner-padding-bottom: 4px;
+  --min-height: 28px;
+  font-size: 0.85rem;
+}
+
+.tech-item ion-icon {
+  color: var(--custom-primary-green);
+  font-size: 0.9rem;
+  margin-right: 6px;
+}
 
 /* --- TARJETA DE DESARROLLADOR --- */
 .developer-card p {
@@ -124,18 +146,19 @@
 
 .developer-card ion-button {
   --background: var(--custom-primary-green);
-  --background-activated: #2bb886;
   --color: var(--custom-card-bg);
-  font-weight: 600; text-transform: none; --border-radius: 8px;
+  font-weight: 600;
+  text-transform: none;
+  --border-radius: 8px;
 }
 
 /* --- ZONA DE PELIGRO --- */
 .danger-zone {
-  border: 1px solid var(--custom-danger-red);
+  border: 1px solid var(--custom-danger-red); /* Borde rojo visible */
 }
 
 .danger-zone ion-card-header {
-  border-bottom: 1px solid var(--custom-danger-red);
+  border-bottom: 1px solid var(--custom-danger-red); /* Borde inferior rojo visible */
 }
 
 .danger-zone ion-card-title {
@@ -152,13 +175,16 @@
 
 .danger-zone ion-button {
   --background: var(--custom-danger-red);
-  --background-activated: #dc2626;
   --color: #fff;
-  font-weight: 600; text-transform: none; --border-radius: 8px;
+  font-weight: 600;
+  text-transform: none;
+  --border-radius: 8px;
 }
-
 
 /* --- RESPONSIVE DESIGN --- */
 @media (max-width: 768px) {
-  .settings-container, .cards-row { flex-direction: column; }
+  .settings-container, .cards-row {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
