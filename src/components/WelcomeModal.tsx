@@ -15,9 +15,9 @@ interface WelcomeModalProps {
 const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) => {
   return (
     <IonModal isOpen={isOpen} onDidDismiss={onClose} className="welcome-modal">
-      <IonContent className="ion-padding">
+      <IonContent>
         {/* Header con Logo */}
-        <div className="header-container" style={{ justifyContent: 'center', paddingTop: '2rem', paddingBottom: '1rem' }}>
+        <div className="header-container">
           <div className="header-logo">
             <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -31,7 +31,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) => {
             </svg>
           </div>
           <div className="header-title-wrapper">
-            <h1 className="header-main-title" style={{ fontSize: '1.8rem' }}>PoliFocusTask</h1>
+            <h1 className="header-main-title">PoliFocusTask</h1>
           </div>
         </div>
 
