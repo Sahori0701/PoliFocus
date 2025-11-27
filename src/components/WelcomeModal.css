@@ -22,107 +22,127 @@
   --color: var(--text-light);
 }
 
-/* ===== SWIPER & SLIDES ===== */
-.mySwiper { width: 100%; height: calc(100% - 70px); }
-.swiper-slide {
-  display: flex; flex-direction: column; justify-content: center; align-items: center;
-  padding: 0 1.25rem; height: 100%;
+/* ===== SWIPER & SLIDES (CORREGIDO) ===== */
+.mySwiper {
+  width: 100%;
+  /* Se elimina la altura fija para permitir que el contenido defina la altura */
+  touch-action: pan-y; /* Solución para el deslizamiento en Android */
 }
+
+.swiper-slide {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Alinear contenido arriba para evitar cortes */
+  align-items: center;
+  padding: 1.5rem 1.25rem 1rem; /* Añadir padding vertical para espaciado */
+  height: auto; /* ¡CLAVE! Permitir que la altura del slide se ajuste al contenido */
+  box-sizing: border-box;
+}
+
 .slide-content {
-  display: flex; flex-direction: column; align-items: center; text-align: center;
-  gap: 0.5rem; /* Reducido de 0.6rem */
-  width: 100%; max-width: 420px; margin: 0 auto; overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.8rem; /* Espacio entre elementos del slide */
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  /* Se elimina overflow: hidden para que no se corte el contenido */
 }
 
 /* ===== COMPACT TYPOGRAPHY ===== */
-.slide-emoji { font-size: 2rem; margin-bottom: -4px; line-height: 1; } /* Reducido de 2.2rem */
-.slide-content h2:not(.slide-emoji) { font-family: 'Dosis', sans-serif; font-weight: 700; font-size: 1.15rem; margin: 0; line-height: 1.2; } /* Reducido de 1.25rem */
-.slide-subtitle { font-size: 0.85rem; color: var(--primary-color); font-weight: 600; margin: -6px 0 0px; } /* Reducido de 0.9rem */
+.slide-emoji { font-size: 2.2rem; margin: 0; line-height: 1; }
+.slide-content h2:not(.slide-emoji) { font-family: 'Dosis', sans-serif; font-weight: 700; font-size: 1.25rem; margin: 0; line-height: 1.2; }
+.slide-subtitle { font-size: 0.9rem; color: var(--primary-color); font-weight: 600; margin: -8px 0 0; }
 
-/* ===== BASE CARD STYLES (MÁS COMPACTOS) ===== */
+/* ===== BASE CARD STYLES ===== */
 .feature-item, .step-item, .option-card, .state-card, .flow-step, .control-card, 
 .timer-features, .view-card, .metric-box, .setting-card, .warning-box, .final-tip, 
 .success-message, .tip-box, .action-item, .chart-item, .mini-feature {
   border-radius: var(--card-radius); width: 100%;
-  padding: 0.6rem 1rem; /* Padding vertical reducido de 0.75rem */
-  gap: 0.6rem; /* Gap interno reducido de 0.75rem */
+  padding: 0.75rem 1rem; gap: 0.75rem; 
   background: rgba(42, 54, 78, 0.5); 
   border: 1px solid rgba(129, 144, 168, 0.2);
 }
 
-/* ===== LIST SPACING (MÁS COMPACTO) ===== */
+/* ===== LIST SPACING ===== */
 .feature-list, .instruction-steps, .task-states, .pomodoro-flow, .tips-final, 
 .stats-preview, .settings-options, .chart-list, .calendar-views, .action-list {
   display: flex; flex-direction: column; 
-  gap: 0.4rem; /* Reducido de 0.5rem */
+  gap: 0.5rem; 
   width: 100%;
 }
 
-.calendar-actions h3 { margin-top: 0.1rem; margin-bottom: 0.1rem !important; } /* Reducido */
-
-/* TEXTOS DENTRO DE TARJETAS (MÁS COMPACTOS) */
-h3 { font-size: 0.85rem !important; font-weight: 700; margin: 0 0 2px !important; color: var(--text-light); } /* Reducido de 0.9rem */
-p { font-size: 0.8rem !important; margin: 0 !important; line-height: 1.3; opacity: 0.85; } /* Reducido de 0.85rem */
+/* Textos dentro de cards */
+h3 { font-size: 0.9rem !important; font-weight: 700; margin: 0 0 4px !important; color: var(--text-light); }
+p { font-size: 0.85rem !important; margin: 0 !important; line-height: 1.3; opacity: 0.85; }
 
 /* SLIDE 4: GESTIONA TUS TAREAS */
 .task-states h3 { display: flex; align-items: center; gap: 0.5rem; }
-.state-card { padding: 0.8rem; } /* Reducido de 1rem */
+.state-card { padding: 1rem; }
 .state-card.active-card { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.4); }
 .state-card.expired-card { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.4); }
 .state-card.completed-card { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.4); }
 
 .state-actions, .efficiency-badge {
-  gap: 0.4rem; margin-top: 0.6rem; /* Reducido */
+  display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem;
 }
 .state-actions span, .efficiency-badge span {
-  padding: 0.25rem 0.6rem; font-size: 0.75rem; /* Reducido */
+  background: rgba(255, 255, 255, 0.1); padding: 0.3rem 0.7rem; border-radius: 6px;
+  font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;
 }
 
 /* TIP BOX */
-.tip-box { padding: 0.7rem 1rem; }
-.tip-emoji { font-size: 1rem; }
+.tip-box { display: flex; align-items: flex-start; text-align: left; gap: 0.75rem; padding: 0.8rem 1rem; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.4);}
+.tip-emoji { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+.tip-box p { font-weight: 500; }
 
 /* Other specific styles */
-.feature-item, .step-item, .flow-step, .final-tip, .action-item, .chart-item { display: flex; align-items: center; text-align: left; }
+.feature-item, .step-item, .flow-step, .final-tip, .action-item, .chart-item, .mini-feature {
+  display: flex; align-items: center; text-align: left;
+}
 .step-content { flex: 1; }
-.step-number { width: 22px; height: 22px; font-size: 0.8rem;} /* Reducido */
+.step-number { width: 24px; height: 24px; font-size: 0.9rem; flex-shrink: 0; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;}
 
-.recurring-options, .controls-grid, .metrics-grid, .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; width: 100%;} /* Gap reducido */
+.recurring-options, .controls-grid, .metrics-grid, .feature-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; width: 100%;
+}
 .controls-grid { grid-template-columns: repeat(3, 1fr); }
 
-.option-card, .control-card, .metric-box, .setting-card, .mini-feature { padding: 0.6rem 0.5rem;} /* Padding reducido */
-.option-emoji, .control-emoji, .view-emoji, .metric-icon, .setting-emoji, .warning-emoji, .success-emoji { font-size: 1.4rem; } /* Reducido */
+.option-card, .control-card, .metric-box, .setting-card, .mini-feature {
+  text-align: center; padding: 0.75rem 0.5rem;
+}
+.option-emoji, .control-emoji, .view-emoji, .metric-icon, .setting-emoji, .warning-emoji, .success-emoji { font-size: 1.5rem; display: block; margin: 0 auto 4px;}
 
 /* FINAL BUTTON & PAGINATION */
-.start-button-slide { font-size: 0.9rem; --border-radius: var(--card-radius); margin-top: 0.5rem; width: 100%; --background: var(--ion-color-primary, #10b981); --color: white; font-weight: 700; text-transform: none; height: 42px;} /* Reducido */
+.start-button-slide {
+  font-size: 1rem;
+  --border-radius: var(--card-radius);
+  margin-top: 1rem; /* Añadido margen superior */
+  margin-bottom: 0.5rem; /* Añadido margen inferior */
+  width: 100%;
+  --background: var(--ion-color-primary, #10b981);
+  --color: white;
+  font-weight: 700;
+  text-transform: none;
+  height: 44px;
+}
 
-.swiper-pagination { position: static; padding: 10px 0 4px;}
+.swiper-pagination {
+  position: static;
+  padding: 12px 0 8px; /* Espacio para la paginación */
+}
+
 .swiper-pagination-bullet { background: rgba(255, 255, 255, 0.3); width: 6px; height: 6px; }
 .swiper-pagination-bullet-active { background: var(--primary-color); }
 
-/* --- MEDIA QUERIES EXISTENTES (SE MANTIENEN POR DEBAJO) --- */
+/* Responsive tweak for very short screens */
 @media (max-height: 720px) {
-  /* Estos estilos ahora son menos necesarios pero se mantienen como fallback */
-}
-
-@media (max-width: 480px) {
-  /* Los ajustes para móviles siguen siendo válidos */
-  .recurring-options, 
-  .controls-grid, 
-  .metrics-grid,
-  .feature-grid,
-  .calendar-views,
-  .settings-options {
-    grid-template-columns: 1fr;
-    gap: 0.4rem; 
-  }
-
-  .slide-content {
-      gap: 0.5rem; 
-  }
-
-  .control-card, .option-card, .metric-box {
-      padding-left: 1rem;
-      padding-right: 1rem;
-  }
+  .slide-content { gap: 0.6rem; }
+  .slide-emoji { font-size: 2rem; }
+  h2:not(.slide-emoji) { font-size: 1.2rem !important; }
+  p { font-size: 0.8rem !important; }
+  .state-card { padding: 0.75rem; }
+  .swiper-pagination { padding: 8px 0; }
 }
