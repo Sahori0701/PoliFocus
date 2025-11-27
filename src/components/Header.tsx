@@ -11,9 +11,9 @@ const Header: React.FC = () => {
 
   return (
     <IonHeader className="ion-no-border">
-      {/* IonToolbar gestionará automáticamente el padding para la barra de estado */}
-      <IonToolbar>
-        {/* Usamos IonTitle para agrupar el logo y el texto, asegurando que se centren como un bloque */}
+      <IonToolbar style={{ paddingTop: 'var(--ion-safe-area-top)' }}>
+        {/* El IonTitle actúa como un contenedor que Ionic centra automáticamente. */}
+        {/* Dentro, usamos flexbox para alinear el logo y el texto como un solo bloque. */}
         <IonTitle>
           <div className="header-title-content">
             <div className="header-logo">
@@ -36,8 +36,7 @@ const Header: React.FC = () => {
             <span className="header-main-title">PoliFocusTask</span>
           </div>
         </IonTitle>
-
-        {/* El botón de ayuda se coloca en el slot 'end' para alinearse a la derecha */}
+        
         <IonButtons slot="end">
           <IonButton onClick={() => setShowWelcomeModal(true)}>
             <IonIcon slot="icon-only" icon={helpCircleOutline} />

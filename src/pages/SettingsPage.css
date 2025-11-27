@@ -16,7 +16,7 @@
   --custom-border-color: #4A4D55;
 }
 
-/* --- LAYOUT GENERAL --- */
+/* --- LAYOUT GENERAL (AJUSTADO PARA SCROLL) --- */
 .settings-container {
   padding: 10px;
   padding-top: 15px;
@@ -112,22 +112,24 @@
   height: 22px;
 }
 
-/* --- TARJETA DE STACK TECNOLÓGICO (COMPACTA) --- */
+/* --- TARJETA DE STACK TECNOLÓGICO (3X3) --- */
 .tech-stack-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0px 8px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px 8px;
   background: transparent;
   padding: 0;
+  justify-items: center; /* Centra los items en el eje X */
 }
 
 .tech-item {
   --background: transparent;
-  --padding-start: 2px;
+  --padding-start: 0; /* Quita el padding para un centrado perfecto */
   --inner-padding-top: 4px;
   --inner-padding-bottom: 4px;
   --min-height: 28px;
   font-size: 0.85rem;
+  width: fit-content; /* Asegura que el item ocupe solo el ancho de su contenido */
 }
 
 .tech-item ion-icon {
@@ -136,29 +138,37 @@
   margin-right: 6px;
 }
 
-/* --- TARJETA DE DESARROLLADOR --- */
-.developer-card p {
-  color: var(--custom-text-muted);
-  font-size: 0.85rem;
-  text-align: center;
-  margin: 0 0 12px 0;
+/* --- TARJETA ACERCA DEL DESARROLLADOR --- */
+.developer-card .developer-content {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
-.developer-card ion-button {
-  --background: var(--custom-primary-green);
-  --color: var(--custom-card-bg);
+.developer-card .developer-content p {
+  font-size: 0.85rem;
+  color: var(--custom-text-muted);
+  text-align: justify;
+  line-height: 1.6;
+  margin: 0 0 10px 0;
+}
+
+.developer-card .developer-content p:last-child {
+  margin-bottom: 0;
+}
+
+.developer-card .developer-content strong {
+  color: var(--custom-text-light);
   font-weight: 600;
-  text-transform: none;
-  --border-radius: 8px;
 }
 
 /* --- ZONA DE PELIGRO --- */
 .danger-zone {
-  border: 1px solid var(--custom-danger-red); /* Borde rojo visible */
+  border: 1px solid var(--custom-danger-red);
+  margin-top: 8px; /* Espacio por encima en layout de escritorio */
 }
 
 .danger-zone ion-card-header {
-  border-bottom: 1px solid var(--custom-danger-red); /* Borde inferior rojo visible */
+  border-bottom: 1px solid var(--custom-danger-red);
 }
 
 .danger-zone ion-card-title {
@@ -186,5 +196,14 @@
   .settings-container, .cards-row {
     flex-direction: column;
     gap: 12px;
+  }
+  
+  .danger-zone {
+    margin-top: 0;
+  }
+
+  .developer-card .developer-content p {
+    font-size: 0.8rem; 
+    text-align: left;
   }
 }

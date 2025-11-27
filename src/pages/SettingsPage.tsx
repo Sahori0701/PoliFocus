@@ -22,8 +22,11 @@ import {
   logoReact, 
   logoCapacitor, 
   logoFirebase, 
-  buildOutline, 
-  codeWorkingOutline 
+  codeWorkingOutline,
+  logoCss3,
+  gitBranchOutline,
+  logoHtml5,
+  logoJavascript
 } from 'ionicons/icons';
 import { useApp } from '../context/AppContext';
 import Header from '../components/Header';
@@ -139,8 +142,11 @@ const SettingsPage: React.FC = () => {
                   <IonItem className="tech-item"><IonIcon icon={logoReact} slot="start" /><IonLabel>React</IonLabel></IonItem>
                   <IonItem className="tech-item"><IonIcon icon={logoCapacitor} slot="start" /><IonLabel>Capacitor</IonLabel></IonItem>
                   <IonItem className="tech-item"><IonIcon icon={logoFirebase} slot="start" /><IonLabel>Firebase</IonLabel></IonItem>
-                  <IonItem className="tech-item"><IonIcon icon={buildOutline} slot="start" /><IonLabel>Vite</IonLabel></IonItem>
                   <IonItem className="tech-item"><IonIcon icon={codeWorkingOutline} slot="start" /><IonLabel>TypeScript</IonLabel></IonItem>
+                  <IonItem className="tech-item"><IonIcon icon={logoHtml5} slot="start" /><IonLabel>HTML5</IonLabel></IonItem>
+                  <IonItem className="tech-item"><IonIcon icon={logoCss3} slot="start" /><IonLabel>CSS3</IonLabel></IonItem>
+                  <IonItem className="tech-item"><IonIcon icon={logoJavascript} slot="start" /><IonLabel>JavaScript</IonLabel></IonItem>
+                  <IonItem className="tech-item"><IonIcon icon={gitBranchOutline} slot="start" /><IonLabel>Git</IonLabel></IonItem>
                 </IonList>
               </IonCardContent>
             </IonCard>
@@ -150,11 +156,16 @@ const SettingsPage: React.FC = () => {
             <IonCardHeader>
               <IonCardTitle>👨‍💻 Acerca del Desarrollador</IonCardTitle>
             </IonCardHeader>
-            <IonCardContent>
-              <p>Creado por grupo del Politecnico Grancolombiano</p>
-              <a href="https://deepmind.google/technologies/gemini/" target="_blank" rel="noopener noreferrer">
-                <IonButton expand="block">Conoce más sobre Gemini AI</IonButton>
-              </a>
+            <IonCardContent className="developer-content">
+              <p>
+                <strong>PoliFocusTask</strong> nació de nuestra pasión por la tecnología y el deseo de crear una herramienta que realmente ayude a las personas a concentrarse 🎯. Como estudiantes del <strong>Politécnico Grancolombiano</strong>, este proyecto representa nuestro compromiso con la excelencia y el aprendizaje práctico, desarrollado en el curso de Énfasis en Programación Móvil.
+              </p>
+              <p>
+                Construida con tecnologías modernas como <strong>Ionic, React y Firebase</strong>, esta app es el resultado de horas de colaboración, estudio y esfuerzo del <strong>Grupo B01, Subgrupo 10</strong>, durante el segundo semestre de 2025 🚀. Cada línea de código refleja nuestro crecimiento y la dedicación para ofrecer una experiencia de usuario fluida y efectiva.
+              </p>
+              <p>
+                Esperamos que disfrutes usando esta herramienta tanto como nosotros disfrutamos creándola. ¡Que te ayude a alcanzar tus metas y a mantener el enfoque en lo que más importa! ✨
+              </p>
             </IonCardContent>
           </IonCard>
 

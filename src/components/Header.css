@@ -10,7 +10,7 @@
 }
 
 .header-logo {
-  margin-right: 0.75rem; /* Espacio entre el logo y el título */
+  margin-right: 0.5rem; /* Espacio reducido entre el logo y el título */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -22,24 +22,16 @@
   height: 25px;
 }
 
-/* Título principal con un color sólido y seguro */
+/* Título principal con degradado y alineado */
 .header-main-title {
   font-family: 'Dosis', sans-serif;
   font-weight: 700;
   font-size: 1.3rem;
   line-height: 1.2;
+  background: linear-gradient(90deg, var(--app-primary) 0%, var(--app-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0;
-  /* Se elimina el degradado que no funciona en Android. */
-  /* El color ahora se hereda automáticamente del tema de Ionic, asegurando la visibilidad. */
-  color: var(--ion-color-dark-contrast);
-}
-
-/* Se asegura que el color del texto sea el correcto en tema oscuro */
-.dark-theme .header-main-title {
-  color: var(--ion-color-dark-contrast);
-}
-
-/* Se asegura que el color del texto sea el correcto en tema claro */
-.light-theme .header-main-title {
-  color: var(--ion-color-dark);
+  padding: 0; /* Se elimina cualquier padding anterior */
 }

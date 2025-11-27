@@ -2,10 +2,10 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import './WelcomeModal.css';
-import './Header.css';
 import { Pagination } from 'swiper/modules';
 import React from 'react';
-import { IonModal, IonContent, IonButton } from '@ionic/react';
+import { IonModal, IonContent, IonButton, IonHeader, IonToolbar, IonButtons, IonTitle } from '@ionic/react';
+import './Header.css'; // Reutilizamos el CSS del Header principal
 
 interface WelcomeModalProps {
   isOpen: boolean;
@@ -13,28 +13,42 @@ interface WelcomeModalProps {
 }
 
 const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) => {
+
+  const gradientId = `logoGradient-welcome-${Math.random().toString(36).substr(2, 9)}`;
+
   return (
     <IonModal isOpen={isOpen} onDidDismiss={onClose} className="welcome-modal">
-      <IonContent>
-        {/* Header con Logo */}
-        <div className="header-container">
-          <div className="header-logo">
-            <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#3b82f6" />
-                </linearGradient>
-              </defs>
-              <path d="M16 31C24.2843 31 31 24.2843 31 16C31 7.71573 24.2843 1 16 1C7.71573 1 1 7.71573 1 16C1 24.2843 7.71573 31 16 31Z" stroke="url(#logoGradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-              <path d="M22.2427 9.75738C20.9383 8.45295 19.2089 7.58691 17.3536 7.27548L14.7247 14.7248L7.27535 17.3537C7.58678 19.209 8.45282 20.9384 9.75725 22.2428C12.3093 24.7949 16.1998 25.1673 19.1437 23.4211L23.421 19.1438C25.1672 16.1999 24.7948 12.3094 22.2427 9.75738Z" fill="url(#logoGradient)"/>
-            </svg>
-          </div>
-          <div className="header-title-wrapper">
-            <h1 className="header-main-title">PoliFocusTask</h1>
-          </div>
-        </div>
+      <IonHeader className="ion-no-border">
+        <IonToolbar style={{ paddingTop: 'var(--ion-safe-area-top)' }}>
+          <IonTitle>
+            <div className="header-title-content">
+              <div className="header-logo">
+                <svg
+                  width="26"
+                  height="26"
+                  viewBox="0 0 32 32"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <defs>
+                    <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="100%" stopColor="#3b82f6" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M16 31C24.2843 31 31 24.2843 31 16C31 7.71573 24.2843 1 16 1C7.71573 1 1 7.71573 1 16C1 24.2843 7.71573 31 16 31Z" stroke={`url(#${gradientId})`} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                  <path d="M22.2427 9.75738C20.9383 8.45295 19.2089 7.58691 17.3536 7.27548L14.7247 14.7248L7.27535 17.3537C7.58678 19.209 8.45282 20.9384 9.75725 22.2428C12.3093 24.7949 16.1998 25.1673 19.1437 23.4211L23.421 19.1438C25.1672 16.1999 24.7948 12.3094 22.2427 9.75738Z" fill={`url(#${gradientId})`}/>
+                </svg>
+              </div>
+              <span className="header-main-title">PoliFocusTask</span>
+            </div>
+          </IonTitle>
+          <IonButtons slot="end">
+            <IonButton onClick={onClose}>Saltar</IonButton>
+          </IonButtons>
+        </IonToolbar>
+      </IonHeader>
 
+      <IonContent>
         <Swiper pagination={true} modules={[Pagination]} className="mySwiper">
           {/* Slide 1: Bienvenida */}
           <SwiperSlide>
@@ -495,8 +509,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) => {
             </div>
           </SwiperSlide>
         </Swiper>
-
-        <IonButton fill="clear" onClick={onClose} className="skip-button">Saltar</IonButton>
       </IonContent>
     </IonModal>
   );
